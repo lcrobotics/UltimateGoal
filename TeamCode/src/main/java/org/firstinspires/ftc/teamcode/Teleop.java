@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import java.util.Set;
 
 @TeleOp
 public class Teleop extends OpMode {
@@ -19,6 +18,11 @@ public class Teleop extends OpMode {
 
     boolean grabservo = true;
     boolean pushservo = true;
+
+    final double INTAKE_POWER = 1;
+    final double GRABBER_POWER = 1;
+    final double SHOOTER_POWER = 1;
+
 
     @Override
     public void init() {
@@ -39,37 +43,54 @@ public class Teleop extends OpMode {
         intake();
     }
 
-    // Code for the grabber. Servo grabs the ring and the linear actuator lifts it up.
+    // this method binds the grabber function to right bumper
     public void grabbing() {
         // set motor power to 1 when right bumper is pressed
         if (gamepad1.right_bumper) {
-            linearActuator.setPower(1);
+            linearActuator.setPower(GRABBER_POWER);
         }
-        // starts servo when b is pressed
+        // starts servo when b is pressed   
         if (gamepad1.b) {
             grabservo = true;
         }
     }
-    // code for the ring shooter which shoots the rings.
+    // binds shooter to left stick button .
     public void shooter() {
         // sets power to 1 when left stick button s pressed
         if (gamepad1.left_stick_button) {
-            shooter.setPower(1);
+            shooter.setPower(SHOOTER_POWER);
         }
     }
-    // code for the push servo that pushes the rings into the shooter.
+    // binds pushservo to a and sets power
     public void push() {
-        // starts servo when a is pressed
+        // starts servo when a is pushed
         if (gamepad1.a) {
             pushservo = true;
         }
     }
 
-    // code for the intake motor which brings the rings into the robot.
+    // binds intake to left bumper and sets power
     public void intake() {
         // sets power to 1 when left bumper is pressed
         if (gamepad1.left_bumper) {
-            intake.setPower(1);
+            intake.setPower(INTAKE_POWER);
+        }
+    }
+    // reverse intake binded to right bumper and sets power to opposite of intake
+    public void reverseIntake() {
+        if (gamepad1.right_bumper) {
+            intake.setPower(-INTAKE_POWER);
+        }
+    }
+    // binds stoppage of all motors/servos to dpad down
+    public void stop() {
+        //stops all functions
+        if (gamepad1.dpad_down) {
+            linearActuator.setPower(0);
+            grabservo = false;
+            shooter.setPower(0);
+            pushservo = false;
+            intake.setPower(0);
         }
     }
 }
