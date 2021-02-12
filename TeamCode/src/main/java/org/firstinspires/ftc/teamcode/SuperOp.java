@@ -6,11 +6,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public abstract class SuperOp extends OpMode {
     //motors/servos for exactly what it says
-    DcMotor intake;
-    DcMotor linearActuator;
-    DcMotor shooter;
-    Servo openGrabber;
-    Servo push;
+    DcMotor Intake;
+    DcMotor Rotator;
+    DcMotor Shooter;
+    Servo FrontHook;
+    Servo TopHook;
+    Servo ShooterServo;
     //wheels
     DcMotor FrontLeftDrive;
     DcMotor BackLeftDrive;
@@ -20,15 +21,16 @@ public abstract class SuperOp extends OpMode {
     @Override
     public void init() {
         // Initializes each piece of hardware
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        linearActuator = hardwareMap.get(DcMotor.class, "linearActuator");
-        shooter = hardwareMap.get(DcMotor.class, "shooter");
-        openGrabber = hardwareMap.get(Servo.class, "openGrabber");
-        push = hardwareMap.get(Servo.class, "push");
+        Intake = hardwareMap.get(DcMotor.class, "Intake");
+        Rotator = hardwareMap.get(DcMotor.class, "Rotator");
+        Shooter = hardwareMap.get(DcMotor.class, "Shooter");
+        FrontHook = hardwareMap.get(Servo.class, "FrontHook");
+        TopHook = hardwareMap.get(Servo.class, "TopHook");
+        ShooterServo = hardwareMap.get(Servo.class, "ShooterServo");
+
         FrontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftDrive");
         BackLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftDrive");
         FrontRightDrive = hardwareMap.get(DcMotor.class, "BackRightDrive");
         BackRightDrive = hardwareMap.get(DcMotor.class, "BackRightDrive");
-
     }
 }
