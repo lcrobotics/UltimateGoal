@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 
+import com.lcrobotics.easyftclib.CommandCenter.driveTrain.MecanumDrive;
+
 import org.firstinspires.ftc.teamcode.SuperOp;
 
 public class Autonomous extends SuperOp {
@@ -39,7 +41,7 @@ public class Autonomous extends SuperOp {
                 break;
 
             case DELTA:
-                //find traslational delta
+                //find translational delta
 
                 //find rotational delta
 

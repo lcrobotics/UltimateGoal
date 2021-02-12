@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.lcrobotics.easyftclib.CommandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.CommandCenter.hardware.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -20,6 +21,8 @@ public abstract class SuperOp extends OpMode {
     Motor FrontRightDrive;
     Motor BackRightDrive;
 
+    MecanumDrive drive;
+
     @Override
     public void init() {
         // Initializes each piece of hardware
@@ -34,5 +37,8 @@ public abstract class SuperOp extends OpMode {
         BackLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
         FrontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
         BackRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+
+        // initialize drive
+        drive = new MecanumDrive(true, FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRightDrive);
     }
 }
