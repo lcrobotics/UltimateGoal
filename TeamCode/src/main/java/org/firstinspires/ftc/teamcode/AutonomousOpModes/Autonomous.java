@@ -22,16 +22,16 @@ public class Autonomous extends SuperOp {
     }
 
     public void loop() {
-        //drive forward
+
         switch (auto) {
 
             case DRIVE:
-                //drive forward
+                driveForward.driveRobotCentric(0, 0.5, 0, true);
                 auto = CLOCKWISE;
                 break;
 
             case CLOCKWISE:
-                //Clockwise rotation
+                driveForward.driveRobotCentric(0, 0, 0.5, true);
 
                 if (picture) {
                     auto = DELTA;
@@ -51,7 +51,7 @@ public class Autonomous extends SuperOp {
                 break;
 
             case COUNTERCLOCKWISE:
-                //Counterclockwise rotation
+                driveForward.driveRobotCentric(0, 0, -0.5, true);
 
                 if (picture) {
                     auto = DELTA;

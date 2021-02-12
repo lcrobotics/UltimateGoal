@@ -21,7 +21,7 @@ public abstract class SuperOp extends OpMode {
     Motor FrontRightDrive;
     Motor BackRightDrive;
 
-    MecanumDrive drive;
+    public MecanumDrive driveForward;
 
     @Override
     public void init() {
@@ -39,6 +39,6 @@ public abstract class SuperOp extends OpMode {
         BackRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
 
         // initialize drive
-        drive = new MecanumDrive(true, FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRightDrive);
+        driveForward = new MecanumDrive(true, FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRightDrive);
     }
 }
