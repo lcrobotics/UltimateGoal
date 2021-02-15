@@ -3,9 +3,10 @@ package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 import com.lcrobotics.easyftclib.CommandCenter.driveTrain.MecanumDrive;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.SuperOp;
-
-public class Autonomous extends SuperOp {
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous
+public class FirstAuto extends SuperOp {
 
     final int DRIVE = 0;
     final int CLOCKWISE = 1;
