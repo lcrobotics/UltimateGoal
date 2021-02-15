@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public abstract class SuperOp extends OpMode {
     // power constant
-    final double ROTATE_POWER = 1;
-    final double INTAKE_POWER = .1;
+    final double ROTATE_POWER = .6;
+    final double INTAKE_POWER = .5;
 
     // drive constants
     final int cpr = 448;
@@ -83,7 +83,7 @@ public abstract class SuperOp extends OpMode {
         }
 
         if (gamepad2.dpad_up) {
-            intake.set(INTAKE_POWER);
+            intake.set(-INTAKE_POWER);
         } else {
             intake.set(0);
         }
@@ -108,7 +108,7 @@ public abstract class SuperOp extends OpMode {
     // binds shooter to right trigger for operator
     public void shooter() {
         // binds shooter power to operator's right trigger
-        shooter.set(gamepad2.right_trigger);
+        shooter.set(-gamepad2.right_trigger);
     }
 
     // binds intake power to left stick y for operator
@@ -135,7 +135,7 @@ public abstract class SuperOp extends OpMode {
 
             // stop servos
             frontHook.setPosition(0);
-            topHook.setPosition(0);
+            topHook.setPosition(1);
             shooterServo.setPosition(0);
 
             // stop drive motors
@@ -153,7 +153,7 @@ public abstract class SuperOp extends OpMode {
 
             // stop servos
             frontHook.setPosition(0);
-            topHook.setPosition(0);
+            topHook.setPosition(1);
             shooterServo.setPosition(0);
 
             // stop drive motors
@@ -166,6 +166,6 @@ public abstract class SuperOp extends OpMode {
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-        drive.driveRobotCentric(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x, true);
+        drive.driveRobotCentric(gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, gamepad1.right_stick_x * .8, true);
     }
 }
