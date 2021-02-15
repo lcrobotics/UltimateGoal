@@ -2,39 +2,38 @@ package org.firstinspires.ftc.teamcode;
 
 import com.lcrobotics.easyftclib.CommandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.CommandCenter.hardware.Motor;
+import com.lcrobotics.easyftclib.CommandCenter.hardware.RevIMU;
+import com.lcrobotics.easyftclib.CommandCenter.hardware.ServoEx;
+import com.lcrobotics.easyftclib.CommandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public abstract class SuperOp extends OpMode {
-    // power constants
-    final double INTAKE_POWER = 1;
+    // power constant
     final double ROTATE_POWER = 1;
-    final double SHOOTER_POWER = 1;
 
     // drive constants
     final int cpr = 448;
     final int rpm = 64;
 
-    // servo constants
-    boolean frontHookServo = true;
-    boolean topHookServo = true;
-    boolean shooterServo = true;
+    // declare imu
+    RevIMU imu;
 
     // declare non-drive motors
-    Motor Intake;
-    Motor Rotate;
-    Motor Shooter;
+    Motor intake;
+    Motor rotate;
+    Motor shooter;
 
     // declare servos
-    Servo FrontHook;
-    Servo TopHook;
-    Servo ShooterServo;
+    ServoEx frontHook;
+    ServoEx topHook;
+    ServoEx shooterServo;
 
     // declare drive motors
-    Motor FrontLeftDrive;
-    Motor BackLeftDrive;
-    Motor FrontRightDrive;
-    Motor BackRightDrive;
+    Motor frontLeftDrive;
+    Motor backLeftDrive;
+    Motor frontRightDrive;
+    Motor backRightDrive;
 
     // declare drive
     public MecanumDrive drive;
@@ -42,93 +41,124 @@ public abstract class SuperOp extends OpMode {
     @Override
     public void init() {
         // initialize non-drive motors
-        Intake = new Motor(hardwareMap, "Intake", cpr, rpm);
-        Rotate = new Motor(hardwareMap, "Rotator", cpr, rpm);
-        Shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
+        intake = new Motor(hardwareMap, "Intake", cpr, rpm);
+        rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
+        shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
 
         // initialize servos
-        FrontHook = hardwareMap.get(Servo.class, "FrontHook");
-        TopHook = hardwareMap.get(Servo.class, "TopHook");
-        ShooterServo = hardwareMap.get(Servo.class, "ShooterServo");
+        frontHook = new SimpleServo(hardwareMap, "FrontHook");
+        topHook = new SimpleServo(hardwareMap, "TopHook");
+        shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
 
         // initialize drive motors
-        FrontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
-        BackLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
-        FrontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
-        BackRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
+        frontLeftDrive.setInverted(true);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
+        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
+        backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+        backRightDrive.setInverted(true);
+
+        // initialize imu
+        imu = new RevIMU(hardwareMap, "imu");
+        imu.init();
 
         // initialize drive
-        drive = new MecanumDrive(true, FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRightDrive);
+        drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
     }
 
-    // binds Rotate to y and sets power
-    // binds front servo to b and starts servo
-    // binds top servo to y and starts servo
+    // bind rotate up to operator's left stick button and down to operator's right stick button
+    // bind operator's x to trigger and hold front servo
+    // bind operator's y to release front servo
+    // bind operator's a to trigger and hold top servo
+    // bind operator's b to release top servo
     public void wobbleGoals() {
-        // set motor power to 1 when y is pressed
-        if (gamepad1.y) {
-            Rotate.set(ROTATE_POWER);
+        // set rotate to -rotate power on left stick button press
+        if (gamepad2.left_stick_button) {
+            rotate.set(-ROTATE_POWER);
         }
-        // starts front servo when b is pressed
-        if (gamepad1.b) {
-            frontHookServo = true;
+        // set rotate to rotate power on right stick button press
+        if (gamepad2.right_stick_button) {
+            rotate.set(ROTATE_POWER);
         }
-        // starts top servo when x is pressed
-        if (gamepad1.x) {
-            topHookServo = true;
+        // triggers and holds front servo on x press
+        if (gamepad2.x) {
+            frontHook.setPosition(1);
+        }
+        // releases front servo on y press
+        if (gamepad2.y) {
+            frontHook.setPosition(0);
+        }
+        // triggers and holds top servo on a press
+        if (gamepad2.a) {
+            topHook.setPosition(1);
+        }
+        // releases top servo on b press
+        if (gamepad2.b){
+            topHook.setPosition(0);
         }
     }
 
-    // binds shooter to left stick button .
+    // binds shooter to right trigger for operator
     public void shooter() {
-        // sets power to 1 when left stick button s pressed
-        if (gamepad1.left_stick_button) {
-            Shooter.set(SHOOTER_POWER);
-        }
+        // binds shooter power to operator's right trigger
+        shooter.set(gamepad2.right_trigger);
     }
 
-    // binds intake to left bumper and sets power
-    // binds reverse intake to right bumper and sets power
-    // binds shooterServo to a and sets power
+    // binds intake power to left stick y for operator
+    // binds shooterServo to right bumper and sets power for operator
     public void intake() {
-        // sets power to 1 when left bumper is pressed
-        if (gamepad1.left_bumper) {
-            Intake.set(INTAKE_POWER);
-        }
-        // sets power to -1 when right bumper is pressed
-        if (gamepad1.right_bumper) {
-            Intake.set(-INTAKE_POWER);
-        }
-        // starts servo when a is pushed
-        if (gamepad1.a) {
-            shooterServo = true;
+        // bind intake to power of left stick y for operator
+        intake.set(gamepad2.left_stick_y);
+        // triggers shooterServo when right bumper pressed
+        if (gamepad2.right_bumper) {
+            shooterServo.setPosition(1);
+        } else {
+            shooterServo.setPosition(0);
         }
     }
 
-    // binds stoppage of all motors/servos to dpad down
+    // binds stoppage of all motors/servos to dpad down (both operator and driver)b
     public void stop() {
-        // stops motors on robot
+        // if driver presses dpad down, stop all motors/servos
         if (gamepad1.dpad_down) {
             // stop non-drive motors
-            Intake.set(0);
-            Rotate.set(0);
-            Shooter.set(0);
+            intake.set(0);
+            rotate.set(0);
+            shooter.set(0);
 
             // stop servos
-            frontHookServo = false;
-            topHookServo= false;
-            shooterServo = true;
+            frontHook.setPosition(0);
+            topHook.setPosition(0);
+            shooterServo.setPosition(0);
 
             // stop drive motors
-            FrontLeftDrive.set(0);
-            FrontRightDrive.set(0);
-            BackLeftDrive.set(0);
-            BackRightDrive.set(0);
+            frontLeftDrive.set(0);
+            frontRightDrive.set(0);
+            backLeftDrive.set(0);
+            backRightDrive.set(0);
+        }
+        // if operator presses dpad down, stop all motors/servos
+        if (gamepad2.dpad_down) {
+            // stop non-drive motors
+            intake.set(0);
+            rotate.set(0);
+            shooter.set(0);
+
+            // stop servos
+            frontHook.setPosition(0);
+            topHook.setPosition(0);
+            shooterServo.setPosition(0);
+
+            // stop drive motors
+            frontLeftDrive.set(0);
+            frontRightDrive.set(0);
+            backLeftDrive.set(0);
+            backRightDrive.set(0);
         }
     }
 
-    // drive according to controller inputs from sticks
+    // drive according to controller inputs from driver's sticks
     public void drive() {
-        drive.driveRobotCentric(-gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x, true);
+        drive.driveRobotCentric(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x, true);
     }
 }
