@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public abstract class SuperOp extends OpMode {
     // power constant
     final double ROTATE_POWER = 1;
+    final double INTAKE_POWER = .1;
 
     // drive constants
     final int cpr = 448;
@@ -79,6 +80,12 @@ public abstract class SuperOp extends OpMode {
         // set rotate to rotate power on right stick button press
         if (gamepad2.right_stick_button) {
             rotate.set(ROTATE_POWER);
+        }
+
+        if (gamepad2.dpad_up) {
+            intake.set(INTAKE_POWER);
+        } else {
+            intake.set(0);
         }
         // triggers and holds front servo on x press
         if (gamepad2.x) {
