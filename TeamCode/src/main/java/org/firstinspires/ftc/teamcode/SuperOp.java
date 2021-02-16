@@ -9,9 +9,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public abstract class SuperOp extends OpMode {
-    // power constant
-    final double ROTATE_POWER = .6;
+    // power constants
     final double INTAKE_POWER = .5;
+    final double SHOOTER_POWER = 1;
 
     // drive constants
     final int cpr = 448;
@@ -38,6 +38,9 @@ public abstract class SuperOp extends OpMode {
 
     // declare drive
     public MecanumDrive drive;
+
+    // declare boolean for shooter (so it can toggle)
+    boolean shooterOn = false;
 
     @Override
     public void init() {
@@ -67,22 +70,16 @@ public abstract class SuperOp extends OpMode {
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
     }
 
-    // bind rotate up to operator's left stick button and down to operator's right stick button
+    // bind rotate up to operator's right trigger
     // bind operator's x to trigger and hold front servo
     // bind operator's y to release front servo
     // bind operator's a to trigger and hold top servo
     // bind operator's b to release top servo
     public void wobbleGoals() {
-        // set rotate to -rotate power on left stick button press
-        if (gamepad2.left_stick_button) {
-            rotate.set(-ROTATE_POWER);
-        }
-        // set rotate to rotate power on right stick button press
-        if (gamepad2.right_stick_button) {
-            rotate.set(ROTATE_POWER);
-        }
-
-        if (gamepad2.dpad_up) {
+        // bind rotate power to right trigger of operator
+        rotate.set(-gamepad2.right_trigger * .4);
+        // slow down intake for wobble goal (bind to dpad left)
+        if (gamepad2.dpad_left) {
             intake.set(-INTAKE_POWER);
         } else {
             intake.set(0);
@@ -105,10 +102,18 @@ public abstract class SuperOp extends OpMode {
         }
     }
 
-    // binds shooter to right trigger for operator
+    // toggle shooter on operator's left bumper
     public void shooter() {
-        // binds shooter power to operator's right trigger
-        shooter.set(-gamepad2.right_trigger);
+        // make left bumper toggle for shooter
+        if (gamepad2.left_bumper) {
+            if (!shooterOn) {
+                shooter.set(SHOOTER_POWER);
+                shooterOn = true;
+            } else {
+                shooter.set(0);
+                shooterOn = false;
+            }
+        }
     }
 
     // binds intake power to left stick y for operator
@@ -127,7 +132,7 @@ public abstract class SuperOp extends OpMode {
     // binds stoppage of all motors/servos to dpad down (both operator and driver)b
     public void stop() {
         // if driver presses dpad down, stop all motors/servos
-        if (gamepad1.dpad_down) {
+        if (gamepad1.dpad_right) {
             // stop non-drive motors
             intake.set(0);
             rotate.set(0);
@@ -145,7 +150,7 @@ public abstract class SuperOp extends OpMode {
             backRightDrive.set(0);
         }
         // if operator presses dpad down, stop all motors/servos
-        if (gamepad2.dpad_down) {
+        if (gamepad2.dpad_right) {
             // stop non-drive motors
             intake.set(0);
             rotate.set(0);
