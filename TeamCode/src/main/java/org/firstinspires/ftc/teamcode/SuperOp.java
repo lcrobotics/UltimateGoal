@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public abstract class SuperOp extends OpMode {
     // power constants
-    final double INTAKE_POWER = .5;
+    final double INTAKE_POWER = .6;
     final double SHOOTER_POWER = 1;
 
     // drive constants
@@ -48,6 +48,7 @@ public abstract class SuperOp extends OpMode {
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
         rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
         shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
+        shooter.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
 
         // initialize servos
         frontHook = new SimpleServo(hardwareMap, "FrontHook");
@@ -77,7 +78,7 @@ public abstract class SuperOp extends OpMode {
     // bind operator's b to release top servo
     public void wobbleGoals() {
         // bind rotate power to right trigger of operator
-        rotate.set(-gamepad2.right_trigger * .4);
+        rotate.set(gamepad2.right_stick_y * .4);
         // slow down intake for wobble goal (bind to dpad left)
         if (gamepad2.dpad_left) {
             intake.set(-INTAKE_POWER);
@@ -107,7 +108,7 @@ public abstract class SuperOp extends OpMode {
         // make left bumper toggle for shooter
         if (gamepad2.left_bumper) {
             if (!shooterOn) {
-                shooter.set(SHOOTER_POWER);
+                shooter.set(-SHOOTER_POWER);
                 shooterOn = true;
             } else {
                 shooter.set(0);
@@ -139,7 +140,7 @@ public abstract class SuperOp extends OpMode {
             shooter.set(0);
 
             // stop servos
-            frontHook.setPosition(0);
+            frontHook.setPosition(1);
             topHook.setPosition(1);
             shooterServo.setPosition(0);
 
@@ -157,7 +158,7 @@ public abstract class SuperOp extends OpMode {
             shooter.set(0);
 
             // stop servos
-            frontHook.setPosition(0);
+            frontHook.setPosition(1);
             topHook.setPosition(1);
             shooterServo.setPosition(0);
 
@@ -171,6 +172,6 @@ public abstract class SuperOp extends OpMode {
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-        drive.driveRobotCentric(gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, gamepad1.right_stick_x * .8, true);
+        drive.driveRobotCentric(-gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, gamepad1.right_stick_x * .8, true);
     }
 }
