@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public abstract class SuperOp extends OpMode {
     // power constants
-    //final double ROTATE_POWER = .4;
     final double INTAKE_POWER = .5;
     final double SHOOTER_POWER = 1;
 
@@ -40,6 +39,7 @@ public abstract class SuperOp extends OpMode {
     // declare drive
     public MecanumDrive drive;
 
+    // declare boolean for shooter (so it can toggle)
     boolean shooterOn = false;
 
     @Override
@@ -102,7 +102,7 @@ public abstract class SuperOp extends OpMode {
         }
     }
 
-    // binds shooter to right trigger for operator
+    // toggle shooter on operator's left bumper
     public void shooter() {
         // make left bumper toggle for shooter
         if (gamepad2.left_bumper) {
