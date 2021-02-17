@@ -6,11 +6,10 @@ import com.lcrobotics.easyftclib.CommandCenter.hardware.RevIMU;
 import com.lcrobotics.easyftclib.CommandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.CommandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.Servo;
 
 public abstract class SuperOp extends OpMode {
     // power constants
-    final double INTAKE_POWER = .5;
+    final double INTAKE_POWER = .6;
     final double SHOOTER_POWER = 1;
 
     // drive constants
@@ -39,8 +38,10 @@ public abstract class SuperOp extends OpMode {
     // declare drive
     public MecanumDrive drive;
 
-    // declare boolean for shooter (so it can toggle)
+    // declare booleans for toggles
     boolean shooterOn = false;
+    boolean frontOn = false;
+    boolean topOn =false;
 
     @Override
     public void init() {
@@ -48,6 +49,9 @@ public abstract class SuperOp extends OpMode {
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
         rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
         shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
+
+        // set shooter to float so that we don't murder another motor
+        shooter.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
 
         // initialize servos
         frontHook = new SimpleServo(hardwareMap, "FrontHook");
@@ -70,44 +74,49 @@ public abstract class SuperOp extends OpMode {
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
     }
 
-    // bind rotate up to operator's right trigger
-    // bind operator's x to trigger and hold front servo
-    // bind operator's y to release front servo
-    // bind operator's a to trigger and hold top servo
-    // bind operator's b to release top servo
+    // bind rotate to operator's right stick
+    // create toggle for front servo to operator's x
+    // create toggle for top servo to operator's a
     public void wobbleGoals() {
-        // bind rotate power to right trigger of operator
-        rotate.set(-gamepad2.right_trigger * .4);
+        // bind rotate power to right stick of operator
+        rotate.set(gamepad2.right_stick_y * .4);
+
         // slow down intake for wobble goal (bind to dpad left)
-        if (gamepad2.dpad_left) {
+        if (gamepad2.left_bumper) {
             intake.set(-INTAKE_POWER);
         } else {
             intake.set(0);
         }
-        // triggers and holds front servo on x press
+
+        // toggles front servo on operator's x press
         if (gamepad2.x) {
-            frontHook.setPosition(1);
+            if (!frontOn) {
+                frontHook.setPosition(1);
+                frontOn = true;
+            } else {
+                frontHook.setPosition(0);
+                frontOn = false;
+            }
         }
-        // releases front servo on y press
-        if (gamepad2.y) {
-            frontHook.setPosition(0);
-        }
-        // triggers and holds top servo on a press
+
+        // toggles top servo on operator's a press
         if (gamepad2.a) {
-            topHook.setPosition(1);
-        }
-        // releases top servo on b press
-        if (gamepad2.b){
-            topHook.setPosition(0);
+            if (!topOn) {
+                topHook.setPosition(1);
+                topOn = true;
+            } else {
+                topHook.setPosition(0);
+                topOn = false;
+            }
         }
     }
 
-    // toggle shooter on operator's left bumper
+    // toggle shooter on driver's left bumper
     public void shooter() {
         // make left bumper toggle for shooter
-        if (gamepad2.left_bumper) {
+        if (gamepad1.left_bumper) {
             if (!shooterOn) {
-                shooter.set(SHOOTER_POWER);
+                shooter.set(-SHOOTER_POWER);
                 shooterOn = true;
             } else {
                 shooter.set(0);
@@ -116,13 +125,14 @@ public abstract class SuperOp extends OpMode {
         }
     }
 
-    // binds intake power to left stick y for operator
-    // binds shooterServo to right bumper and sets power for operator
+    // binds intake power to driver's left trigger
+    // triggers shooter servo when driver presses right bumper
     public void intake() {
         // bind intake to power of left stick y for operator
-        intake.set(gamepad2.left_stick_y);
+        intake.set(gamepad1.left_trigger);
+
         // triggers shooterServo when right bumper pressed
-        if (gamepad2.right_bumper) {
+        if (gamepad1.right_bumper) {
             shooterServo.setPosition(1);
         } else {
             shooterServo.setPosition(0);
@@ -140,7 +150,7 @@ public abstract class SuperOp extends OpMode {
 
             // stop servos
             frontHook.setPosition(0);
-            topHook.setPosition(1);
+            topHook.setPosition(0);
             shooterServo.setPosition(0);
 
             // stop drive motors
@@ -149,6 +159,7 @@ public abstract class SuperOp extends OpMode {
             backLeftDrive.set(0);
             backRightDrive.set(0);
         }
+
         // if operator presses dpad down, stop all motors/servos
         if (gamepad2.dpad_right) {
             // stop non-drive motors
@@ -158,7 +169,7 @@ public abstract class SuperOp extends OpMode {
 
             // stop servos
             frontHook.setPosition(0);
-            topHook.setPosition(1);
+            topHook.setPosition(0);
             shooterServo.setPosition(0);
 
             // stop drive motors
@@ -171,6 +182,6 @@ public abstract class SuperOp extends OpMode {
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-        drive.driveRobotCentric(gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, gamepad1.right_stick_x * .8, true);
+        drive.driveRobotCentric(-gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, gamepad1.right_stick_x * .8, true);
     }
 }
