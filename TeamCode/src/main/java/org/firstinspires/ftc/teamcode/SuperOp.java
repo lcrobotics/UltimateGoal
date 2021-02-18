@@ -1,44 +1,48 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.lcrobotics.easyftclib.CommandCenter.driveTrain.MecanumDrive;
-import com.lcrobotics.easyftclib.CommandCenter.hardware.Motor;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
+import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
+import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
+import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 
-public abstract class SuperOp extends OpMode {
+import examples.VuforiaSuperOp;
+
+public abstract class SuperOp extends VuforiaSuperOp {
     final int cpr = 448;
     final int rpm = 64;
     //motors/servos for exactly what it says
-    Motor Intake;
-    Motor Rotator;
-    Motor Shooter;
-    Servo FrontHook;
-    Servo TopHook;
-    Servo ShooterServo;
+    public Motor intake;
+    public Motor rotate;
+    public Motor shooter;
+    public ServoEx frontHook;
+    public ServoEx topHook;
+    public ServoEx shooterServo;
     //wheels
-    Motor FrontLeftDrive;
-    Motor BackLeftDrive;
-    Motor FrontRightDrive;
-    Motor BackRightDrive;
+    public Motor frontLeftDrive;
+    public Motor backLeftDrive;
+    public Motor frontRightDrive;
+    public Motor backRightDrive;
 
-    public MecanumDrive driveForward;
+    public MecanumDrive drive;
 
     @Override
     public void init() {
-        // Initializes each piece of hardware
-        Intake = new Motor(hardwareMap, "Intake", cpr, rpm);
-        Rotator = new Motor(hardwareMap, "Rotator", cpr, rpm);
-        Shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
-        FrontHook = hardwareMap.get(Servo.class, "FrontHook");
-        TopHook = hardwareMap.get(Servo.class, "TopHook");
-        ShooterServo = hardwareMap.get(Servo.class, "ShooterServo");
+        super.init();
 
-        FrontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
-        BackLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
-        FrontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
-        BackRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+        // Initializes each piece of hardware
+        intake = new Motor(hardwareMap, "Intake", cpr, rpm);
+        rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
+        shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
+        frontHook = new SimpleServo(hardwareMap, "FrontHook");
+        topHook = new SimpleServo(hardwareMap, "TopHook");
+        shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
+
+        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
+        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
+        backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
 
         // initialize drive
-        driveForward = new MecanumDrive(true, FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRightDrive);
+        drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
     }
 }
