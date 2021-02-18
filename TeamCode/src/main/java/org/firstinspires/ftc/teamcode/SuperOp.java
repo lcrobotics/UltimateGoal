@@ -9,8 +9,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 public abstract class SuperOp extends OpMode {
     // power constants
-    final double INTAKE_POWER = .6;
-    final double SHOOTER_POWER = 1;
+    final float INTAKE_POWER = 1f;
+    final float INTAKE_POWER_SLOW = .6f;
+    final float SHOOTER_POWER = 1f;
+
+    final double THRESHOLD = 0.12;
 
     // drive constants
     final int cpr = 448;
@@ -83,7 +86,7 @@ public abstract class SuperOp extends OpMode {
 
         // slow down intake for wobble goal (bind to dpad left)
         if (gamepad2.left_bumper) {
-            intake.set(-INTAKE_POWER);
+            intake.set(-INTAKE_POWER_SLOW);
         } else {
             intake.set(0);
         }
@@ -128,8 +131,23 @@ public abstract class SuperOp extends OpMode {
     // binds intake power to driver's left trigger
     // triggers shooter servo when driver presses right bumper
     public void intake() {
-        // bind intake to power of left stick y for operator
-        intake.set(gamepad1.left_trigger);
+        float intakePower = 0;
+        // set intake as a button on right trigger and reverse intake on left trigger (button)
+        if(gamepad2.right_trigger > THRESHOLD) {
+            intakePower = INTAKE_POWER;
+        } else if (gamepad2.left_trigger > THRESHOLD) {
+            intakePower = -INTAKE_POWER;
+        }
+
+        // set intake as a button on right trigger and reverse intake on left trigger (button)
+        // and override operator
+        if(gamepad1.right_trigger > THRESHOLD) {
+            intakePower = INTAKE_POWER;
+        } else if (gamepad1.left_trigger > THRESHOLD) {
+            intakePower = -INTAKE_POWER;
+        }
+
+        intake.set(intakePower);
 
         // triggers shooterServo when right bumper pressed
         if (gamepad1.right_bumper) {
@@ -142,16 +160,10 @@ public abstract class SuperOp extends OpMode {
     // binds stoppage of all motors/servos to dpad down (both operator and driver)b
     public void stop() {
         // if driver presses dpad down, stop all motors/servos
-        if (gamepad1.dpad_right) {
+        if (gamepad1.dpad_down) {
             // stop non-drive motors
             intake.set(0);
-            rotate.set(0);
             shooter.set(0);
-
-            // stop servos
-            frontHook.setPosition(0);
-            topHook.setPosition(0);
-            shooterServo.setPosition(0);
 
             // stop drive motors
             frontLeftDrive.set(0);
@@ -161,27 +173,20 @@ public abstract class SuperOp extends OpMode {
         }
 
         // if operator presses dpad down, stop all motors/servos
-        if (gamepad2.dpad_right) {
+        if (gamepad2.dpad_down) {
             // stop non-drive motors
             intake.set(0);
             rotate.set(0);
-            shooter.set(0);
 
-            // stop servos
-            frontHook.setPosition(0);
-            topHook.setPosition(0);
+            // release all servos
             shooterServo.setPosition(0);
-
-            // stop drive motors
-            frontLeftDrive.set(0);
-            frontRightDrive.set(0);
-            backLeftDrive.set(0);
-            backRightDrive.set(0);
+            topHook.setPosition(0);
+            frontHook.setPosition(0);
         }
     }
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-        drive.driveRobotCentric(-gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, gamepad1.right_stick_x * .8, true);
+        drive.driveRobotCentric(gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, -gamepad1.right_stick_x * .8, true);
     }
 }
