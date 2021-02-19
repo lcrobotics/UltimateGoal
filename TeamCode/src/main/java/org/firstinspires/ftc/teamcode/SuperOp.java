@@ -44,7 +44,7 @@ public abstract class SuperOp extends OpMode {
     // declare booleans for toggles
     boolean shooterOn = false;
     boolean frontOn = false;
-    boolean topOn =false;
+    boolean topOn = false;
 
     @Override
     public void init() {
@@ -64,8 +64,8 @@ public abstract class SuperOp extends OpMode {
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
         frontLeftDrive.setInverted(true);
-        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1.1);
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 1.1);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1.1);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
         backRightDrive.setInverted(true);
 
