@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.lcrobotics.easyftclib.CommandCenter.driveTrain.MecanumDrive;
-import com.lcrobotics.easyftclib.CommandCenter.hardware.Motor;
-import com.lcrobotics.easyftclib.CommandCenter.hardware.RevIMU;
-import com.lcrobotics.easyftclib.CommandCenter.hardware.ServoEx;
-import com.lcrobotics.easyftclib.CommandCenter.hardware.SimpleServo;
+import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
+import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
+import com.lcrobotics.easyftclib.commandCenter.hardware.RevIMU;
+import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
+import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 public abstract class SuperOp extends OpMode {
@@ -64,8 +64,8 @@ public abstract class SuperOp extends OpMode {
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
         frontLeftDrive.setInverted(true);
-        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
-        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1.1);
+        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 1.1);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
         backRightDrive.setInverted(true);
 
