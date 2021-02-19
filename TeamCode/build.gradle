@@ -20,5 +20,5 @@ repositories {
 
 dependencies {
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
-    implementation "io.github.lcrobotics:easyftc:0.0.5aar"
+    implementation "io.github.lcrobotics:easyftc:0.0.5@aar"
 }

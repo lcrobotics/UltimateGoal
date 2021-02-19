@@ -62,10 +62,10 @@ public abstract class SuperOp extends OpMode {
         shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
 
         // initialize drive motors
-        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
+        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, 1.4);
         frontLeftDrive.setInverted(true);
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 1.2);
-        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1.2);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm;
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
         backRightDrive.setInverted(true);
 
@@ -134,17 +134,17 @@ public abstract class SuperOp extends OpMode {
         float intakePower = 0;
         // set intake as a button on right trigger and reverse intake on left trigger (button)
         if(gamepad2.right_trigger > THRESHOLD) {
-            intakePower = INTAKE_POWER;
-        } else if (gamepad2.left_trigger > THRESHOLD) {
             intakePower = -INTAKE_POWER;
+        } else if (gamepad2.left_trigger > THRESHOLD) {
+            intakePower = INTAKE_POWER;
         }
 
         // set intake as a button on right trigger and reverse intake on left trigger (button)
         // and override operator
         if(gamepad1.right_trigger > THRESHOLD) {
-            intakePower = INTAKE_POWER;
-        } else if (gamepad1.left_trigger > THRESHOLD) {
             intakePower = -INTAKE_POWER;
+        } else if (gamepad1.left_trigger > THRESHOLD) {
+            intakePower = INTAKE_POWER;
         }
 
         intake.set(intakePower);
