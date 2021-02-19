@@ -64,8 +64,8 @@ public abstract class SuperOp extends OpMode {
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
         frontLeftDrive.setInverted(true);
-        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 1.1);
-        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1.1);
+        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 1.2);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1.2);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
         backRightDrive.setInverted(true);
 
