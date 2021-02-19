@@ -34,8 +34,8 @@ public abstract class SuperOp extends OpMode {
 
     // declare drive motors
     Motor frontLeftDrive;
-    Motor backLeftDrive;
     Motor frontRightDrive;
+    Motor backLeftDrive;
     Motor backRightDrive;
 
     // declare drive
@@ -187,6 +187,6 @@ public abstract class SuperOp extends OpMode {
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-        drive.driveRobotCentric(gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, -gamepad1.right_stick_x * .8, true);
+        drive.driveRobotCentric(gamepad1.left_stick_y * .8, -gamepad1.left_stick_x * .8, -gamepad1.right_stick_x * .8, true);
     }
 }
