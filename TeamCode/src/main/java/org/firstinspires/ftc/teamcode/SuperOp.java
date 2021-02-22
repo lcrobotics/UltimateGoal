@@ -4,6 +4,7 @@ import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 
 import examples.VuforiaSuperOp;
 

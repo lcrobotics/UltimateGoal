@@ -7,7 +7,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.SuperOp;
 
 @Autonomous
-public class FirstAuto extends SuperOp {
+public class Auto extends SuperOp {
+    private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
+    private static final String LABEL_FIRST_ELEMENT = "Quad";
+    private static final String LABEL_SECOND_ELEMENT = "Single";
     // what state of autonomous we are in
     AutoState auto = AutoState.DRIVE;
     // number of attempts to find nav target
@@ -45,7 +48,7 @@ public class FirstAuto extends SuperOp {
                 }
                 break;
 
-                // Turns robot clockwise to look for picture.
+            // Turns robot clockwise to look for picture.
             case CLOCKWISE:
 
                 if (!lock) {
@@ -68,12 +71,12 @@ public class FirstAuto extends SuperOp {
                 if (objectLocator.targetVisible) {
                     lock = false;
                     auto = AutoState.ANGLE;
-                 // if time is < rotation time, reset lock and go to FAIL
+                    // if time is < rotation time, reset lock and go to FAIL
                 } else if (time.seconds() >= rotTime) {
                     lock = false;
                     if (rotNum == 4) {
                         auto = AutoState.FAIL;
-                    // if target is not visible, go to counterclockwise
+                        // if target is not visible, go to counterclockwise
                     } else {
                         auto = AutoState.COUNTERCLOCKWISE;
                         rotNum++;
@@ -81,7 +84,7 @@ public class FirstAuto extends SuperOp {
                 }
                 break;
 
-                // if robot passes picture, turns the other way (counterclockwise) to look again.
+            // if robot passes picture, turns the other way (counterclockwise) to look again.
             case COUNTERCLOCKWISE:
 
                 if (!lock) {
@@ -98,7 +101,7 @@ public class FirstAuto extends SuperOp {
                 if (objectLocator.targetVisible) {
                     lock = false;
                     auto = AutoState.ANGLE;
-                // if the robot has not seen picture in 4 secs, go back to clockwise to try again
+                    // if the robot has not seen picture in 4 secs, go back to clockwise to try again
                 } else if (time.seconds() >= 4) {
                     lock = false;
                     rotNum++;
@@ -106,7 +109,7 @@ public class FirstAuto extends SuperOp {
                 }
                 break;
 
-                // get robot's position based on nav target and update angle
+            // get robot's position based on nav target and update angle
             // until the robot is facing the nav target directly
             case ANGLE:
 
@@ -118,14 +121,14 @@ public class FirstAuto extends SuperOp {
                     drive.driveRobotCentric(0, 0, 0.5);
                 } else if (lastPos.w < 88) {
                     drive.driveRobotCentric(0, 0, -0.5);
-                // if angle is within threshold, go to sideways case
+                    // if angle is within threshold, go to sideways case
                 } else {
                     auto = AutoState.SIDEWAYS;
                 }
 
                 break;
 
-                // finds translational delta (only R/L) and adjusts to within threshold.
+            // finds translational delta (only R/L) and adjusts to within threshold.
             case SIDEWAYS:
 
                 // get robot's position and update sideways position
@@ -138,7 +141,7 @@ public class FirstAuto extends SuperOp {
                     drive.driveRobotCentric(0.5, 0, 0);
                 } else if (lastPos.y < desiredY - 2) {
                     drive.driveRobotCentric(-0.5, 0, 0);
-                // when robot within threshold, go to back case
+                    // when robot within threshold, go to back case
                 } else {
                     auto = AutoState.BACK;
                 }
@@ -156,7 +159,7 @@ public class FirstAuto extends SuperOp {
                     drive.driveRobotCentric(0, -0.5, 0);
                 } else if (lastPos.x < desiredX - 2) {
                     drive.driveRobotCentric(0, 0.5, 0);
-                // if robot in right place, go to shoot case
+                    // if robot in right place, go to shoot case
                 } else {
                     auto = AutoState.SHOOT;
                 }
@@ -192,7 +195,7 @@ public class FirstAuto extends SuperOp {
                 }
                 break;
 
-                // stops OpMode
+            // stops OpMode
             case FAIL:
                 requestOpModeStop();
                 break;
