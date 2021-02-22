@@ -12,10 +12,10 @@ public class Teleop extends SuperOp {
     @Override
     public void loop() {
         // calls all methods
-        wobbleGoals();
-        shooter();
-        intake();
-        stop();
         drive();
+        intake();
+        shooter();
+        wobbleGoals();
+        stop();
     }
 }

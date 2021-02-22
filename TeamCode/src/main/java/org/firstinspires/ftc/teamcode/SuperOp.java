@@ -98,23 +98,6 @@ public abstract class SuperOp extends OpMode {
         drive.driveRobotCentric(-gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, -gamepad1.right_stick_x * .8, true);
     }
 
-    // toggle shooter on driver's left bumper
-    public void shooter() {
-        // make left bumper toggle for shooter
-        // track history of button
-        if((isLB = gamepad1.left_bumper) && !wasLB) {
-            if(shooterOn) {
-                // if the shooter is on and left bumper is pressed, turn shooter off
-                shooter.set(0);
-            } else {
-                // if the shooter is off and left bumper is pressed, turn shooter on
-                shooter.set(-SHOOTER_POWER);
-            }
-            shooterOn = !shooterOn;
-        }
-        wasLB = isLB;
-    }
-
     // binds intake to left trigger, reverse intake to right
     // both driver and operator can intake, but driver has precedence
     public void intake() {
@@ -142,6 +125,23 @@ public abstract class SuperOp extends OpMode {
         } else {
             shooterServo.setPosition(0);
         }
+    }
+
+    // toggle shooter on driver's left bumper
+    public void shooter() {
+        // make left bumper toggle for shooter
+        // track history of button
+        if((isLB = gamepad1.left_bumper) && !wasLB) {
+            if(shooterOn) {
+                // if the shooter is on and left bumper is pressed, turn shooter off
+                shooter.set(0);
+            } else {
+                // if the shooter is off and left bumper is pressed, turn shooter on
+                shooter.set(-SHOOTER_POWER);
+            }
+            shooterOn = !shooterOn;
+        }
+        wasLB = isLB;
     }
 
     // bind rotate to operator's right stick
