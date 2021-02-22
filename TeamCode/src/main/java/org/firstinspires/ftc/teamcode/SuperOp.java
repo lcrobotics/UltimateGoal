@@ -5,6 +5,7 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.lcrobotics.easyftclib.commandCenter.hardware.RevIMU;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 public abstract class SuperOp extends OpMode {
@@ -45,6 +46,12 @@ public abstract class SuperOp extends OpMode {
     boolean shooterOn = false;
     boolean frontOn = false;
     boolean topOn = false;
+    boolean isX = false;
+    boolean wasX = false;
+    boolean isA = false;
+    boolean wasA = false;
+    boolean isLB = false;
+    boolean wasLB = false;
 
     @Override
     public void init() {
@@ -62,11 +69,11 @@ public abstract class SuperOp extends OpMode {
         shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
 
         // initialize drive motors
-        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, 1.4);
+        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
         frontLeftDrive.setInverted(true);
-        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 1.2);
-        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm;
-        backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, .7);
+        backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm, .7);
         backRightDrive.setInverted(true);
 
         // initialize imu
@@ -92,40 +99,40 @@ public abstract class SuperOp extends OpMode {
         }
 
         // toggles front servo on operator's x press
-        if (gamepad2.x) {
-            if (!frontOn) {
-                frontHook.setPosition(1);
-                frontOn = true;
-            } else {
+        if ((isX = gamepad2.x) && !wasX) {
+            if(frontOn) {
                 frontHook.setPosition(0);
-                frontOn = false;
+            } else {
+                frontHook.setPosition(1);
             }
+            frontOn = !frontOn;
         }
+        wasX = isX;
 
         // toggles top servo on operator's a press
-        if (gamepad2.a) {
-            if (!topOn) {
-                topHook.setPosition(1);
-                topOn = true;
-            } else {
+        if((isA = gamepad2.a) && !wasA) {
+            if(topOn) {
                 topHook.setPosition(0);
-                topOn = false;
+            } else {
+                topHook.setPosition(1);
             }
+            topOn = !topOn;
         }
+        wasA = isA;
     }
 
     // toggle shooter on driver's left bumper
     public void shooter() {
         // make left bumper toggle for shooter
-        if (gamepad1.left_bumper) {
-            if (!shooterOn) {
-                shooter.set(-SHOOTER_POWER);
-                shooterOn = true;
-            } else {
+        if((isLB = gamepad1.left_bumper) && !wasLB) {
+            if(shooterOn) {
                 shooter.set(0);
-                shooterOn = false;
+            } else {
+                shooter.set(-SHOOTER_POWER);
             }
+            shooterOn = !shooterOn;
         }
+        wasLB = isLB;
     }
 
     // binds intake power to driver's left trigger
@@ -187,6 +194,6 @@ public abstract class SuperOp extends OpMode {
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-        drive.driveRobotCentric(gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, -gamepad1.right_stick_x * .8, true);
+        drive.driveRobotCentric(-gamepad1.left_stick_x * .8, -gamepad1.left_stick_y * .8, -gamepad1.right_stick_x * .8, true);
     }
 }
