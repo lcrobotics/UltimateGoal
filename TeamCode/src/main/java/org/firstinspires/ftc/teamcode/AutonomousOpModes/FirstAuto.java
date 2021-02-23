@@ -38,7 +38,6 @@ public class FirstAuto extends AutoSuperOp {
                 // resets lock
                 if (time.seconds() >= 2.2) {
                     lock = false;
-                    telemetry.speak("Hi Alexa");
                     drive.stop();
                     auto = AutoState.CLOCKWISE;
                 }
