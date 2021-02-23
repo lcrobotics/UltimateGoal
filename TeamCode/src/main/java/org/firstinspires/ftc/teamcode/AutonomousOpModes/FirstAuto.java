@@ -4,7 +4,7 @@ import com.lcrobotics.easyftclib.vision.ObjectLocator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous
+@Autonomous(name = "Competition Auto")
 public class FirstAuto extends AutoSuperOp {
 
     public enum AutoState {

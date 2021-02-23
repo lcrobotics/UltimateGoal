@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp
+@TeleOp(name = "Competition TeleOp")
 public class Teleop extends SuperOp {
     @Override
     public void init() {
