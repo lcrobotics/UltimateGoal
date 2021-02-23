@@ -4,10 +4,26 @@ import com.lcrobotics.easyftclib.vision.ObjectLocator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.SuperOp;
-
 @Autonomous
-public class FirstAuto extends SuperOp {
+public class FirstAuto extends AutoSuperOp {
+
+    public enum AutoState {
+        DRIVE(0),
+        CLOCKWISE(1),
+        ANGLE(2),
+        SIDEWAYS(3),
+        BACK(4),
+        COUNTERCLOCKWISE(5),
+        SHOOT(6),
+        FAIL(7);
+
+        int val;
+
+        AutoState(int value) {
+            val = value;
+        }
+    }
+
     // what state of autonomous we are in
     AutoState auto = AutoState.DRIVE;
     // number of attempts to find nav target

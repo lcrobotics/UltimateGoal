@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 
 import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 
 import examples.VuforiaSuperOp;
 
-public abstract class SuperOp extends VuforiaSuperOp {
+public abstract class AutoSuperOp extends VuforiaSuperOp {
     final int cpr = 448;
     final int rpm = 64;
     //motors/servos for exactly what it says
