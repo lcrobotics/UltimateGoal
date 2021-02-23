@@ -37,7 +37,7 @@ public class Auto extends AutoSuperOp {
                     lock = true;
                 }
 
-                drive.driveRobotCentric(0, 0.5, 0);
+                drive.driveRobotCentric(0, -0.5, 0);
                 // once robot drives for >3 secs, goes to clockwise case
                 // resets lock
                 if (time.seconds() >= 3) {
@@ -198,5 +198,6 @@ public class Auto extends AutoSuperOp {
                 requestOpModeStop();
                 break;
         }
+        telemetry.update();
     }
 }
