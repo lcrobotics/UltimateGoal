@@ -4,10 +4,8 @@ import com.lcrobotics.easyftclib.vision.ObjectLocator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.SuperOp;
-
 @Autonomous
-public class FirstAuto extends SuperOp {
+public class FirstAuto extends AutoSuperOp {
 
     public enum AutoState {
         DRIVE(0),
