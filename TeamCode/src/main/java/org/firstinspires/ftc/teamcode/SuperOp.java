@@ -121,7 +121,7 @@ public abstract class SuperOp extends OpMode {
 
         // triggers shooterServo when right bumper pressed
         if (gamepad1.right_bumper) {
-            shooterServo.setPosition(1);
+            shooterServo.setPosition(0.6);
         } else {
             shooterServo.setPosition(0);
         }

@@ -56,7 +56,5 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         telemetry.addData("Front Right Power", frontRightDrive::get);
         telemetry.addData("Back Left Power", backLeftDrive::get);
         telemetry.addData("Back Right Power", backRightDrive::get);
-        telemetry.addData("Target Visible", objectLocator.targetVisible);
-        telemetry.setAutoClear(false);
     }
 }

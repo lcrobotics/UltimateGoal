@@ -16,6 +16,7 @@ public class FirstAuto extends AutoSuperOp {
     boolean targetFound = false;
     boolean lock = false;
     int ringsShot = 0;
+    int rot = 0;
     @Override
     public void init() {
         super.init();
@@ -37,7 +38,7 @@ public class FirstAuto extends AutoSuperOp {
                 drive.driveRobotCentric(0, -0.5, 0);
                 // once robot drives for >3 secs, goes to clockwise case
                 // resets lock
-                if (time.seconds() >= 2.7) {
+                if (time.seconds() >= 2.8) {
                     lock = false;
                     drive.stop();
                     auto = AutoState.STOPCHECK;
@@ -46,16 +47,19 @@ public class FirstAuto extends AutoSuperOp {
 
             case STOPCHECK:
 
+                telemetry.addData("rotNum", rotNum);
+
                 if (!lock) {
                     drive.stop();
                     time.reset();
                     lock = true;
                 }
 
-                if (time.seconds() <= 0.3) {
+                if (time.seconds() <= 0.4) {
 
                     // attempt to get robot's location based on nav target
                     objectLocator.updateRobotLocation();
+                    telemetry.addData("VISIBLE", objectLocator.targetVisible);
 
                     if (objectLocator.targetVisible) {
                         lastPos = objectLocator.lastPos;
@@ -122,17 +126,25 @@ public class FirstAuto extends AutoSuperOp {
             case ANGLE:
 
                 // optimal angle the robot should be facing
+                objectLocator.updateRobotLocation();
                 lastPos = objectLocator.lastPos;
 
+                telemetry.addData("angle", lastPos.w);
+
                 // adjust position until angle is within pre-decided threshold
-                if (lastPos.w > 92) {
-                    drive.driveRobotCentric(0, 0, 0.5);
-                } else if (lastPos.w < 88) {
-                    drive.driveRobotCentric(0, 0, -0.5);
+                if (lastPos.w > 91) {
+                    drive.driveRobotCentric(0, 0, -0.3);
+                } else if (lastPos.w < 89) {
+                    drive.driveRobotCentric(0, 0, 0.3);
                 // if angle is within threshold, go to sideways case
                 } else {
                     drive.stop();
-                    auto = AutoState.SIDEWAYS;
+                    if (rot == 0) {
+                        auto = AutoState.SIDEWAYS;
+                    } else {
+                        rot = 0;
+                        auto = AutoState.SHOOT;
+                    }
                 }
 
                 break;
@@ -141,44 +153,53 @@ public class FirstAuto extends AutoSuperOp {
             case SIDEWAYS:
 
                 // get robot's position and update sideways position
-                double desiredY = 300;
+                double desiredY = 33;
 
+                objectLocator.updateRobotLocation();
                 lastPos = objectLocator.lastPos;
 
+                telemetry.addData("y", lastPos.y);
+
                 // adjust position until robot pos is within a pre-decided threshold
-                if (lastPos.y > desiredY + 2) {
-                    drive.driveRobotCentric(0.5, 0, 0);
-                } else if (lastPos.y < desiredY - 2) {
-                    drive.driveRobotCentric(-0.5, 0, 0);
+                if (lastPos.y > desiredY + 1) {
+                    drive.driveRobotCentric(0.4, 0, 0);
+                } else if (lastPos.y < desiredY - 1) {
+                    drive.driveRobotCentric(-0.4, 0, 0);
                 // when robot within threshold, go to back case
                 } else {
+                    drive.stop();
                     auto = AutoState.BACK;
                 }
-
+                break;
                 // finds distance robot needs to go to be behind shooting line and adjusts.
             case BACK:
 
                 // get robot's position and go back
-                double desiredX = 500;
+                double desiredX = 44;
 
+                objectLocator.updateRobotLocation();
                 lastPos = objectLocator.lastPos;
 
+                telemetry.addData("x", lastPos.x);
+
                 // adjust robot position based on pre-determined values
-                if (lastPos.x > desiredX + 2) {
-                    drive.driveRobotCentric(0, -0.5, 0);
-                } else if (lastPos.x < desiredX - 2) {
-                    drive.driveRobotCentric(0, 0.5, 0);
+                if (lastPos.x > desiredX + 1) {
+                    drive.driveRobotCentric(0, 0.3, 0);
+                } else if (lastPos.x < desiredX - 1) {
+                    drive.driveRobotCentric(0, -0.3, 0);
                 // if robot in right place, go to shoot case
                 } else {
-                    auto = AutoState.SHOOT;
+                    drive.stop();
+                    rot++;
+                    auto = AutoState.ANGLE;
                 }
-
+                break;
                 // shoots ring into goal
             case SHOOT:
 
                 if (!lock) {
                     // sets shooter motor to 1, will run for rest of case
-                    shooter.set(1);
+                    shooter.set(-1);
                     time.reset();
                     lock = true;
                     target = true;
@@ -200,6 +221,21 @@ public class FirstAuto extends AutoSuperOp {
                 // caps the number of shots at 3
                 if (ringsShot == 6) {
                     lock = false;
+                    auto = AutoState.PARK;
+                }
+                break;
+
+            case PARK:
+                if (!lock) {
+                    time.reset();
+                    lock = true;
+                }
+
+                drive.driveRobotCentric(0, -0.3, 0);
+
+                if (time.seconds() >= 0.5) {
+                    lock = false;
+                    drive.stop();
                     auto = AutoState.FAIL;
                 }
                 break;
