@@ -13,10 +13,9 @@ public class FirstAuto extends AutoSuperOp {
     ObjectLocator.RobotPos lastPos;
     ElapsedTime time;
     boolean target;
-    boolean targetFound = false;
     boolean lock = false;
     int ringsShot = 0;
-    int rot = 0;
+    int rot = 0; // 0 when adjusting angle the first time, 1 when adjusting a second time
     @Override
     public void init() {
         super.init();
@@ -64,7 +63,6 @@ public class FirstAuto extends AutoSuperOp {
                     if (objectLocator.targetVisible) {
                         lastPos = objectLocator.lastPos;
                         lock = false;
-                        targetFound = true;
                         rotNum = 0;
                         auto = AutoState.ANGLE;
                     }
@@ -190,10 +188,27 @@ public class FirstAuto extends AutoSuperOp {
                 // if robot in right place, go to shoot case
                 } else {
                     drive.stop();
+                    auto = AutoState.BACK2;
+                }
+                break;
+
+            case BACK2:
+
+                if (!lock) {
+                    time.reset();
+                    lock = true;
+                }
+
+                drive.driveRobotCentric(0, 0.3, 0);
+                // resets lock
+                if (time.seconds() >= 0.7) {
+                    lock = false;
+                    drive.stop();
                     rot++;
                     auto = AutoState.ANGLE;
                 }
                 break;
+
                 // shoots ring into goal
             case SHOOT:
 

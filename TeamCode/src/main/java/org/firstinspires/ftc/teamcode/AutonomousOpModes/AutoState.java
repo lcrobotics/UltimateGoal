@@ -10,7 +10,8 @@ public enum AutoState {
     SHOOT(6),
     PARK(7),
     FAIL(8),
-    STOPCHECK(9);
+    STOPCHECK(9),
+    BACK2(10);
 
     int val;
 
