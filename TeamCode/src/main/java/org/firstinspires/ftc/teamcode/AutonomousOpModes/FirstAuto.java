@@ -13,6 +13,7 @@ public class FirstAuto extends AutoSuperOp {
     ObjectLocator.RobotPos lastPos;
     ElapsedTime time;
     boolean target;
+    boolean targetFound = false;
     boolean lock = false;
     int ringsShot = 0;
     @Override
@@ -43,6 +44,32 @@ public class FirstAuto extends AutoSuperOp {
                 }
                 break;
 
+            case STOPCHECK:
+
+                if (!lock) {
+                    drive.stop();
+                    time.reset();
+                    lock = true;
+                }
+
+                if (time.seconds() <= 0.3) {
+
+                    // attempt to get robot's location based on nav target
+                    objectLocator.updateRobotLocation();
+
+                    if (objectLocator.targetVisible) {
+                        lock = false;
+                        targetFound = true;
+                        auto = AutoState.ANGLE;
+                    }
+
+                } else {
+                    lock = false;
+
+                }
+
+                break;
+
                 // Turns robot clockwise to look for picture.
             case CLOCKWISE:
 
@@ -51,34 +78,11 @@ public class FirstAuto extends AutoSuperOp {
                     lock = true;
                 }
 
-                // select time for rotation based on the rotNum we are on
-                int rotTime = 4;
-                // if number of rotation = 0 or 4, rotation time = 2 seconds
-                // if not, rotation time = 4 seconds
-                if (rotNum == 0 || rotNum == 4) {
-                    rotTime = 2;
-                }
+                // time for rotation
+                int rotTime = 1;
 
                 drive.driveRobotCentric(0, 0, 0.2);
 
-                // attempt to get robot's location based on nav target
-                objectLocator.updateRobotLocation();
-                if (objectLocator.targetVisible) {
-                    lock = false;
-                    drive.stop();
-                    auto = AutoState.ANGLE;
-                 // if time is < rotation time, reset lock and go to FAIL
-                } else if (time.seconds() >= rotTime) {
-                    lock = false;
-                    if (rotNum == 4) {
-                        drive.stop();
-                        auto = AutoState.FAIL;
-                    // if target is not visible, go to counterclockwise
-                    } else {
-                        auto = AutoState.COUNTERCLOCKWISE;
-                        rotNum++;
-                    }
-                }
                 break;
 
                 // if robot passes picture, turns the other way (counterclockwise) to look again.
