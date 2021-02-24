@@ -4,6 +4,7 @@ import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 
 import examples.VuforiaSuperOp;
 
@@ -38,11 +39,24 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
 
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
-        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
+        frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        frontLeftDrive.setInverted(true);
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
+        frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
+        backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+        backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        backRightDrive.setInverted(true);
 
         // initialize drive
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
+
+        telemetry.addData("Front Left Power", frontLeftDrive::get);
+        telemetry.addData("Front Right Power", frontRightDrive::get);
+        telemetry.addData("Back Left Power", backLeftDrive::get);
+        telemetry.addData("Back Right Power", backRightDrive::get);
+        telemetry.addData("Target Visible", objectLocator.targetVisible);
+        telemetry.setAutoClear(false);
     }
 }
