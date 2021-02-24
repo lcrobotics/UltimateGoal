@@ -37,10 +37,10 @@ public class FirstAuto extends AutoSuperOp {
                 drive.driveRobotCentric(0, -0.5, 0);
                 // once robot drives for >3 secs, goes to clockwise case
                 // resets lock
-                if (time.seconds() >= 2.2) {
+                if (time.seconds() >= 2.7) {
                     lock = false;
                     drive.stop();
-                    auto = AutoState.CLOCKWISE;
+                    auto = AutoState.STOPCHECK;
                 }
                 break;
 
@@ -58,14 +58,27 @@ public class FirstAuto extends AutoSuperOp {
                     objectLocator.updateRobotLocation();
 
                     if (objectLocator.targetVisible) {
+                        lastPos = objectLocator.lastPos;
                         lock = false;
                         targetFound = true;
+                        rotNum = 0;
                         auto = AutoState.ANGLE;
                     }
 
                 } else {
                     lock = false;
 
+                    if (rotNum >= 2 && rotNum <= 5) {
+                        auto = AutoState.COUNTERCLOCKWISE;
+                    } else if (rotNum == 8) {
+                        auto = AutoState.FAIL;
+                        rotNum = 0;
+                        break;
+
+                    } else {
+                        auto = AutoState.CLOCKWISE;
+                    }
+                    rotNum++;
                 }
 
                 break;
@@ -78,10 +91,12 @@ public class FirstAuto extends AutoSuperOp {
                     lock = true;
                 }
 
-                // time for rotation
-                int rotTime = 1;
-
                 drive.driveRobotCentric(0, 0, 0.2);
+
+                if (time.seconds() > 1) {
+                    lock = false;
+                    auto = AutoState.STOPCHECK;
+                }
 
                 break;
 
@@ -95,20 +110,11 @@ public class FirstAuto extends AutoSuperOp {
 
                 drive.driveRobotCentric(0, 0, -0.2);
 
-                // attempt to get robot's location based on nav target
-                objectLocator.updateRobotLocation();
-
-                // if the target is visible, go to angle case
-                if (objectLocator.targetVisible) {
+                if (time.seconds() > 1) {
                     lock = false;
-                    drive.stop();
-                    auto = AutoState.ANGLE;
-                // if the robot has not seen picture in 4 secs, go back to clockwise to try again
-                } else if (time.seconds() >= 4) {
-                    lock = false;
-                    rotNum++;
-                    auto = AutoState.CLOCKWISE;
+                    auto = AutoState.STOPCHECK;
                 }
+
                 break;
 
                 // get robot's position based on nav target and update angle
