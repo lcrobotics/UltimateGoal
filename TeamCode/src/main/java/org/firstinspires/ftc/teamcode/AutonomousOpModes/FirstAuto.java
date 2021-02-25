@@ -15,7 +15,8 @@ public class FirstAuto extends AutoSuperOp {
     boolean target;
     boolean lock = false;
     int ringsShot = 0;
-    int rot = 0; // 0 when adjusting angle the first time, 1 when adjusting a second time
+    int rot = 0; // 0 when adjusting angle the first time, 1 when adjusting angle the second time
+    int checkState = 0; // 0 when checking for target during rotation, 1 when strafing, 2 when going back
     @Override
     public void init() {
         super.init();
@@ -37,7 +38,7 @@ public class FirstAuto extends AutoSuperOp {
                 drive.driveRobotCentric(0, -0.5, 0);
                 // once robot drives for >3 secs, goes to clockwise case
                 // resets lock
-                if (time.seconds() >= 2.8) {
+                if (time.seconds() >= 3) {
                     lock = false;
                     drive.stop();
                     auto = AutoState.STOPCHECK;
@@ -54,11 +55,18 @@ public class FirstAuto extends AutoSuperOp {
                     lock = true;
                 }
 
-                if (time.seconds() <= 0.4) {
+                if (time.seconds() <= 0.3 && time.seconds() >= 0.1) {
 
                     // attempt to get robot's location based on nav target
                     objectLocator.updateRobotLocation();
                     telemetry.addData("VISIBLE", objectLocator.targetVisible);
+
+                    if (checkState == 1) {
+                        auto = AutoState.SIDEWAYS;
+                        lastPos = objectLocator.lastPos;
+                        lock = false;
+                        break;
+                    }
 
                     if (objectLocator.targetVisible) {
                         lastPos = objectLocator.lastPos;
@@ -67,7 +75,7 @@ public class FirstAuto extends AutoSuperOp {
                         auto = AutoState.ANGLE;
                     }
 
-                } else {
+                } else if (time.seconds() > 0.5) {
                     lock = false;
 
                     if (rotNum >= 2 && rotNum <= 5) {
@@ -153,21 +161,37 @@ public class FirstAuto extends AutoSuperOp {
                 // get robot's position and update sideways position
                 double desiredY = 33;
 
-                objectLocator.updateRobotLocation();
-                lastPos = objectLocator.lastPos;
+                if (!lock) {
+                    time.reset();
+                    lock = true;
+                }
+
+                // adjust position until robot pos is within a pre-decided threshold
+                if (lastPos.y > desiredY + 2) {
+                    drive.driveRobotCentric(0.4, 0, 0);
+                    telemetry.addData("where am i", "left");
+                } else if (lastPos.y < desiredY - 2) {
+                    drive.driveRobotCentric(-0.4, 0, 0);
+                    telemetry.addData("where am i", "right");
+                    // when robot within threshold, go to back case
+                } else {
+                    drive.stop();
+                    telemetry.addData("where am i", "done");
+                    lock = false;
+                    auto = AutoState.BACK;
+                    break;
+                }
+
+                if (time.seconds() > 0.2) {
+                    lock = false;
+                    if (checkState == 0) {
+                        checkState = 1;
+                    }
+                    auto = AutoState.STOPCHECK;
+                }
 
                 telemetry.addData("y", lastPos.y);
 
-                // adjust position until robot pos is within a pre-decided threshold
-                if (lastPos.y > desiredY + 1) {
-                    drive.driveRobotCentric(0.4, 0, 0);
-                } else if (lastPos.y < desiredY - 1) {
-                    drive.driveRobotCentric(-0.4, 0, 0);
-                // when robot within threshold, go to back case
-                } else {
-                    drive.stop();
-                    auto = AutoState.BACK;
-                }
                 break;
                 // finds distance robot needs to go to be behind shooting line and adjusts.
             case BACK:
