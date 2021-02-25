@@ -41,6 +41,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+        backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         // initialize drive
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);

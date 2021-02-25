@@ -8,7 +8,7 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 public abstract class SuperOp extends OpMode {
-    // power constants
+    // power constants1
     final float INTAKE_POWER = 1f;
     final float INTAKE_POWER_SLOW = .6f;
     final float SHOOTER_POWER = 1f;
@@ -80,6 +80,7 @@ public abstract class SuperOp extends OpMode {
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, .7);
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, .9);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+        backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // reverse motor (mr. ross can't wire things)
         backRightDrive.setInverted(true);
 
@@ -104,17 +105,17 @@ public abstract class SuperOp extends OpMode {
         float intakePower = 0;
         // set intake as a button on right trigger and reverse intake on left trigger (button)
         if(gamepad2.right_trigger > THRESHOLD) {
-            intakePower = -INTAKE_POWER;
-        } else if (gamepad2.left_trigger > THRESHOLD) {
             intakePower = INTAKE_POWER;
+        } else if (gamepad2.left_trigger > THRESHOLD) {
+            intakePower = -INTAKE_POWER;
         }
 
         // set intake as a button on right trigger and reverse intake on left trigger (button)
         // and override operator
         if(gamepad1.right_trigger > THRESHOLD) {
-            intakePower = -INTAKE_POWER;
-        } else if (gamepad1.left_trigger > THRESHOLD) {
             intakePower = INTAKE_POWER;
+        } else if (gamepad1.left_trigger > THRESHOLD) {
+            intakePower = -INTAKE_POWER;
         }
 
         intake.set(intakePower);
