@@ -45,13 +45,13 @@ public abstract class SuperOp extends OpMode {
 
     // frontHook booleans (for toggle)
     boolean frontOn = false;
-    boolean isX = false;
-    boolean wasX = false;
+    boolean isA = false;
+    boolean wasA = false;
 
     // topHook booleans (for toggle)
     boolean topOn = false;
-    boolean isA = false;
-    boolean wasA = false;
+    boolean isY = false;
+    boolean wasY = false;
 
     // shooter booleans (for toggle)
     boolean shooterOn = false;
@@ -159,15 +159,22 @@ public abstract class SuperOp extends OpMode {
         // multiplier slows motor down so it doesn't kill the robot
         rotate.set(gamepad2.right_stick_y * .4);
 
-        // bind slow intake (for wobble goal locking in) to operator's left bumper
+        // bind slow outtake (for wobble goal locking in) to operator's left bumper
         if (gamepad2.left_bumper) {
             intake.set(-INTAKE_POWER_SLOW);
         } else {
             intake.set(0);
         }
 
+        // bind slow intake (for wobble goal locking in) to operator's right bumper
+        if (gamepad2.right_bumper) {
+            intake.set(INTAKE_POWER_SLOW);
+        } else {
+            intake.set(0);
+        }
+
         // toggles front servo on operator's x press
-        if ((isX = gamepad2.x) && !wasX) {
+        if ((isA = gamepad2.a) && !wasA) {
             if(frontOn) {
                 // if servo is open, close on x press
                 frontHook.setPosition(0);
@@ -177,10 +184,10 @@ public abstract class SuperOp extends OpMode {
             }
             frontOn = !frontOn;
         }
-        wasX = isX;
+        wasA = isA;
 
         // toggles top servo on operator's a press
-        if((isA = gamepad2.a) && !wasA) {
+        if((isY = gamepad2.y) && !wasY) {
             if(topOn) {
                 // if servo is open, close on a press
                 topHook.setPosition(0);
@@ -190,7 +197,7 @@ public abstract class SuperOp extends OpMode {
             }
             topOn = !topOn;
         }
-        wasA = isA;
+        wasY = isY;
     }
 
     // bind stoppage of motors/servos that each person controls to dpad down
