@@ -199,9 +199,9 @@ public class FirstAuto extends AutoSuperOp {
                 }
 
                 // adjust position until robot pos is within a pre-decided threshold
-                if (lastPos.y > desiredY + 2) {
+                if (lastPos.y > desiredY + 3) {
                     drive.driveRobotCentric(0.4, 0, 0);
-                } else if (lastPos.y < desiredY - 2) {
+                } else if (lastPos.y < desiredY - 3) {
                     drive.driveRobotCentric(-0.4, 0, 0);
                     // when robot within threshold, go to back case
                 } else {
@@ -213,7 +213,7 @@ public class FirstAuto extends AutoSuperOp {
                 }
 
                 // 0.2
-                if (time.seconds() > 0.35) {
+                if (time.seconds() > 0.5) {
                     lock = false;
                     if (checkState == 1) {
                         checkState = 2;
@@ -270,14 +270,14 @@ public class FirstAuto extends AutoSuperOp {
 
                 if (!lock) {
                     // sets shooter motor to 1, will run for rest of case
-                    shooter.set(-1);
+                    shooter.set(1);
                     time.reset();
                     lock = true;
                     target = true;
                 }
 
 
-                if (time.seconds() > 0.7) {
+                if (time.seconds() > 0.5) {
 
                     // set servo to 0 = second half of shooting action
                     shooterServo.setPosition(target? 0 : 1);
@@ -302,7 +302,7 @@ public class FirstAuto extends AutoSuperOp {
                     lock = true;
                 }
 
-                if (time.seconds() >= 1) {
+                if (time.seconds() >= 1.8) {
                     drive.driveRobotCentric(0, -0.3, 0);
                 }
 

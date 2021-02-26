@@ -25,6 +25,7 @@ public abstract class SuperOp extends OpMode {
 
     // declare non-drive motors
     Motor intake;
+    Motor intake2;
     Motor rotate;
     Motor shooter;
 
@@ -61,6 +62,7 @@ public abstract class SuperOp extends OpMode {
     public void init() {
         // initialize non-drive motors
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
+        intake2 = new Motor(hardwareMap, "Intake2", cpr, rpm);
         rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
         shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
 
@@ -76,9 +78,12 @@ public abstract class SuperOp extends OpMode {
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
         // reverse motor (mr. ross can't wire things)
         frontLeftDrive.setInverted(true);
+        frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // multipliers on frontRightDrive and backLeftDrive are because of the weight imbalance on our robot
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, .7);
+        frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, .9);
+        backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // reverse motor (mr. ross can't wire things)
@@ -119,6 +124,7 @@ public abstract class SuperOp extends OpMode {
         }
 
         intake.set(intakePower);
+        intake2.set(-intakePower);
 
         // triggers shooterServo when right bumper pressed
         if (gamepad1.right_bumper) {
@@ -138,7 +144,7 @@ public abstract class SuperOp extends OpMode {
                 shooter.set(0);
             } else {
                 // if the shooter is off and left bumper is pressed, turn shooter on
-                shooter.set(-SHOOTER_POWER);
+                shooter.set(SHOOTER_POWER);
             }
             shooterOn = !shooterOn;
         }
