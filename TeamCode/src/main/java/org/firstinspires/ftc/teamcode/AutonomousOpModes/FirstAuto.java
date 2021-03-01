@@ -6,61 +6,53 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name = "Competition Auto")
 public class FirstAuto extends AutoSuperOp {
-    // what state of autonomous we are in
+    // start the OpMode in state DRIVE
     AutoState auto = AutoState.DRIVE;
-    // number of attempts to find nav target
-    int rotNum = 0;
-    ObjectLocator.RobotPos lastPos;
-    ElapsedTime time;
-    boolean target;
-    boolean strafeAngle = false;
-    boolean lock = false;
-    int ringsShot = 0;
-    int rot = 0; // 0 when adjusting angle the first time, 1 when adjusting angle the second time
-    int checkState = 0; // 0 when checking for target during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
     @Override
     public void init() {
         super.init();
-        time = new ElapsedTime();
     }
 
     public void loop() {
         switch (auto) {
-
-            // drive from starting position to just past shooting line
-            // so that the sensors can see the picture.
+            // drive from starting position to just past shooting line, allowing camera to see target
             case DRIVE:
-
+                // make sure this only runs once
                 if (!lock) {
                     time.reset();
                     lock = true;
                 }
 
+                // begin to drive forward, towards shooting line
                 drive.driveRobotCentric(0, -0.5, 0);
-                // once robot drives for >3 secs, goes to clockwise case
-                // resets lock
+                // when time > 3, reset lock, stop robot, and go to state STOPCHECK
                 if (time.seconds() >= 3) {
                     lock = false;
                     drive.stop();
                     auto = AutoState.STOPCHECK;
                 }
+
                 break;
-
+            // stop robot and get location, then use as a springboard to get to other states
             case STOPCHECK:
-
+                // add telemetry for rotNum value (so we know how many times the robot has turned)
                 telemetry.addData("rotNum", rotNum);
 
+                // make sure code only runs worse
                 if (!lock) {
                     drive.stop();
                     time.reset();
                     lock = true;
                 }
 
+                // time time is between .1 and .3 check for location of robot
                 if (time.seconds() <= 0.3 && time.seconds() >= 0.1) {
 
                     // attempt to get robot's location based on nav target
                     objectLocator.updateRobotLocation();
+                    // add telemetry telling us if robot can see target
                     telemetry.addData("VISIBLE", objectLocator.targetVisible);
+
 
                     if (strafeAngle) {
                         lastPos = objectLocator.lastPos;
@@ -73,6 +65,7 @@ public class FirstAuto extends AutoSuperOp {
                         lastPos = objectLocator.lastPos;
                         lock = false;
                     }
+
                     if (checkState == 1) {
                         auto = AutoState.ANGLE;
                         break;
