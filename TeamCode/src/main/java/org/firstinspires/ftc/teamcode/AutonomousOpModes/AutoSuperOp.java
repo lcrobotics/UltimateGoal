@@ -30,9 +30,9 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     public ServoEx topHook;
     public ServoEx shooterServo;
 
-    ObjectLocator.RobotPos lastPos;
-
+    // check if servo is going to 1 or 0
     boolean target;
+    // check if code has been in state SIDEWAYS & check that the angle is close to correct
     boolean strafeAngle = false;
     // boolean to make sure that nothing runs 40 times
     boolean lock = false;
@@ -51,6 +51,9 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
 
     // declare elapsed time
     ElapsedTime time;
+
+    // declare lastPos
+    ObjectLocator.RobotPos lastPos;
 
     @Override
     public void init() {
