@@ -46,6 +46,13 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     // 0 when checking for servoPos during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
     int checkMoveType = 0;
 
+    // declare desiredY position (eg: about where the robot so be in the y direction on the field)
+    // NOTE: the Y is actually horizontal, due to rev
+    double desiredY = 33;
+    // declare desiredX position (eg: about where the robot so be in the x direction on the field)
+    // NOTE: the X is actually vertical, due to rev
+    double desiredX = 44;
+
     // declare drive
     public MecanumDrive drive;
 
