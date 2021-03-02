@@ -31,20 +31,20 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     public ServoEx shooterServo;
 
     // check if servo is going to 1 or 0
-    boolean target;
-    // check if code has been in state SIDEWAYS & check that the angle is close to correct
-    boolean strafeAngle = false;
+    boolean servoPos;
+    // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
+    boolean angleCorrect = false;
     // boolean to make sure that nothing runs 40 times
     boolean lock = false;
 
-    // number of attempts to find nav target
-    int rotNum = 0;
+    // number of attempts to find nav servoPos
+    int turnCount = 0;
     // count number
-    int ringsShot = 0;
+    int servoMoveCount = 0;
     // 0 when adjusting angle the first time, 1 when adjusting angle the second time
-    int rot = 0;
-    // 0 when checking for target during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
-    int checkState = 0;
+    int angleAdjustCount = 0;
+    // 0 when checking for servoPos during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
+    int checkMoveType = 0;
 
     // declare drive
     public MecanumDrive drive;

@@ -1,17 +1,17 @@
 package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 
 public enum AutoState {
-    DRIVE(0),
-    CLOCKWISE(1),
-    ANGLE(2),
-    SIDEWAYS(3),
-    BACK(4),
-    COUNTERCLOCKWISE(5),
+    DRIVEOVERMID(0),
+    ROTATECW(1),
+    FIXANGLE(2),
+    STRAFETOTARGET(3),
+    CORRECTX(4),
+    ROTATECCW(5),
     SHOOT(6),
-    PARK(7),
-    FAIL(8),
-    STOPCHECK(9),
-    BACK2(10);
+    DRIVETOMID(7),
+    DONE(8),
+    UPDATE(9),
+    DRIVEBEHINDMID(10);
 
     int val;
 

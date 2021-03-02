@@ -4,8 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous(name = "Competition Auto")
 public class FirstAuto extends AutoSuperOp {
-    // start the OpMode in state DRIVE
-    AutoState auto = AutoState.DRIVE;
+    // start the OpMode in state DRIVEOVERMID
+    AutoState auto = AutoState.DRIVEOVERMID;
+
     @Override
     public void init() {
         super.init();
@@ -13,8 +14,8 @@ public class FirstAuto extends AutoSuperOp {
 
     public void loop() {
         switch (auto) {
-            // drive from starting position to just past shooting line, allowing camera to see target
-            case DRIVE:
+            // drive from starting position to just past shooting line, allowing camera to see servoPos
+            case DRIVEOVERMID:
                 // make sure this only runs once
                 if (!lock) {
                     time.reset();
@@ -23,18 +24,18 @@ public class FirstAuto extends AutoSuperOp {
 
                 // begin to drive forward, towards shooting line
                 drive.driveRobotCentric(0, -0.5, 0);
-                // when time > 3, reset lock, stop robot, and go to state STOPCHECK
+                // when time > 3, reset lock, stop robot, and go to state UPDATE
                 if (time.seconds() >= 3) {
                     lock = false;
                     drive.stop();
-                    auto = AutoState.STOPCHECK;
+                    auto = AutoState.UPDATE;
                 }
 
                 break;
             // stop robot and get location, then use as a springboard to get to other states
-            case STOPCHECK:
-                // add telemetry for rotNum value (so we know how many times the robot has turned)
-                telemetry.addData("rotNum", rotNum);
+            case UPDATE:
+                // add telemetry for turnCount value (so we know how many times the robot has turned)
+                telemetry.addData("turnCount", turnCount);
 
                 // make sure code only runs worse
                 if (!lock) {
@@ -47,68 +48,68 @@ public class FirstAuto extends AutoSuperOp {
                 // if time > .5, proceed to turning states by conditionals
                 if (time.seconds() <= 0.3 && time.seconds() >= 0.1) {
 
-                    // attempt to get robot's location based on nav target
+                    // attempt to get robot's location based on nav servoPos
                     objectLocator.updateRobotLocation();
-                    // add telemetry telling us if robot can see target
+                    // add telemetry telling us if robot can see servoPos
                     telemetry.addData("VISIBLE", objectLocator.targetVisible);
 
-                    // strafe angle is only true if the code has been to state SIDEWAYS, requiring
-                    // the robot to be at about 90 degrees, facing the target
-                    // if it is true, update position and change to state ANGLE
-                    if (strafeAngle) {
+                    // strafe angle is only true if the code has been to state STRAFETOTARGET, requiring
+                    // the robot to be at about 90 degrees, facing the servoPos
+                    // if it is true, update position and change to state FIXANGLE
+                    if (angleCorrect) {
                         lastPos = objectLocator.lastPos;
                         lock = false;
-                        auto = AutoState.ANGLE;
+                        auto = AutoState.FIXANGLE;
                         break;
                     }
 
-                    // if not trying to find target, update position
-                    if (checkState > 0) {
+                    // if not trying to find servoPos, update position
+                    if (checkMoveType > 0) {
                         lastPos = objectLocator.lastPos;
                         lock = false;
                     }
 
-                    // if adjusting angle, proceed to state ANGLE (checkState == 1)
-                    // if strafing, proceed to state SIDEWAYS (checkState == 2)
-                    if (checkState == 1) {
-                        auto = AutoState.ANGLE;
+                    // if adjusting angle, proceed to state FIXANGLE (checkMoveType == 1)
+                    // if strafing, proceed to state STRAFETOTARGET (checkMoveType == 2)
+                    if (checkMoveType == 1) {
+                        auto = AutoState.FIXANGLE;
                         break;
-                    } else if (checkState == 2) {
-                        auto = AutoState.SIDEWAYS;
+                    } else if (checkMoveType == 2) {
+                        auto = AutoState.STRAFETOTARGET;
                         break;
                     }
 
-                    // if target located, update position, reset rotation, and switch to state ANGLE
+                    // if servoPos located, update position, reset rotation, and switch to state FIXANGLE
                     if (objectLocator.targetVisible) {
                         lastPos = objectLocator.lastPos;
                         lock = false;
-                        rotNum = 0;
-                        auto = AutoState.ANGLE;
+                        turnCount = 0;
+                        auto = AutoState.FIXANGLE;
                     }
 
                 } else if (time.seconds() > 0.5) {
                     lock = false;
 
-                    // if rotNum == 2, 3, 4, 5, switch to state COUNTERCLOCKWISE
-                    // if rotNum == 8, switch to state FAIL (code is over)
-                    // if rotNum == 1, 6, 7, switch to state CLOCKWISE
-                    if (rotNum >= 2 && rotNum <= 5) {
-                        auto = AutoState.COUNTERCLOCKWISE;
-                    } else if (rotNum == 8) {
-                        auto = AutoState.FAIL;
-                        rotNum = 0;
+                    // if turnCount == 2, 3, 4, 5, switch to state ROTATECCW
+                    // if turnCount == 8, switch to state DONE (code is over)
+                    // if turnCount == 1, 6, 7, switch to state ROTATECW
+                    if (turnCount >= 2 && turnCount <= 5) {
+                        auto = AutoState.ROTATECCW;
+                    } else if (turnCount == 8) {
+                        auto = AutoState.DONE;
+                        turnCount = 0;
                         break;
                     } else {
-                        auto = AutoState.CLOCKWISE;
+                        auto = AutoState.ROTATECW;
                     }
-                    // increment rotNum
-                    rotNum++;
+                    // increment turnCount
+                    turnCount++;
                 }
 
                 break;
 
             // turn robot clockwise slowly - for attempting to find nav targets
-            case CLOCKWISE:
+            case ROTATECW:
 
                 // make sure code only runs once
                 if (!lock) {
@@ -119,18 +120,18 @@ public class FirstAuto extends AutoSuperOp {
                 // turn clockwise (according to robot, not field view)
                 drive.driveRobotCentric(0, 0, 0.2);
 
-                // if time > 1, switch state to STOPCHECK (this both switches the state and stops the robot)
+                // if time > 1, switch state to UPDATE (this both switches the state and stops the robot)
                 if (time.seconds() > 1) {
                     lock = false;
-                    auto = AutoState.STOPCHECK;
+                    auto = AutoState.UPDATE;
                 }
 
                 break;
 
             // turn robot counter clockwise slowly - used if can't find nav targets while turning clockwise
-            case COUNTERCLOCKWISE:
+            case ROTATECCW:
 
-                // mkae sure code only runs once
+                // make sure code only runs once
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -139,17 +140,17 @@ public class FirstAuto extends AutoSuperOp {
                 // turn counter clockwise (according to robot, not field view)
                 drive.driveRobotCentric(0, 0, -0.2);
 
-                // if time > 1, switch state to STOPCHECK (this both switches the state and stops the robot)
+                // if time > 1, switch state to UPDATE (this both switches the state and stops the robot)
                 if (time.seconds() > 1) {
                     lock = false;
-                    auto = AutoState.STOPCHECK;
+                    auto = AutoState.UPDATE;
                 }
 
                 break;
 
-            // get the robot's position based on the nav target and correct the angle until the robot
-            // is facing the nav target head on
-            case ANGLE:
+            // get the robot's position based on the nav servoPos and correct the angle until the robot
+            // is facing the nav servoPos head on
+            case FIXANGLE:
 
                 // make sure code only runs once
                 if (!lock) {
@@ -157,21 +158,21 @@ public class FirstAuto extends AutoSuperOp {
                     lock = true;
                 }
 
-                // if time > .1, switch state to STOPCHECK
-                // if checkState == 0, set it equal to 1
+                // if time > .1, switch state to UPDATE
+                // if checkMoveType == 0, set it equal to 1
                 if (time.seconds() > 0.1) {
                     lock = false;
-                    if (checkState == 0) {
-                        checkState = 1;
+                    if (checkMoveType == 0) {
+                        checkMoveType = 1;
                     }
-                    auto = AutoState.STOPCHECK;
+                    auto = AutoState.UPDATE;
                 }
 
-                // find optimal angle for the robot to face
-                objectLocator.updateRobotLocation();
                 // update position of the robot
+                objectLocator.updateRobotLocation();
                 lastPos = objectLocator.lastPos;
-                // add telemetry for the angle of the robot (in relation to nav target)
+
+                // add telemetry for the angle of the robot (in relation to nav servoPos)
                 telemetry.addData("angle", lastPos.w);
 
 
@@ -180,22 +181,22 @@ public class FirstAuto extends AutoSuperOp {
                     drive.driveRobotCentric(0, 0, -0.3);
                 } else if (lastPos.w < 89) {
                     drive.driveRobotCentric(0, 0, 0.3);
-                // if angle is within threshold, switch to state SIDEWAYS
+                    // if angle is within threshold, switch to state STRAFETOTARGET
                 } else {
                     // stop driving
                     drive.stop();
                     lock = false;
 
-                    // if strafeAngle == true, switch to state SIDEWAYS
-                    if (strafeAngle) {
-                        auto = AutoState.SIDEWAYS;
+                    // if angleCorrect == true, switch to state STRAFETOTARGET
+                    if (angleCorrect) {
+                        auto = AutoState.STRAFETOTARGET;
                     }
-                    // if adjusting the angle the first time (rot == 0), switch to state SIDEWAYS
-                    if (rot == 0) {
-                        auto = AutoState.SIDEWAYS;
+                    // if adjusting the angle the first time (angleAdjustCount == 0), switch to state STRAFETOTARGET
+                    if (angleAdjustCount == 0) {
+                        auto = AutoState.STRAFETOTARGET;
                     } else {
-                        // if neither condition is true, set rot = 0 and switch to state SHOOT
-                        rot = 0;
+                        // if neither condition is true, set angleAdjustCount = 0 and switch to state SHOOT
+                        angleAdjustCount = 0;
                         auto = AutoState.SHOOT;
                     }
                 }
@@ -204,10 +205,10 @@ public class FirstAuto extends AutoSuperOp {
 
             // finds translational delta (only R/L) and adjusts so that the robot is within a
             // pre-determined threshold
-            case SIDEWAYS:
-                // set strafeAngle = true (so that the states with conditionals requiring it can
+            case STRAFETOTARGET:
+                // set angleCorrect = true (so that the states with conditionals requiring it can
                 // know that the angle is close enough)
-                strafeAngle = true;
+                angleCorrect = true;
 
                 // declare desiredY position (eg: about where the robot so be in the y direction on the field)
                 // NOTE: the Y is actually horizontal, due to rev
@@ -224,24 +225,24 @@ public class FirstAuto extends AutoSuperOp {
                     drive.driveRobotCentric(0.4, 0, 0);
                 } else if (lastPos.y < desiredY - 3) {
                     drive.driveRobotCentric(-0.4, 0, 0);
-                // when robot within threshold, reset variables, stop driving, and switch to state BACK
+                    // when robot within threshold, reset variables, stop driving, and switch to state CORRECTX
                 } else {
-                    strafeAngle = false;
+                    angleCorrect = false;
                     drive.stop();
                     lock = false;
-                    auto = AutoState.BACK;
+                    auto = AutoState.CORRECTX;
                     break;
                 }
 
-                // if time > .5 switch to state STOPCHECK
+                // if time > .5 switch to state UPDATE
                 if (time.seconds() > 0.5) {
                     lock = false;
 
-                    // if checkstate == 1, set to checkState = 2;
-                    if (checkState == 1) {
-                        checkState = 2;
+                    // if checkstate == 1, set to checkMoveType = 2;
+                    if (checkMoveType == 1) {
+                        checkMoveType = 2;
                     }
-                    auto = AutoState.STOPCHECK;
+                    auto = AutoState.UPDATE;
                 }
 
                 // add telemetry for y position
@@ -250,18 +251,17 @@ public class FirstAuto extends AutoSuperOp {
                 break;
 
             // find distance the robot needs to move behind the shooting line
-            case BACK:
+            case CORRECTX:
 
                 // declare desiredX position (eg: about where the robot so be in the x direction on the field)
                 // NOTE: the X is actually vertical, due to rev
                 double desiredX = 44;
 
-                // find optimal angle for the robot to face
-                objectLocator.updateRobotLocation();
                 // update position of the robot
+                objectLocator.updateRobotLocation();
                 lastPos = objectLocator.lastPos;
 
-                // add telemetry for the angle of the robot (in relation to nav target)
+                // add telemetry for the angle of the robot (in relation to nav servoPos)
                 telemetry.addData("x", lastPos.x);
 
                 // adjust robot position based on pre-determined values
@@ -269,16 +269,16 @@ public class FirstAuto extends AutoSuperOp {
                     drive.driveRobotCentric(0, 0.3, 0);
                 } else if (lastPos.x < desiredX - 1) {
                     drive.driveRobotCentric(0, -0.3, 0);
-                // if robot is the correct position, switch to state BACK2
+                    // if robot is the correct position, switch to state DRIVEBEHINDMID
                 } else {
                     drive.stop();
-                    auto = AutoState.BACK2;
+                    auto = AutoState.DRIVEBEHINDMID;
                 }
 
                 break;
 
-            // drive to behind shooting line using information from state BACK
-            case BACK2:
+            // drive to behind shooting line using information from state CORRECTX
+            case DRIVEBEHINDMID:
 
                 // make sure code only runs once
                 if (!lock) {
@@ -289,12 +289,12 @@ public class FirstAuto extends AutoSuperOp {
                 // drive to behind shooting line
                 drive.driveRobotCentric(0, 0.3, 0);
 
-                // if time > 3, reset variables, stop driving, and switch to state ANGLE
+                // if time > 3, reset variables, stop driving, and switch to state FIXANGLE
                 if (time.seconds() >= 3) {
                     lock = false;
                     drive.stop();
-                    rot++;
-                    auto = AutoState.ANGLE;
+                    angleAdjustCount++;
+                    auto = AutoState.FIXANGLE;
                 }
 
                 break;
@@ -307,35 +307,35 @@ public class FirstAuto extends AutoSuperOp {
                     shooter.set(1);
                     time.reset();
                     lock = true;
-                    target = true;
+                    servoPos = true;
                 }
 
                 // if time > .5, begin toggling shooterServo
                 // NOTE: the shooter must be given enough time to get to full power, hence the wait time
                 if (time.seconds() > 0.5) {
                     // set shooterServo = 0, second half of shooting (eg: it closes)
-                    shooterServo.setPosition(target? 0 : 1);
+                    shooterServo.setPosition(servoPos ? 0 : 1);
                     time.reset();
-                    // toggle target
-                    target = !target;
-                    // increment ringsShot
-                    ringsShot++;
+                    // toggle servoPos
+                    servoPos = !servoPos;
+                    // increment servoMoveCount
+                    servoMoveCount++;
                 } else {
                     // set servo to 1 = first half of shooting (eg: it opens)
-                    shooterServo.setPosition(target? 1 : 0);
+                    shooterServo.setPosition(servoPos ? 1 : 0);
                 }
 
-                // caps the number of shots at 3 (ringsShot keeps track of how many times shooterServo
+                // caps the number of shots at 3 (servoMoveCount keeps track of how many times shooterServo
                 // has opened/closed, so the actual rings shot will be half of the value
-                // if ringsShot == 6, switch to state PARK
-                if (ringsShot == 6) {
+                // if servoMoveCount == 6, switch to state DRIVETOMID
+                if (servoMoveCount == 6) {
                     lock = false;
-                    auto = AutoState.PARK;
+                    auto = AutoState.DRIVETOMID;
                 }
 
                 break;
             // park over shooting line
-            case PARK:
+            case DRIVETOMID:
                 // make sure code only runs once
                 if (!lock) {
                     time.reset();
@@ -347,17 +347,17 @@ public class FirstAuto extends AutoSuperOp {
                     drive.driveRobotCentric(0, -0.3, 0);
                 }
 
-                // if time >= 2.5, stop robot and switch to state FAIL
+                // if time >= 2.5, stop robot and switch to state DONE
                 if (time.seconds() >= 2.5) {
                     lock = false;
                     drive.stop();
-                    auto = AutoState.FAIL;
+                    auto = AutoState.DONE;
                 }
 
                 break;
 
-            // stops OpMode, either after state PARK or in the case of catastrophic failure
-            case FAIL:
+            // stops OpMode, either after state DRIVETOMID or in the case of catastrophic failure
+            case DONE:
                 // stop the entire OpMode, not just motors
                 requestOpModeStop();
 
