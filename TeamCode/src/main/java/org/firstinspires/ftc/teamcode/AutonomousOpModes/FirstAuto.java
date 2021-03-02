@@ -32,6 +32,7 @@ public class FirstAuto extends AutoSuperOp {
                 }
 
                 break;
+
             // stop robot and get location, then use as a springboard to get to other states
             case UPDATE:
                 // add telemetry for turnCount value (so we know how many times the robot has turned)
