@@ -159,9 +159,21 @@ public class Auto extends AutoSuperOp {
                     lock = true;
                 }
 
-                // if time > 100 milliseconds, switch state to UPDATE
+                // the angle that we want to end up with
+                double desiredAngle = 90;
+
+                // time that we want to rotate before checking position again using nav targets
+                double rotatingTime = 100;
+                // if we have a recorded last position
+                if (lastPos != null) {
+                    // factor used to calculate approximate rotation time - NOT TESTED YET
+                    double factor = 30;
+                    rotatingTime = Math.max(100, Math.abs(desiredAngle - lastPos.w) * factor);
+                }
+
+                // if time > rotatingTime, switch state to UPDATE
                 // if checkMoveType == 0, set it equal to 1
-                if (time.milliseconds() > 100) {
+                if (time.milliseconds() > rotatingTime) {
                     lock = false;
                     if (checkMoveType == 0) {
                         checkMoveType = 1;
@@ -178,9 +190,9 @@ public class Auto extends AutoSuperOp {
 
 
                 // adjust position until angle is within pre-decided threshold
-                if (lastPos.w > 91) {
+                if (lastPos.w > desiredAngle + 1) {
                     drive.driveRobotCentric(0, 0, -0.3);
-                } else if (lastPos.w < 89) {
+                } else if (lastPos.w < desiredAngle - 1) {
                     drive.driveRobotCentric(0, 0, 0.3);
                     // if angle is within threshold, switch to state STRAFETOTARGET
                 } else {
