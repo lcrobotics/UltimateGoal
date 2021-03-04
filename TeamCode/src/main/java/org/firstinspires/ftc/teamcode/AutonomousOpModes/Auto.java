@@ -28,7 +28,7 @@ public class Auto extends AutoSuperOp {
                 if (time.milliseconds() >= 3000) {
                     lock = false;
                     drive.stop();
-                    auto = AutoState.UPDATE;
+                    auto = AutoState.ROTATECW;
                 }
 
                 break;
@@ -89,14 +89,14 @@ public class Auto extends AutoSuperOp {
                 } else if (time.milliseconds() > 500) {
                     lock = false;
 
-                    // if turnCount == 2, 3, 4, 5, switch to state ROTATECCW
-                    // if turnCount == 8, switch to state DONE (code is over)
-                    // if turnCount == 1, 6, 7, switch to state ROTATECW
+                    // if turnCount == 3, 4, 5, 6 switch to state ROTATECCW
+                    // if turnCount == 9, switch to state DONE (code is over)
+                    // if turnCount == 1, 2, 7, 8 switch to state ROTATECW
                     // essentially, we want the robot to do two turns cw and the 4 ccw and then
                     // one more cw. turnCount allows us to keep track of where the robot is.
-                    if (turnCount >= 2 && turnCount <= 5) {
+                    if (turnCount >= 3 && turnCount <= 6) {
                         auto = AutoState.ROTATECCW;
-                    } else if (turnCount == 8) {
+                    } else if (turnCount == 9) {
                         auto = AutoState.DONE;
                         turnCount = 0;
                         break;
@@ -217,35 +217,12 @@ public class Auto extends AutoSuperOp {
                     lock = true;
                 }
 
-                // adjust position until the robot is within a pre-decided threshold
-                if (lastPos.y > desiredY + 3) {
-                    drive.driveRobotCentric(0.4, 0, 0);
-                } else if (lastPos.y < desiredY - 3) {
-                    drive.driveRobotCentric(-0.4, 0, 0);
-                    // when robot is within threshold, reset variables, stop driving, and switch to state CORRECTX
-                } else {
-                    angleCorrect = false;
+                drive.driveRobotCentric(.5, 0, 0);
+
+                if(time.milliseconds() > 1000) {
                     drive.stop();
-                    lock = false;
-                    auto = AutoState.CORRECTX;
-                    break;
+                    auto = AutoState.ROTATECCW;
                 }
-
-                // if time > 500 milliseconds switch to state UPDATE
-                if (time.milliseconds() > 500) {
-                    lock = false;
-
-                    // if checkMoveType == 1, set to checkMoveType = 2
-                    // the change allows us to not get stuck in an infinite loop and actually
-                    // continue the OpMode
-                    if (checkMoveType == 1) {
-                        checkMoveType = 2;
-                    }
-                    auto = AutoState.UPDATE;
-                }
-
-                // add telemetry for y position
-                telemetry.addData("y", lastPos.y);
 
                 break;
 
