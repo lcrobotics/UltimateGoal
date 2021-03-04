@@ -11,7 +11,8 @@ public enum AutoState {
     DRIVETOMID(7),
     DONE(8),
     UPDATE(9),
-    DRIVEBEHINDMID(10);
+    DRIVEBEHINDMID(10),
+    CENTER(11);
 
     int val;
 
