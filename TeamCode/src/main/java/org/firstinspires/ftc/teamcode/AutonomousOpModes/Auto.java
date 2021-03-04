@@ -70,12 +70,8 @@ public class Auto extends AutoSuperOp {
                     }
 
                     // if adjusting angle, proceed to state FIXANGLE (checkMoveType == 1)
-                    // if strafing, proceed to state STRAFETOTARGET (checkMoveType == 2)
                     if (checkMoveType == 1) {
                         auto = AutoState.FIXANGLE;
-                        break;
-                    } else if (checkMoveType == 2) {
-                        auto = AutoState.STRAFETOTARGET;
                         break;
                     }
 
