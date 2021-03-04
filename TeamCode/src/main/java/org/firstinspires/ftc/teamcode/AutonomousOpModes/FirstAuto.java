@@ -91,9 +91,9 @@ public class FirstAuto extends AutoSuperOp {
                 } else if (time.seconds() > 0.5) {
                     lock = false;
 
-                    if (rotNum >= 2 && rotNum <= 5) {
+                    if (rotNum >= 3 && rotNum <= 6) {
                         auto = AutoState.COUNTERCLOCKWISE;
-                    } else if (rotNum == 8) {
+                    } else if (rotNum == 9) {
                         auto = AutoState.FAIL;
                         rotNum = 0;
                         break;
