@@ -20,8 +20,11 @@ public abstract class SuperOp extends OpMode {
     final int cpr = 448;
     final int rpm = 64;
 
-    // declare imu
-    RevIMU imu;
+    // declare drive motors
+    Motor frontLeftDrive;
+    Motor frontRightDrive;
+    Motor backLeftDrive;
+    Motor backRightDrive;
 
     // declare non-drive motors
     Motor intake;
@@ -34,14 +37,11 @@ public abstract class SuperOp extends OpMode {
     ServoEx topHook;
     ServoEx shooterServo;
 
-    // declare drive motors
-    Motor frontLeftDrive;
-    Motor frontRightDrive;
-    Motor backLeftDrive;
-    Motor backRightDrive;
-
     // declare drive constructor
     public MecanumDrive drive;
+
+    // declare imu
+    RevIMU imu;
 
     // frontHook booleans (for toggle)
     boolean frontOn = false;
@@ -60,20 +60,6 @@ public abstract class SuperOp extends OpMode {
 
     @Override
     public void init() {
-        // initialize non-drive motors
-        intake = new Motor(hardwareMap, "Intake", cpr, rpm);
-        intake2 = new Motor(hardwareMap, "Intake2", cpr, rpm);
-        rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
-        shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
-
-        // set shooter to float so that we don't murder another motor
-        shooter.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-
-        // initialize servos
-        frontHook = new SimpleServo(hardwareMap, "FrontHook");
-        topHook = new SimpleServo(hardwareMap, "TopHook");
-        shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
-
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
         // reverse motor (mr. ross can't wire things)
@@ -88,6 +74,20 @@ public abstract class SuperOp extends OpMode {
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // reverse motor (mr. ross can't wire things)
         backRightDrive.setInverted(true);
+
+        // initialize non-drive motors
+        intake = new Motor(hardwareMap, "Intake", cpr, rpm);
+        intake2 = new Motor(hardwareMap, "Intake2", cpr, rpm);
+        rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
+        shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
+
+        // set shooter to float so that we don't murder another motor
+        shooter.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+
+        // initialize servos
+        frontHook = new SimpleServo(hardwareMap, "FrontHook");
+        topHook = new SimpleServo(hardwareMap, "TopHook");
+        shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
 
         // initialize imu (needed for field centric driving)
         imu = new RevIMU(hardwareMap, "imu");

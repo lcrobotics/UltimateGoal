@@ -89,7 +89,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
 //@Disabled
 public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
 
-    // IMPORTANT: If you are using a USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
+    // IMPORTANT: If you are using a USB WebCam, you must select CAMERA_CHOICE = CORRECTX; and PHONE_IS_PORTRAIT = false;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     private static final boolean PHONE_IS_PORTRAIT = false  ;
 

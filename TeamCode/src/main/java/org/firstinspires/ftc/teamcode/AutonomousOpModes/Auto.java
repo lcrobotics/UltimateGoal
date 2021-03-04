@@ -10,8 +10,8 @@ public class Auto extends AutoSuperOp {
     private static final String LABEL_FIRST_ELEMENT = "Quad";
     private static final String LABEL_SECOND_ELEMENT = "Single";
     // what state of autonomous we are in
-    AutoState auto = AutoState.DRIVE;
-    // number of attempts to find nav target
+    AutoState auto = AutoState.DRIVEOVERMID;
+    // number of attempts to find nav servoPos
     int rotNum = 0;
     ObjectLocator.RobotPos lastPos;
     ElapsedTime time;
@@ -30,7 +30,7 @@ public class Auto extends AutoSuperOp {
 
             // drive from starting position to just past shooting line
             // so that the sensors can see the picture.
-            case DRIVE:
+            case DRIVEOVERMID:
 
                 if (!lock) {
                     time.reset();
@@ -42,19 +42,19 @@ public class Auto extends AutoSuperOp {
                 // resets lock
                 if (time.seconds() >= 3) {
                     lock = false;
-                    auto = AutoState.CLOCKWISE;
+                    auto = AutoState.ROTATECW;
                 }
                 break;
 
             // Turns robot clockwise to look for picture.
-            case CLOCKWISE:
+            case ROTATECW:
 
                 if (!lock) {
                     time.reset();
                     lock = true;
                 }
 
-                // select time for rotation based on the rotNum we are on
+                // select time for rotation based on the turnCount we are on
                 int rotTime = 4;
                 // if number of rotation = 0 or 4, rotation time = 2 seconds
                 // if not, rotation time = 4 seconds
@@ -64,26 +64,26 @@ public class Auto extends AutoSuperOp {
 
                 drive.driveRobotCentric(0, 0, 0.5);
 
-                // attempt to get robot's location based on nav target
+                // attempt to get robot's location based on nav servoPos
                 objectLocator.updateRobotLocation();
                 if (objectLocator.targetVisible) {
                     lock = false;
-                    auto = AutoState.ANGLE;
-                    // if time is < rotation time, reset lock and go to FAIL
+                    auto = AutoState.FIXANGLE;
+                    // if time is < rotation time, reset lock and go to DONE
                 } else if (time.seconds() >= rotTime) {
                     lock = false;
                     if (rotNum == 4) {
-                        auto = AutoState.FAIL;
-                        // if target is not visible, go to counterclockwise
+                        auto = AutoState.DONE;
+                        // if servoPos is not visible, go to counterclockwise
                     } else {
-                        auto = AutoState.COUNTERCLOCKWISE;
+                        auto = AutoState.ROTATECCW;
                         rotNum++;
                     }
                 }
                 break;
 
             // if robot passes picture, turns the other way (counterclockwise) to look again.
-            case COUNTERCLOCKWISE:
+            case ROTATECCW:
 
                 if (!lock) {
                     time.reset();
@@ -92,24 +92,24 @@ public class Auto extends AutoSuperOp {
 
                 drive.driveRobotCentric(0, 0, -0.5);
 
-                // attempt to get robot's location based on nav target
+                // attempt to get robot's location based on nav servoPos
                 objectLocator.updateRobotLocation();
 
-                // if the target is visible, go to angle case
+                // if the servoPos is visible, go to angle case
                 if (objectLocator.targetVisible) {
                     lock = false;
-                    auto = AutoState.ANGLE;
+                    auto = AutoState.FIXANGLE;
                     // if the robot has not seen picture in 4 secs, go back to clockwise to try again
                 } else if (time.seconds() >= 4) {
                     lock = false;
                     rotNum++;
-                    auto = AutoState.CLOCKWISE;
+                    auto = AutoState.ROTATECW;
                 }
                 break;
 
-            // get robot's position based on nav target and update angle
-            // until the robot is facing the nav target directly
-            case ANGLE:
+            // get robot's position based on nav servoPos and update angle
+            // until the robot is facing the nav servoPos directly
+            case FIXANGLE:
 
                 // optimal angle the robot should be facing
                 lastPos = objectLocator.lastPos;
@@ -121,13 +121,13 @@ public class Auto extends AutoSuperOp {
                     drive.driveRobotCentric(0, 0, -0.5);
                     // if angle is within threshold, go to sideways case
                 } else {
-                    auto = AutoState.SIDEWAYS;
+                    auto = AutoState.STRAFETOTARGET;
                 }
 
                 break;
 
             // finds translational delta (only R/L) and adjusts to within threshold.
-            case SIDEWAYS:
+            case STRAFETOTARGET:
 
                 // get robot's position and update sideways position
                 double desiredY = 300;
@@ -141,11 +141,11 @@ public class Auto extends AutoSuperOp {
                     drive.driveRobotCentric(-0.5, 0, 0);
                     // when robot within threshold, go to back case
                 } else {
-                    auto = AutoState.BACK;
+                    auto = AutoState.CORRECTX;
                 }
 
                 // finds distance robot needs to go to be behind shooting line and adjusts.
-            case BACK:
+            case CORRECTX:
 
                 // get robot's position and go back
                 double desiredX = 500;
@@ -189,12 +189,12 @@ public class Auto extends AutoSuperOp {
                 // caps the number of shots at 3
                 if (ringsShot == 6) {
                     lock = false;
-                    auto = AutoState.FAIL;
+                    auto = AutoState.DONE;
                 }
                 break;
 
             // stops OpMode
-            case FAIL:
+            case DONE:
                 requestOpModeStop();
                 break;
         }
