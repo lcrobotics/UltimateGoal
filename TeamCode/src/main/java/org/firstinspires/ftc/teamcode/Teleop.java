@@ -11,11 +11,14 @@ public class Teleop extends SuperOp {
 
     @Override
     public void loop() {
+        telemetry.addData("vertical position", vertical.getPosition());
+        telemetry.addData("front hook position", frontHook.getPosition());
         // calls all methods
         drive();
         intake();
         shooter();
         wobbleGoals();
         stop();
+        telemetry.update();
     }
 }

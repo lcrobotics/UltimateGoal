@@ -226,7 +226,7 @@ public abstract class SuperOp extends OpMode {
         if ((isB = gamepad2.b) && !wasB) {
             if (vertOn) {
                 // if servo is open, close on b press
-                vertical.setPosition(0);
+                vertical.setPosition(0.3);
             } else {
                 // if servo is closed, open on b press
                 vertical.setPosition(1);
@@ -242,7 +242,7 @@ public abstract class SuperOp extends OpMode {
                 shooterControl.setPosition(0);
             } else {
                 // if servo is closed, open on x press
-                shooterControl.setPosition(1);
+                shooterControl.setPosition(.8);
             }
             controlOn = !controlOn;
         }
