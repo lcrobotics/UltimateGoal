@@ -69,16 +69,6 @@ public class Auto extends AutoSuperOp {
                     // add telemetry telling us if robot can see servoPos
                     telemetry.addData("VISIBLE", objectLocator.targetVisible);
 
-                    // strafe angle is only true if the code has been to state STRAFETOTARGET, requiring
-                    // the robot to be at about 90 degrees, facing the servoPos
-                    // if it is true, update position and change to state FIXANGLE
-                    if (angleCorrect) {
-                        lastPos = objectLocator.lastPos;
-                        lock = false;
-                        auto = AutoState.FIXANGLE;
-                        break;
-                    }
-
                     // if not trying to find servoPos, update position
                     if (checkMoveType > 0) {
                         lastPos = objectLocator.lastPos;
@@ -101,22 +91,14 @@ public class Auto extends AutoSuperOp {
                 } else if (time.milliseconds() > 500) {
                     lock = false;
 
-                    // if turnCount == 3, 4, 5, 6 switch to state ROTATECW
-                    // if turnCount == 9, switch to state DONE (code is over)
-                    // if turnCount == 0, 1, 2, 7, 8 switch to state ROTATECCW
-                    // essentially, we want the robot to do two turns cw and the 4 ccw and then
-                    // one more cw. turnCount allows us to keep track of where the robot is.
-                    if (turnCount >= 3 && turnCount <= 6) {
-                        auto = AutoState.ROTATECW;
-                    } else if (turnCount == 9) {
-                        auto = AutoState.DONE;
+                    // select next rotation based on rotations array
+                    auto = rotations[turnCount];
+                    // update turnCount
+                    if (turnCount == 9) {
                         turnCount = 0;
-                        break;
                     } else {
-                        auto = AutoState.ROTATECCW;
+                        turnCount++;
                     }
-                    // increment turnCount
-                    turnCount++;
                 }
 
                 break;
@@ -173,6 +155,9 @@ public class Auto extends AutoSuperOp {
 
                 // the angle that we want to end up with
                 double desiredAngle = 90;
+                if (angleAdjustCount == 0) {
+                    desiredAngle = 120;
+                }
 
                 // time that we want to rotate before checking position again using nav targets
                 double rotatingTime = 100;
@@ -212,18 +197,16 @@ public class Auto extends AutoSuperOp {
                     drive.stop();
                     lock = false;
 
-                    // if angleCorrect == true, switch to state STRAFETOTARGET
-                    if (angleCorrect) {
-                        auto = AutoState.STRAFETOTARGET;
-                    }
-                    // if adjusting the angle the first time (angleAdjustCount == 0), switch to state STRAFETOTARGET
+                    // if adjusting the angle the first time (angleAdjustCount == 0), switch to state CENTER
                     if (angleAdjustCount == 0) {
-                        auto = AutoState.STRAFETOTARGET;
-                    } else {
-                        // if neither condition is true, set angleAdjustCount = 0 and switch to state SHOOT
-                        angleAdjustCount = 0;
+                        auto = AutoState.CENTER;
+                    } else if (angleAdjustCount == 1) { // if adjusting for the second time, switch to state DRIVEBEHINDMID
+                        auto = AutoState.DRIVEBEHINDMID;
+                    } else if (angleAdjustCount == 2) { // if adjusting for the third time, switch to state SHOOT
                         auto = AutoState.SHOOT;
                     }
+                    // update angleAdjustCount
+                    angleAdjustCount++;
                 }
 
                 break;
@@ -233,21 +216,17 @@ public class Auto extends AutoSuperOp {
             case CENTER:
                 // sequence of rotations that will be used after CENTER is completed
                 rotations = new AutoState[]{
-                        AutoState.ROTATECW,
-                        AutoState.ROTATECW,
-                        AutoState.ROTATECW,
-                        AutoState.ROTATECCW,
-                        AutoState.ROTATECCW,
-                        AutoState.ROTATECCW,
-                        AutoState.ROTATECCW,
-                        AutoState.ROTATECW,
-                        AutoState.ROTATECW,
-                        AutoState.DONE,
+                    AutoState.ROTATECW,
+                    AutoState.ROTATECW,
+                    AutoState.ROTATECW,
+                    AutoState.ROTATECCW,
+                    AutoState.ROTATECCW,
+                    AutoState.ROTATECCW,
+                    AutoState.ROTATECCW,
+                    AutoState.ROTATECW,
+                    AutoState.ROTATECW,
+                    AutoState.DONE,
                 };
-
-                // set angleCorrect = true (so that the states with conditionals requiring it can
-                // know that the angle is close enough)
-                angleCorrect = true;
 
                 // make sure code only runs once
                 if (!lock) {
@@ -264,29 +243,7 @@ public class Auto extends AutoSuperOp {
 
                 break;
 
-            // find distance the robot needs to move behind the shooting line
-            case CORRECTX:
-                // update position of the robot
-                objectLocator.updateRobotLocation();
-                lastPos = objectLocator.lastPos;
-
-                // add telemetry for the angle of the robot (in relation to nav servoPos)
-                telemetry.addData("x", lastPos.x);
-
-                // adjust robot position based on pre-determined values
-                if (lastPos.x > desiredX + 1) {
-                    drive.driveRobotCentric(0, 0.3, 0);
-                } else if (lastPos.x < desiredX - 1) {
-                    drive.driveRobotCentric(0, -0.3, 0);
-                    // if robot is the correct position, switch to state DRIVEBEHINDMID
-                } else {
-                    drive.stop();
-                    auto = AutoState.DRIVEBEHINDMID;
-                }
-
-                break;
-
-            // drive to behind shooting line using information from state CORRECTX
+            // drive to behind shooting line
             case DRIVEBEHINDMID:
 
                 // make sure code only runs once
@@ -302,7 +259,6 @@ public class Auto extends AutoSuperOp {
                 if (time.milliseconds() >= 3000) {
                     lock = false;
                     drive.stop();
-                    angleAdjustCount++;
                     auto = AutoState.FIXANGLE;
                 }
 
