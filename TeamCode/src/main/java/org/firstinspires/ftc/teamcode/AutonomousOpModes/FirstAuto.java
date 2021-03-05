@@ -88,15 +88,14 @@ public class FirstAuto extends AutoSuperOp {
                     }
                 } else if (time.milliseconds() > 500) {
                     lock = false;
-
-                    // if turnCount == 2, 3, 4, 5, switch to state ROTATECCW
-                    // if turnCount == 8, switch to state DONE (code is over)
-                    // if turnCount == 1, 6, 7, switch to state ROTATECW
+                    // if turnCount == 3, 4, 5, 6 switch to state ROTATECCW
+                    // if turnCount == 9, switch to state DONE (code is over)
+                    // if turnCount == 1, 2, 7, 8 switch to state ROTATECW
                     // essentially, we want the robot to do two turns cw and the 4 ccw and then
                     // one more cw. turnCount allows us to keep track of where the robot is.
-                    if (turnCount >= 2 && turnCount <= 5) {
+                    if (turnCount >= 3 && turnCount <= 6) {
                         auto = AutoState.ROTATECCW;
-                    } else if (turnCount == 8) {
+                    } else if (turnCount == 9) {
                         auto = AutoState.DONE;
                         turnCount = 0;
                         break;
