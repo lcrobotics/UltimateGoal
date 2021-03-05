@@ -89,19 +89,19 @@ public class FirstAuto extends AutoSuperOp {
                 } else if (time.milliseconds() > 500) {
                     lock = false;
 
-                    // if turnCount == 3, 4, 5, 6 switch to state ROTATECCW
+                    // if turnCount == 3, 4, 5, 6 switch to state ROTATECW
                     // if turnCount == 9, switch to state DONE (code is over)
-                    // if turnCount == 1, 2, 7, 8 switch to state ROTATECW
+                    // if turnCount == 1, 2, 7, 8 switch to state ROTATECCW
                     // essentially, we want the robot to do two turns cw and the 4 ccw and then
                     // one more cw. turnCount allows us to keep track of where the robot is.
                     if (turnCount >= 3 && turnCount <= 6) {
-                        auto = AutoState.ROTATECCW;
+                        auto = AutoState.ROTATECW;
                     } else if (turnCount == 9) {
                         auto = AutoState.DONE;
                         turnCount = 0;
                         break;
                     } else {
-                        auto = AutoState.ROTATECW;
+                        auto = AutoState.ROTATECCW;
                     }
                     // increment turnCount
                     turnCount++;
@@ -110,7 +110,7 @@ public class FirstAuto extends AutoSuperOp {
                 break;
 
             // turn robot clockwise slowly - for attempting to find nav targets
-            case ROTATECW:
+            case ROTATECCW:
 
                 // make sure code only runs once
                 if (!lock) {
@@ -130,7 +130,7 @@ public class FirstAuto extends AutoSuperOp {
                 break;
 
             // turn robot counter clockwise slowly - used if can't find nav targets while turning clockwise
-            case ROTATECCW:
+            case ROTATECW:
 
                 // make sure code only runs once
                 if (!lock) {

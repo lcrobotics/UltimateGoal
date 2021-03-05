@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 @Autonomous
 public class Auto extends AutoSuperOp {
     // start the OpMode in state DRIVEOVERMID
+    AutoState[] rotations;
     AutoState auto = AutoState.DRIVEOVERMID;
 
     @Override
@@ -16,6 +17,21 @@ public class Auto extends AutoSuperOp {
         switch (auto) {
             // drive from starting position to just past shooting line, allowing camera to see servoPos
             case DRIVEOVERMID:
+
+                // sequence of rotations that will be used after DRIVEOVERMID is completed
+                rotations = new AutoState[]{
+                    AutoState.ROTATECCW,
+                    AutoState.ROTATECCW,
+                    AutoState.ROTATECCW,
+                    AutoState.ROTATECW,
+                    AutoState.ROTATECW,
+                    AutoState.ROTATECW,
+                    AutoState.ROTATECW,
+                    AutoState.ROTATECCW,
+                    AutoState.ROTATECCW,
+                    AutoState.DONE,
+                };
+
                 // make sure this only runs once
                 if (!lock) {
                     time.reset();
@@ -24,11 +40,11 @@ public class Auto extends AutoSuperOp {
 
                 // begin to drive forward, towards shooting line
                 drive.driveRobotCentric(0, -0.5, 0);
-                // when time > 3000 milliseconds, reset lock, stop robot, and go to state UPDATE
+                // when time > 3000 milliseconds, reset lock, stop robot, and go to state ROTATECCW
                 if (time.milliseconds() >= 3000) {
                     lock = false;
                     drive.stop();
-                    auto = AutoState.ROTATECW;
+                    auto = AutoState.ROTATECCW;
                 }
 
                 break;
@@ -70,12 +86,8 @@ public class Auto extends AutoSuperOp {
                     }
 
                     // if adjusting angle, proceed to state FIXANGLE (checkMoveType == 1)
-                    // if strafing, proceed to state STRAFETOTARGET (checkMoveType == 2)
                     if (checkMoveType == 1) {
                         auto = AutoState.FIXANGLE;
-                        break;
-                    } else if (checkMoveType == 2) {
-                        auto = AutoState.STRAFETOTARGET;
                         break;
                     }
 
@@ -89,19 +101,19 @@ public class Auto extends AutoSuperOp {
                 } else if (time.milliseconds() > 500) {
                     lock = false;
 
-                    // if turnCount == 3, 4, 5, 6 switch to state ROTATECCW
+                    // if turnCount == 3, 4, 5, 6 switch to state ROTATECW
                     // if turnCount == 9, switch to state DONE (code is over)
-                    // if turnCount == 1, 2, 7, 8 switch to state ROTATECW
+                    // if turnCount == 0, 1, 2, 7, 8 switch to state ROTATECCW
                     // essentially, we want the robot to do two turns cw and the 4 ccw and then
                     // one more cw. turnCount allows us to keep track of where the robot is.
                     if (turnCount >= 3 && turnCount <= 6) {
-                        auto = AutoState.ROTATECCW;
+                        auto = AutoState.ROTATECW;
                     } else if (turnCount == 9) {
                         auto = AutoState.DONE;
                         turnCount = 0;
                         break;
                     } else {
-                        auto = AutoState.ROTATECW;
+                        auto = AutoState.ROTATECCW;
                     }
                     // increment turnCount
                     turnCount++;
@@ -110,7 +122,7 @@ public class Auto extends AutoSuperOp {
                 break;
 
             // turn robot clockwise slowly - for attempting to find nav targets
-            case ROTATECW:
+            case ROTATECCW:
 
                 // make sure code only runs once
                 if (!lock) {
@@ -130,7 +142,7 @@ public class Auto extends AutoSuperOp {
                 break;
 
             // turn robot counter clockwise slowly - used if can't find nav targets while turning clockwise
-            case ROTATECCW:
+            case ROTATECW:
 
                 // make sure code only runs once
                 if (!lock) {
@@ -219,6 +231,20 @@ public class Auto extends AutoSuperOp {
             // finds translational delta (only R/L) and adjusts so that the robot is within a
             // pre-determined threshold
             case CENTER:
+                // sequence of rotations that will be used after CENTER is completed
+                rotations = new AutoState[]{
+                        AutoState.ROTATECW,
+                        AutoState.ROTATECW,
+                        AutoState.ROTATECW,
+                        AutoState.ROTATECCW,
+                        AutoState.ROTATECCW,
+                        AutoState.ROTATECCW,
+                        AutoState.ROTATECCW,
+                        AutoState.ROTATECW,
+                        AutoState.ROTATECW,
+                        AutoState.DONE,
+                };
+
                 // set angleCorrect = true (so that the states with conditionals requiring it can
                 // know that the angle is close enough)
                 angleCorrect = true;
@@ -233,7 +259,7 @@ public class Auto extends AutoSuperOp {
 
                 if(time.milliseconds() > 1000) {
                     drive.stop();
-                    auto = AutoState.ROTATECCW;
+                    auto = AutoState.ROTATECW;
                 }
 
                 break;
