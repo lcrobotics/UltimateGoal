@@ -232,8 +232,8 @@ public abstract class SuperOp extends OpMode {
                 vertical.setPosition(1);
             }
             vertOn = !vertOn;
-            wasB = isB;
         }
+        wasB = isB;
 
         // toggles front servo on operator's x press
         if ((isa = gamepad1.a) && !wasa) {
