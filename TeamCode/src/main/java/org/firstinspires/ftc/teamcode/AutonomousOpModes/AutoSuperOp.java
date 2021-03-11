@@ -45,6 +45,8 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     int angleAdjustCount = 0;
     // 0 when checking for servoPos during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
     int checkMoveType = 0;
+    // keeps track of provided rings (for where to drop wobble goal)
+    int numberRings = 0;
 
     // declare desiredY position (eg: about where the robot so be in the y direction on the field)
     // NOTE: the Y is actually horizontal, due to rev
