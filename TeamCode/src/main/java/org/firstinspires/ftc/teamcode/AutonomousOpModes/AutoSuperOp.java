@@ -5,6 +5,7 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.lcrobotics.easyftclib.vision.ObjectLocator;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import examples.VuforiaSuperOp;
@@ -59,7 +60,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     public MecanumDrive drive;
 
     // declare elapsed time
-    ElapsedTime time;
+    public ElapsedTime time;
 
     // declare lastPos
     ObjectLocator.RobotPos lastPos;
@@ -70,13 +71,17 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
         frontLeftDrive.setInverted(true);
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
         backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
         backRightDrive.setInverted(true);
 
         // initialize non-drive motors
@@ -100,5 +105,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         telemetry.addData("Front Right Power", frontRightDrive::get);
         telemetry.addData("Back Left Power", backLeftDrive::get);
         telemetry.addData("Back Right Power", backRightDrive::get);
+
+        telemetry.addData("time", time);
     }
 }

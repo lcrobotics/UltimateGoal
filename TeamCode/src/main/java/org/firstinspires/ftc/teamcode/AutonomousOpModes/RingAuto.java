@@ -297,7 +297,11 @@ public class RingAuto extends AutoSuperOp {
                 // if servoMoveCount == 6, switch to state DRIVETOMID
                 if (servoMoveCount == 6) {
                     lock = false;
-                    auto = AutoState.DROPWOBBLE;
+                    if(numberRings == 0 || numberRings == 4) {
+                        auto = AutoState.DRIVETOMID;
+                    } else if (numberRings == 1) {
+                        auto = AutoState.DROPWOBBLE;
+                    }
                 }
 
                 break;
@@ -305,7 +309,7 @@ public class RingAuto extends AutoSuperOp {
             // drive forward and drop the wobble goal in box B
             case DROPWOBBLE:
                 if (numberRings == 0) {
-                    drive.driveRobotCentric(0,0, .2);
+                    drive.driveRobotCentric(0,0, .3);
                     if(time.milliseconds() >= 500) {
                         drive.stop();
                         auto = AutoState.DONE;
