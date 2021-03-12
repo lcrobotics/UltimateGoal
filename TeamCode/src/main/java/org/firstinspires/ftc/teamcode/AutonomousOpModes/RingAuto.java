@@ -200,7 +200,9 @@ public class RingAuto extends AutoSuperOp {
                         auto = AutoState.CENTER;
                     } else if (angleAdjustCount == 1) { // if adjusting for the second time, switch to state DRIVEBEHINDMID
                         auto = AutoState.DRIVEBEHINDMID;
-                    } else if (angleAdjustCount == 2) { // if adjusting for the third time, switch to state SHOOT
+                    } else if (angleAdjustCount == 2 && numberRings == 4) { // if adjusting for the third time, switch to state SHOOT
+                        auto = AutoState.DROPWOBBLE;
+                    } else if (angleAdjustCount == 2) {
                         auto = AutoState.SHOOT;
                     }
                     // update angleAdjustCount
@@ -237,6 +239,9 @@ public class RingAuto extends AutoSuperOp {
                 // if time > 1000 milliseconds, stop and switch to state ROTATECW
                 if(time.milliseconds() > 1000) {
                     drive.stop();
+                    if(numberRings == 1) {
+                        auto = AutoState.DROPWOBBLE;
+                    }
                     auto = AutoState.ROTATECW;
                 }
 
@@ -299,14 +304,33 @@ public class RingAuto extends AutoSuperOp {
 
             // drive forward and drop the wobble goal in box B
             case DROPWOBBLE:
-                // drive forward
-                drive.driveRobotCentric(0, 0.5, 0);
-                // if time > 2500 milliseconds, stop, release goal, and switch to state DRIVETOMID
-                if (time.milliseconds() > 2500) {
-                    drive.stop();
-                    topHook.setPosition(1);
-                    auto = AutoState.DRIVETOMID;
+                if (numberRings == 0) {
+                    drive.driveRobotCentric(0,0, .2);
+                    if(time.milliseconds() >= 500) {
+                        drive.stop();
+                        auto = AutoState.DONE;
+                    }
                 }
+
+                if (numberRings == 1) {
+                    // if time > 2500 milliseconds, stop, release goal, and switch to state DRIVETOMID
+                    if (time.milliseconds() > 2500) {
+                        drive.stop();
+                        topHook.setPosition(1);
+                        auto = AutoState.DRIVETOMID;
+                    }
+                }
+
+                if (numberRings == 4) {
+                    // drive forward
+                    drive.driveRobotCentric(0, 0.5, 0);
+                    if (time.milliseconds() >= 500) {
+                        drive.stop();
+                        auto = AutoState.SHOOT;
+                    }
+                }
+
+                break;
 
                 // park over shooting line
             case DRIVETOMID:
@@ -325,7 +349,7 @@ public class RingAuto extends AutoSuperOp {
                 if (time.milliseconds() >= 2500) {
                     lock = false;
                     drive.stop();
-                    auto = AutoState.DONE;
+                    auto = AutoState.DROPWOBBLE;
                 }
 
                 break;

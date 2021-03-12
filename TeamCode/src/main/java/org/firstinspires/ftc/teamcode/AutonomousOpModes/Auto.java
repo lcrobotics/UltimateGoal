@@ -7,7 +7,8 @@ public class Auto extends AutoSuperOp {
     // declare array to keep track of rotation states
     AutoState[] rotations;
     // start the OpMode in state DRIVEOVERMID
-    AutoState auto = AutoState.DRIVEOVERMID;
+    AutoState auto = AutoState.TURNABIT;
+
 
     @Override
     public void init() {
@@ -16,6 +17,13 @@ public class Auto extends AutoSuperOp {
 
     public void loop() {
         switch (auto) {
+            case TURNABIT:
+                drive.driveRobotCentric(0,0, -0.4);
+
+                if (time.milliseconds() >= 0001) {
+                    drive.stop();
+                    auto = AutoState.DRIVEOVERMID;
+                }
             // drive from starting position to just past shooting line, allowing camera to see servoPos
             case DRIVEOVERMID:
                 // sequence of rotations that will be used after DRIVEOVERMID is completed
@@ -155,7 +163,7 @@ public class Auto extends AutoSuperOp {
                 double desiredAngle = 90;
                 // adjust desiredAngle, so that the first time it runs, it goes further towards the center
                 if (angleAdjustCount == 0) {
-                    desiredAngle = 120;
+                    desiredAngle = 130;
                 }
 
                 // time that we want to rotate before checking position again using nav targets
@@ -318,7 +326,7 @@ public class Auto extends AutoSuperOp {
 
                 // if time > 1800 milliseconds, drive to end up over shooting line
                 if (time.milliseconds() >= 1800) {
-                    drive.driveRobotCentric(0, 0.3, 0);
+                    drive.driveRobotCentric(0, -0.3, 0);
                 }
 
                 // if time >= 2500 milliseconds, stop robot and switch to state DONE

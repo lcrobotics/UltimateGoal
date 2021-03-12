@@ -13,7 +13,8 @@ public enum AutoState {
     UPDATE(9),
     DRIVEBEHINDMID(10),
     CENTER(11),
-    DROPWOBBLE(12);
+    DROPWOBBLE(12),
+    TURNABIT (13);
 
     int val;
 
