@@ -49,6 +49,8 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     // keeps track of provided rings (for where to drop wobble goal)
     int numberRings = 0;
 
+    int park = 0;
+
     // declare desiredY position (eg: about where the robot so be in the y direction on the field)
     // NOTE: the Y is actually horizontal, due to rev
     double desiredY = 33;

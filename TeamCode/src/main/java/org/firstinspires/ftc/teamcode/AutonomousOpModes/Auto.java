@@ -79,7 +79,7 @@ public class Auto extends AutoSuperOp {
                 drive.driveRobotCentric(0, -.5, 0);
 
                 // when time > 3000 milliseconds, reset lock, stop robot, and go to state ROTATECCW
-                if (time.milliseconds() >= 3000 || Math.abs(frontLeftDrive.encoder.getPosition() - 2849) < 10) {
+                if (time.milliseconds() >= 3000 || Math.abs(frontLeftDrive.encoder.getPosition() - 2849) <= 10) {
                     lock = false;
                     drive.stop();
                     auto = AutoState.ROTATECCW;
@@ -224,9 +224,9 @@ public class Auto extends AutoSuperOp {
 
                 // adjust position until angle is within pre-decided threshold
                 if (lastPos.w > desiredAngle + 1) {
-                    drive.driveRobotCentric(0, 0, -0.15);
+                    drive.driveRobotCentric(0, 0, -0.3);
                 } else if (lastPos.w < desiredAngle - 1) {
-                    drive.driveRobotCentric(0, 0, 0.15);
+                    drive.driveRobotCentric(0, 0, 0.3);
                 } else {
                     // stop driving
                     drive.stop();
@@ -344,12 +344,23 @@ public class Auto extends AutoSuperOp {
                     lock = true;
                 }
 
-                drive.driveRobotCentric(0, -0.3, 0);
-                // if time > 1800 milliseconds, drive to end up over shooting line
-                if (time.milliseconds() >= 1200) {
-                    lock = false;
-                    drive.stop();
-                    auto = AutoState.DROPWOBBLE;
+                if (park == 0) {
+                    drive.driveRobotCentric(0, -0.3, 0);
+                    // if time > 1800 milliseconds, drive to end up over shooting line
+                    if (time.milliseconds() >= 1400) {
+                        lock = false;
+                        drive.stop();
+                        park++;
+                        auto = AutoState.DROPWOBBLE;
+                    }
+                } else if (park == 1) {
+                    drive.driveRobotCentric(0, 0.3, 0);
+
+                    if(time.milliseconds() >= 800) {
+                        lock = false;
+                        drive.stop();
+                        auto = AutoState.DONE;
+                    }
                 }
 
                 break;
@@ -368,7 +379,7 @@ public class Auto extends AutoSuperOp {
                     drive.stop();
                     topHook.setPosition(0);
                     lock = false;
-                    auto = AutoState.DONE;
+                    auto = AutoState.DRIVETOMID;
                 }
 
                 break;
