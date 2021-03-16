@@ -48,7 +48,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     int checkMoveType = 0;
     // keeps track of provided rings (for where to drop wobble goal)
     int numberRings = 0;
-
+    // keep track of number of times code has been in park
     int park = 0;
 
     // declare desiredY position (eg: about where the robot so be in the y direction on the field)
