@@ -202,7 +202,7 @@ public class Auto extends AutoSuperOp {
                 }
 
                 // the angle that we want to end up with
-                double desiredAngle = 90;
+                double desiredAngle = 85;
                 // adjust desiredAngle, so that the first time it runs, it goes further towards the center
                 if (angleAdjustCount == 0) {
                     desiredAngle = 140;
@@ -304,14 +304,16 @@ public class Auto extends AutoSuperOp {
                 // NOTE: this code only runs at the very end of the state, when lock is set to true
                 if (!lock) {
                     time.reset();
+                    intake.set(-1);
                     lock = true;
                 }
 
                 // drive to behind shooting line
-                drive.driveRobotCentric(0, 0.3, 0);
+                drive.driveRobotCentric(0, 0.42, 0);
 
                 // if time >= 3100 milliseconds, set lock to true and prompt above if statement
                 if (time.milliseconds() >= 3100) {
+                    intake.set(0);
                     lock = false;
                     resetDrive();
                     auto = AutoState.FIXANGLE;
@@ -326,15 +328,15 @@ public class Auto extends AutoSuperOp {
                 // state DRIVETOMID
                 // NOTE: this code only runs at the very end of the state, when lock is set to tru
                 if (!lock) {
-                    servoPos = true;
                     shooter.set(1);
+                    servoPos = true;
                     time.reset();
                     lock = true;
                 }
 
                 // if time >= 1500 milliseconds, begin toggling shooterServo
                 // NOTE: the shooter must be given enough time to get to full power, hence the wait time
-                if (time.milliseconds() >= 1500) {
+                if (time.milliseconds() >= 2000) {
                     // set shooterServo = 0, second half of shooting (eg: it closes)
                     shooterServo.setPosition(servoPos ? 0 : 1);
                     time.reset();
@@ -372,12 +374,12 @@ public class Auto extends AutoSuperOp {
                 // if second time in DROVETOMID, drive backwards to properly park
                 if (park == 0) {
                     // drive farther over shooting line
-                    drive.driveRobotCentric(0, -0.3, 0);
+                    drive.driveRobotCentric(0, -0.4, 0);
 
                     // if time >= 1400 milliseconds, drive to end up over shooting line
                     // reset encoders and stop drive motors, increment park, switch state to
                     // DROPWOBBLE, and set lock to true (prompting first if statement)
-                    if (time.milliseconds() >= 1400) {
+                    if (time.milliseconds() >= 1500) {
                         lock = false;
                         resetDrive();
                         park++;
