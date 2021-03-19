@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @Autonomous
-public class Auto extends AutoSuperOp {
+public class AutoClose extends AutoSuperOp {
     // ensure that TURNABIT actually runs
     boolean started = false;
     // declare array to keep track of rotation states
