@@ -11,7 +11,6 @@ public class Teleop extends SuperOp {
 
     @Override
     public void loop() {
-        // calls all methods
         drive();
         intake();
         shooter();

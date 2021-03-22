@@ -6,8 +6,9 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.RevIMU;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-    public abstract class SuperOp extends OpMode {
+public abstract class SuperOp extends OpMode {
         // power constants1
         final float INTAKE_POWER = 1f;
         final float INTAKE_POWER_SLOW = .6f;
