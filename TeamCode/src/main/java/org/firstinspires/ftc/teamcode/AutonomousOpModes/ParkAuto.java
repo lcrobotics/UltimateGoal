@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous
-public class Park extends AutoSuperOp{
+public class ParkAuto extends AutoSuperOp{
 
     @Override
     public void init() {

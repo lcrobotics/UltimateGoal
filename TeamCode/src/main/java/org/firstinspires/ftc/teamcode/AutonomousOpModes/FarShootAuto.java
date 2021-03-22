@@ -1,50 +1,88 @@
 package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 @Autonomous
-public class RingAuto extends AutoSuperOp {
+public class FarShootAuto extends AutoSuperOp {
+    // ensure that TURNABIT actually runs
+    boolean started = false;
     // declare array to keep track of rotation states
     AutoState[] rotations;
-    // start the OpMode in state DRIVEOVERMID
-    AutoState auto = AutoState.DRIVEOVERMID;
+    // start the OpMode in state TURNABIT
+    AutoState auto = AutoState.TURNABIT;
 
     @Override
     public void init() {
+        // call init() in AutoSuperOp
         super.init();
+
+        // sequence of rotations that will be used after DRIVEOVERMID is completed
+        rotations = new AutoState[] {
+                AutoState.ROTATECCW,
+                AutoState.ROTATECCW,
+                AutoState.ROTATECCW,
+                AutoState.ROTATECW,
+                AutoState.ROTATECW,
+                AutoState.ROTATECW,
+                AutoState.ROTATECW,
+                AutoState.ROTATECCW,
+                AutoState.ROTATECCW,
+                AutoState.DONE,
+        };
     }
 
     public void loop() {
+        // make sure that the code runs properly
+        // the elapsed time starts in init() and due to a change made, we had to make
+        // sure the time was reset before the state machine began
+        if (!started) {
+            time.reset();
+            started = true;
+        }
+
+        telemetry.addData("state", auto);
+
         switch (auto) {
+            // turn a small bit to the right (this allows for the robot to be able to see the nav target better)
+            case TURNABIT:
+                // make sure state only runs once - run at beginning of state, reset time
+                if (!lock) {
+                    lock = true;
+                    time.reset();
+                }
+
+                // turn away from goals, toward powershots
+                drive.driveRobotCentric(0,0, -0.3);
+
+                // stop driving after 300 milliseconds and switch to state DRIVEOVERMID
+                if (time.milliseconds() >= 300) {
+                    lock = false;
+                    resetDrive();
+                    auto = AutoState.DRIVEOVERMID;
+                }
+
+                break;
+
             // drive from starting position to just past shooting line, allowing camera to see servoPos
             case DRIVEOVERMID:
-                // sequence of rotations that will be used after DRIVEOVERMID is completed
-                rotations = new AutoState[] {
-                        AutoState.ROTATECCW,
-                        AutoState.ROTATECCW,
-                        AutoState.ROTATECCW,
-                        AutoState.ROTATECW,
-                        AutoState.ROTATECW,
-                        AutoState.ROTATECW,
-                        AutoState.ROTATECW,
-                        AutoState.ROTATECCW,
-                        AutoState.ROTATECCW,
-                        AutoState.DONE,
-                };
-
-                // make sure this only runs once
+                // make sure state only runs once - run at beginning of state, reset time
                 if (!lock) {
-                    time.reset();
                     lock = true;
+                    time.reset();
                 }
 
                 // begin to drive forward, towards shooting line
-                drive.driveRobotCentric(0, -0.5, 0);
+                drive.driveRobotCentric(0, -.5, 0);
 
-                // when time > 3000 milliseconds, reset lock, stop robot, and go to state ROTATECCW
-                if (time.milliseconds() >= 3000) {
+                // when time >= 3000 milliseconds or the frontLeftDrive's encoder is at about 2849
+                // stop driving and switch to state ROTATECCW
+                // NOTE: magic number (2849) was found by testing our encoders for which had the most
+                // consistent value and picking the one that was lowest. In our case, that was the
+                // FrontLeftDrive, and it's lowest value was 2849
+                if (time.milliseconds() >= 3000 || 2849 - frontLeftDrive.encoder.getPosition() < 0) {
                     lock = false;
-                    drive.stop();
+                    resetDrive();
                     auto = AutoState.ROTATECCW;
                 }
 
@@ -55,11 +93,11 @@ public class RingAuto extends AutoSuperOp {
                 // add telemetry for turnCount value (so we know how many times the robot has turned)
                 telemetry.addData("turnCount", turnCount);
 
-                // make sure code only runs worse
+                // make sure state only runs once - run at beginning of state, reset time, and stop drive
                 if (!lock) {
-                    drive.stop();
-                    time.reset();
+                    resetDrive();
                     lock = true;
+                    time.reset();
                 }
 
                 // if time is between 100 milliseconds and 300 milliseconds check for location of robot and proceed into state movement
@@ -73,16 +111,16 @@ public class RingAuto extends AutoSuperOp {
                     // if not trying to find servoPos, update position
                     if (checkMoveType > 0) {
                         lastPos = objectLocator.lastPos;
-                        lock = false;
                     }
 
                     // if adjusting angle, proceed to state FIXANGLE (checkMoveType == 1)
                     if (checkMoveType == 1) {
                         auto = AutoState.FIXANGLE;
+                        lock = false;
                         break;
                     }
 
-                    // if servoPos located, update position, reset rotation, and switch to state FIXANGLE
+                    // if servoPos located, update position, reset rotation, switch to state FIXANGLE
                     if (objectLocator.targetVisible) {
                         lastPos = objectLocator.lastPos;
                         lock = false;
@@ -91,10 +129,10 @@ public class RingAuto extends AutoSuperOp {
                     }
                 } else if (time.milliseconds() > 500) {
                     lock = false;
-                    // select next rotation based on rotations array
+                    // select next rotation based on rotations array (eg: is it in ROTATECCW or ROTATECW)
                     auto = rotations[turnCount];
 
-                    // update turnCount
+                    // if turnCount == 9, reset turnCount, else update turnCount
                     if (turnCount == 9) {
                         turnCount = 0;
                     } else {
@@ -104,18 +142,18 @@ public class RingAuto extends AutoSuperOp {
 
                 break;
 
-            // turn robot clockwise slowly - for attempting to find nav targets
+            // turn robot counterclockwise slowly - for attempting to find nav targets
             case ROTATECCW:
-                // make sure code only runs once
+                // make sure state only runs once - run at beginning of state, reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
                 }
 
-                // turn clockwise (according to robot, not field view)
+                // turn counterclockwise (according to robot, not field view)
                 drive.driveRobotCentric(0, 0, 0.2);
 
-                // if time > 1000 milliseconds, switch state to UPDATE (this both switches the state and stops the robot)
+                // if time > 1000 milliseconds, switch to state UPDATE
                 if (time.milliseconds() > 1000) {
                     lock = false;
                     auto = AutoState.UPDATE;
@@ -123,19 +161,19 @@ public class RingAuto extends AutoSuperOp {
 
                 break;
 
-            // turn robot counter clockwise slowly - used if can't find nav targets while turning clockwise
+            // turn robot clockwise slowly - used if can't find nav targets while turning counterclockwise
             case ROTATECW:
-                // make sure code only runs once
+                // make sure state only runs once - run at beginning of state, reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
                 }
 
-                // turn counter clockwise (according to robot, not field view)
+                // turn clockwise (according to robot, not field view)
                 drive.driveRobotCentric(0, 0, -0.2);
 
-                // if time > 1000 milliseconds, switch state to UPDATE (this both switches the state and stops the robot)
-                if (time.milliseconds() > 1000) {
+                // if time >= 1000 milliseconds, switch to state UPDATE
+                if (time.milliseconds() >= 1000) {
                     lock = false;
                     auto = AutoState.UPDATE;
                 }
@@ -145,17 +183,17 @@ public class RingAuto extends AutoSuperOp {
             // get the robot's position based on the nav servoPos and correct the angle until the robot
             // is facing the nav servoPos head on
             case FIXANGLE:
-                // make sure code only runs once
+                // make sure state only runs once - run at beginning of state, reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
                 }
 
                 // the angle that we want to end up with
-                double desiredAngle = 90;
+                double desiredAngle = 84;
                 // adjust desiredAngle, so that the first time it runs, it goes further towards the center
                 if (angleAdjustCount == 0) {
-                    desiredAngle = 120;
+                    desiredAngle = 140;
                 }
 
                 // time that we want to rotate before checking position again using nav targets
@@ -168,7 +206,7 @@ public class RingAuto extends AutoSuperOp {
                     rotatingTime = Math.max(100, Math.abs(desiredAngle - lastPos.w) * factor);
                 }
 
-                // if time > rotatingTime, switch state to UPDATE
+                // if time > rotatingTime, end state and switch state to UPDATE
                 if (time.milliseconds() > rotatingTime) {
                     lock = false;
                     // if checkMoveType == 0, set it equal to 1
@@ -191,8 +229,8 @@ public class RingAuto extends AutoSuperOp {
                 } else if (lastPos.w < desiredAngle - 1) {
                     drive.driveRobotCentric(0, 0, 0.3);
                 } else {
-                    // stop driving
-                    drive.stop();
+                    // stop driving, reset encoders, end state
+                    resetDrive();
                     lock = false;
 
                     // if adjusting the angle the first time (angleAdjustCount == 0), switch to state CENTER
@@ -200,11 +238,8 @@ public class RingAuto extends AutoSuperOp {
                         auto = AutoState.CENTER;
                     } else if (angleAdjustCount == 1) { // if adjusting for the second time, switch to state DRIVEBEHINDMID
                         auto = AutoState.DRIVEBEHINDMID;
-                    } else if (angleAdjustCount == 2 && numberRings == 4) { // if adjusting for the third time, switch to state SHOOT
-                        auto = AutoState.DROPWOBBLE;
-                    } else if (angleAdjustCount == 2) {
-                        auto = AutoState.SHOOT;
                     }
+
                     // update angleAdjustCount
                     angleAdjustCount++;
                 }
@@ -213,6 +248,7 @@ public class RingAuto extends AutoSuperOp {
 
             // drive forward and stop in box B (robot will be going diagonal from driver perspective)
             case CENTER:
+
                 // sequence of rotations that will be used after CENTER is completed
                 rotations = new AutoState[]{
                         AutoState.ROTATECW,
@@ -227,7 +263,7 @@ public class RingAuto extends AutoSuperOp {
                         AutoState.DONE,
                 };
 
-                // make sure code only runs once
+                // make sure state only runs once - run at beginning of state, reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -236,12 +272,10 @@ public class RingAuto extends AutoSuperOp {
                 // drive forwards
                 drive.driveRobotCentric(0, -.5, 0);
 
-                // if time > 1000 milliseconds, stop and switch to state ROTATECW
-                if(time.milliseconds() > 1000) {
-                    drive.stop();
-                    if(numberRings == 1) {
-                        auto = AutoState.DROPWOBBLE;
-                    }
+                // if time >= 1200 milliseconds, stop drive, and switch to state ROTATECW
+                if(time.milliseconds() >= 1200) {
+                    lock = false;
+                    resetDrive();
                     auto = AutoState.ROTATECW;
                 }
 
@@ -249,37 +283,41 @@ public class RingAuto extends AutoSuperOp {
 
             // drive to behind shooting line
             case DRIVEBEHINDMID:
-                // make sure code only runs once
+                // make sure state only runs once - run at beginning of state, reset time, and run
+                // intake backwards - to make sure we don't run into the ring
                 if (!lock) {
                     time.reset();
+                    intake.set(-1);
                     lock = true;
                 }
 
                 // drive to behind shooting line
-                drive.driveRobotCentric(0, 0.3, 0);
+                drive.driveRobotCentric(0, 0.42, 0);
 
-                // if time > 3000 milliseconds, reset variables, stop driving, and switch to state FIXANGLE
-                if (time.milliseconds() >= 3000) {
+                // if time >= 3100 milliseconds, stop intake, stop drive, and switch to state SHOOT
+                if (time.milliseconds() >= 3100) {
+                    intake.set(0);
                     lock = false;
-                    drive.stop();
-                    auto = AutoState.FIXANGLE;
+                    resetDrive();
+                    auto = AutoState.SHOOT;
                 }
 
                 break;
 
-            // shoot ring into mid or high goal (depending on how shitty the motor is being)
+            // shoot ring into mid goal
             case SHOOT:
-                // make sure code only runs once, set shooter to on, shooter runs until state is switched
+                // make sure state only runs once - run at beginning of state, reset time, turn on
+                // shooter, initialize boolean servoPos
                 if (!lock) {
                     shooter.set(1);
+                    servoPos = true;
                     time.reset();
                     lock = true;
-                    servoPos = true;
                 }
 
-                // if time > 500 milliseconds, begin toggling shooterServo
+                // if time >= 1750 milliseconds, begin toggling shooterServo
                 // NOTE: the shooter must be given enough time to get to full power, hence the wait time
-                if (time.milliseconds() > 500) {
+                if (time.milliseconds() >= 1750) {
                     // set shooterServo = 0, second half of shooting (eg: it closes)
                     shooterServo.setPosition(servoPos ? 0 : 1);
                     time.reset();
@@ -297,10 +335,46 @@ public class RingAuto extends AutoSuperOp {
                 // if servoMoveCount == 6, switch to state DRIVETOMID
                 if (servoMoveCount == 6) {
                     lock = false;
-                    if(numberRings == 0 || numberRings == 4) {
-                        auto = AutoState.DRIVETOMID;
-                    } else if (numberRings == 1) {
+                    shooter.set(0);
+                    shooterServo.setPosition(0);
+                    auto = AutoState.DRIVETOMID;
+                }
+
+                break;
+
+            // park over shooting line
+            case DRIVETOMID:
+                // make sure state only runs once - run at beginning of state, reset time
+                if (!lock) {
+                    time.reset();
+                    lock = true;
+                }
+
+                // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
+                // if second time in DROVETOMID, drive backwards to properly park (park == 1)
+                if (park == 0) {
+                    // drive farther over shooting line
+                    drive.driveRobotCentric(0, -0.42, 0);
+
+                    // if time >= 1700 milliseconds, drive to end up over shooting line
+                    // reset encoders and stop drive motors, increment park, switch state to
+                    // DROPWOBBLE
+                    if (time.milliseconds() >= 1700) {
+                        lock = false;
+                        resetDrive();
+                        park++;
                         auto = AutoState.DROPWOBBLE;
+                    }
+                } else if (park == 1) {
+                    // drive to a bit more on the line
+                    drive.driveRobotCentric(0, 0.3, 0);
+
+                    // if time >= 700 milliseconds, stop drive motors & reset encoders, switch state
+                    // to DONE
+                    if(time.milliseconds() >= 700) {
+                        lock = false;
+                        resetDrive();
+                        auto = AutoState.DONE;
                     }
                 }
 
@@ -308,52 +382,22 @@ public class RingAuto extends AutoSuperOp {
 
             // drive forward and drop the wobble goal in box B
             case DROPWOBBLE:
-                if (numberRings == 0) {
-                    drive.driveRobotCentric(0,0, .3);
-                    if(time.milliseconds() >= 500) {
-                        drive.stop();
-                        auto = AutoState.DONE;
-                    }
-                }
-
-                if (numberRings == 1) {
-                    // if time > 2500 milliseconds, stop, release goal, and switch to state DRIVETOMID
-                    if (time.milliseconds() > 2500) {
-                        drive.stop();
-                        topHook.setPosition(1);
-                        auto = AutoState.DRIVETOMID;
-                    }
-                }
-
-                if (numberRings == 4) {
-                    // drive forward
-                    drive.driveRobotCentric(0, 0.5, 0);
-                    if (time.milliseconds() >= 500) {
-                        drive.stop();
-                        auto = AutoState.SHOOT;
-                    }
-                }
-
-                break;
-
-                // park over shooting line
-            case DRIVETOMID:
-                // make sure code only runs once
+                // make sure state only runs once - run at beginning of state, reset time
                 if (!lock) {
-                    time.reset();
                     lock = true;
+                    time.reset();
+                    break;
                 }
 
-                // if time > 1800 milliseconds, drive to end up over shooting line
-                if (time.milliseconds() >= 1800) {
-                    drive.driveRobotCentric(0, 0.3, 0);
-                }
-
-                // if time >= 2500 milliseconds, stop robot and switch to state DONE
-                if (time.milliseconds() >= 2500) {
+                // drive forward
+                drive.driveRobotCentric(0, 0, 0.3);
+                // if time >= 600 milliseconds, stop driving, release wobble goal, and switch to state
+                // DRIVETOMID
+                if (time.milliseconds() >= 600) {
                     lock = false;
-                    drive.stop();
-                    auto = AutoState.DROPWOBBLE;
+                    resetDrive();
+                    topHook.setPosition(0);
+                    auto = AutoState.DRIVETOMID;
                 }
 
                 break;

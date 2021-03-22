@@ -6,6 +6,7 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.lcrobotics.easyftclib.vision.ObjectLocator;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import examples.VuforiaSuperOp;
@@ -109,5 +110,31 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         telemetry.addData("Back Right Power", backRightDrive::get);
 
         telemetry.addData("time", time);
+    }
+
+    double getBatteryVoltage() {
+        double result = Double.POSITIVE_INFINITY;
+        for (VoltageSensor sensor : hardwareMap.voltageSensor) {
+            double voltage = sensor.getVoltage();
+            if (voltage > 0) {
+                result = Math.min(result, voltage);
+            }
+        }
+        return result;
+    }
+
+    // stop all drive motors, set RunMode to STOP_AND_RESET_ENCODER, then set to RUN_WITHOUT_ENCODER
+    void resetDrive() {
+        drive.stop();
+        setDriveMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    // set drive motors to user specified RunMode (used in resetDrive() for clarity)
+    void setDriveMode(DcMotor.RunMode mode) {
+        frontLeftDrive.motor.setMode(mode);
+        frontRightDrive.motor.setMode(mode);
+        backRightDrive.motor.setMode(mode);
+        backLeftDrive.motor.setMode(mode);
     }
 }
