@@ -35,6 +35,8 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     boolean servoPos;
     // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
     boolean angleCorrect = false;
+    // check if robot is currently correcting in its horizontal axis
+    boolean correctingHorizontal = false;
     // boolean to make sure that nothing runs 40 times
     boolean lock = false;
 

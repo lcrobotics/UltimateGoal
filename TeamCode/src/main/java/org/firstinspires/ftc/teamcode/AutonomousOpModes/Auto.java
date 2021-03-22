@@ -113,16 +113,27 @@ public class Auto extends AutoSuperOp {
                     // add telemetry telling us if robot can see servoPos
                     telemetry.addData("VISIBLE", objectLocator.targetVisible);
 
-                    // if not trying to find servoPos, update position
-                    if (checkMoveType > 0) {
+                    // if robot is correcting in the horizontal axis, go to FIXANGLE to adjust angle
+                    if (correctingHorizontal) {
                         lastPos = objectLocator.lastPos;
+                        lock = false;
+                        auto = AutoState.FIXANGLE;
+                        break;
                     }
 
-                    // if adjusting angle, proceed to state FIXANGLE (checkMoveType == 1) and set
-                    // lock to true (prompting the first if statement)
+                    // if not trying to find servoPos, update position and set lock to false
+                    if (checkMoveType > 0) {
+                        lastPos = objectLocator.lastPos;
+                        lock = false;
+                    }
+
+                    // if adjusting angle, proceed to state FIXANGLE (checkMoveType == 1)
+                    // if correcting horizontal, proceed to state CORRECTHORIZONTAL (checkMoveType == 2)
                     if (checkMoveType == 1) {
                         auto = AutoState.FIXANGLE;
-                        lock = false;
+                        break;
+                    } else if (checkMoveType == 2) {
+                        auto = AutoState.CORRECTHORIZONTAL;
                         break;
                     }
 
@@ -245,6 +256,12 @@ public class Auto extends AutoSuperOp {
                     resetDrive();
                     lock = false;
 
+                    // go back to CORRECTHORIZONTAL if robot is currently correcting in the horizontal axis
+                    if (correctingHorizontal) {
+                        auto = AutoState.CORRECTHORIZONTAL;
+                        break;
+                    }
+
                     // if adjusting the angle the first time (angleAdjustCount == 0), switch to state CENTER
                     if (angleAdjustCount == 0) {
                         auto = AutoState.CENTER;
@@ -294,6 +311,51 @@ public class Auto extends AutoSuperOp {
                    resetDrive();
                    auto = AutoState.ROTATECW;
                 }
+
+                break;
+
+            // finds translational delta (only R/L) and adjusts so that the robot is within a
+            // pre-determined threshold
+            case CORRECTHORIZONTAL:
+                // set correctingHorizontal = true (so that the states with conditionals requiring it can
+                // know that the robot is correcting in its horizontal axis)
+                correctingHorizontal = true;
+
+                // make sure code only runs once
+                if (!lock) {
+                    time.reset();
+                    lock = true;
+                }
+
+                // adjust position until the robot is within a pre-decided threshold
+                if (lastPos.y > desiredY + 2) {
+                    drive.driveRobotCentric(0.4, 0, 0);
+                } else if (lastPos.y < desiredY - 2) {
+                    drive.driveRobotCentric(-0.4, 0, 0);
+                    // when robot is within threshold, reset variables, stop driving, and switch to state DRIVEBEHINDMID
+                } else {
+                    correctingHorizontal = false;
+                    drive.stop();
+                    lock = false;
+                    auto = AutoState.DRIVEBEHINDMID;
+                    break;
+                }
+
+                // if time > 500 milliseconds switch to state UPDATE
+                if (time.milliseconds() > 500) {
+                    lock = false;
+
+                    // if checkMoveType == 1, set to checkMoveType = 2
+                    // the change allows us to not get stuck in an infinite loop and actually
+                    // continue the OpMode
+                    if (checkMoveType == 1) {
+                        checkMoveType = 2;
+                    }
+                    auto = AutoState.UPDATE;
+                }
+
+                // add telemetry for y position
+                telemetry.addData("y", lastPos.y);
 
                 break;
 
