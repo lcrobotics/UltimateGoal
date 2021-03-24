@@ -39,6 +39,8 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     // boolean to make sure that nothing runs 40 times
     boolean lock = false;
 
+    boolean turn = false;
+
     // number of attempts to find nav servoPos
     int turnCount = 0;
     // count number

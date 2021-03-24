@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @Autonomous
 public class FarShootAuto extends AutoSuperOp {
@@ -56,10 +57,14 @@ public class FarShootAuto extends AutoSuperOp {
                 drive.driveRobotCentric(0,0, -0.3);
 
                 // stop driving after 300 milliseconds and switch to state DRIVEOVERMID
-                if (time.milliseconds() >= 300) {
+                if (time.milliseconds() >= 300 && !turn) {
                     lock = false;
                     resetDrive();
                     auto = AutoState.DRIVEOVERMID;
+                } else if(time.milliseconds() >= 100 && turn) {
+                    lock = false;
+                    resetDrive();
+                    auto = AutoState.SHOOT;
                 }
 
                 break;
@@ -190,7 +195,7 @@ public class FarShootAuto extends AutoSuperOp {
                 }
 
                 // the angle that we want to end up with
-                double desiredAngle = 84;
+                double desiredAngle = 79;
                 // adjust desiredAngle, so that the first time it runs, it goes further towards the center
                 if (angleAdjustCount == 0) {
                     desiredAngle = 140;
@@ -198,7 +203,6 @@ public class FarShootAuto extends AutoSuperOp {
 
                 // time that we want to rotate before checking position again using nav targets
                 double rotatingTime = 100;
-
                 // if we have a recorded last position
                 if (lastPos != null) {
                     // factor used to calculate approximate rotation time - NOT TESTED YET
@@ -299,7 +303,8 @@ public class FarShootAuto extends AutoSuperOp {
                     intake.set(0);
                     lock = false;
                     resetDrive();
-                    auto = AutoState.SHOOT;
+                    turn = true;
+                    auto = AutoState.TURNABIT;
                 }
 
                 break;
@@ -330,6 +335,7 @@ public class FarShootAuto extends AutoSuperOp {
                     shooterServo.setPosition(servoPos ? 1 : 0);
                 }
 
+
                 // caps the number of shots at 3 (servoMoveCount keeps track of how many times shooterServo
                 // has opened/closed, so the actual rings shot will be half of the value
                 // if servoMoveCount == 6, switch to state DRIVETOMID
@@ -351,15 +357,15 @@ public class FarShootAuto extends AutoSuperOp {
                 }
 
                 // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
-                // if second time in DROVETOMID, drive backwards to properly park (park == 1)
+                // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
                 if (park == 0) {
                     // drive farther over shooting line
-                    drive.driveRobotCentric(0, -0.42, 0);
+                    drive.driveRobotCentric(0, -0.43, 0);
 
                     // if time >= 1700 milliseconds, drive to end up over shooting line
                     // reset encoders and stop drive motors, increment park, switch state to
                     // DROPWOBBLE
-                    if (time.milliseconds() >= 1700) {
+                    if (time.milliseconds() >= 1900) {
                         lock = false;
                         resetDrive();
                         park++;
