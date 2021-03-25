@@ -42,6 +42,7 @@ public class AutoClose extends AutoSuperOp {
 
         // add telemetry for state the code is in
         telemetry.addData("state", auto);
+        telemetry.addData("angleAdjustCount", angleAdjustCount);
 
         switch (auto) {
             // turn a small but to the right (this allows for the robot to be able to see the nav target better)
@@ -265,9 +266,11 @@ public class AutoClose extends AutoSuperOp {
                     // if adjusting the angle the first time (angleAdjustCount == 0), switch to state CENTER
                     if (angleAdjustCount == 0) {
                         auto = AutoState.CENTER;
-                    } else if (angleAdjustCount == 1) { // if adjusting for the second time, switch to state DRIVEBEHINDMID
+                    } else if (angleAdjustCount == 1) { // if adjusting for the second time, switch to state CORRECTHORIZONTAL
+                        auto = AutoState.CORRECTHORIZONTAL;
+                    } else if (angleAdjustCount == 2) { // if adjusting for the third time, switch to state DRIVEBEHINDMID
                         auto = AutoState.DRIVEBEHINDMID;
-                    } else if (angleAdjustCount == 2) { // if adjusting for the third time, switch to state SHOOT & turn on shooter
+                    } else if (angleAdjustCount == 3) { // if adjusting for the fourth time, switch to state SHOOT & turn on shooter
                         auto = AutoState.SHOOT;
                     }
 
@@ -332,12 +335,12 @@ public class AutoClose extends AutoSuperOp {
                     drive.driveRobotCentric(0.4, 0, 0);
                 } else if (lastPos.y < desiredY - 2) {
                     drive.driveRobotCentric(-0.4, 0, 0);
-                    // when robot is within threshold, reset variables, stop driving, and switch to state DRIVEBEHINDMID
+                    // when robot is within threshold, reset variables, stop driving, and switch to state FIXANGLE
                 } else {
                     correctingHorizontal = false;
                     drive.stop();
                     lock = false;
-                    auto = AutoState.DRIVEBEHINDMID;
+                    auto = AutoState.FIXANGLE;
                     break;
                 }
 
