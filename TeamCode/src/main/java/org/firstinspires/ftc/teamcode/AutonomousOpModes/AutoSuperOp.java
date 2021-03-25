@@ -93,6 +93,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
         rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
         shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
+        shooter.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // initialize servos
         frontHook = new SimpleServo(hardwareMap, "FrontHook");

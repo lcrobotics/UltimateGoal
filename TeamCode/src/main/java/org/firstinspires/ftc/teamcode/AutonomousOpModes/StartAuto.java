@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @Autonomous
 public class StartAuto extends AutoSuperOp {
@@ -30,7 +31,7 @@ public class StartAuto extends AutoSuperOp {
                 // make sure state only runs once - run at beginning of state, reset time, turn on
                 // shooter, initialize boolean servoPos
                 if (!lock) {
-                    shooter.set(1);
+                    ((DcMotorEx)shooter.motor).setVelocity(shooter.motor.getMotorType().getAchieveableMaxTicksPerSecond());
                     servoPos = true;
                     time.reset();
                     lock = true;
@@ -38,7 +39,7 @@ public class StartAuto extends AutoSuperOp {
 
                 // if time >= 1750 milliseconds, begin toggling shooterServo
                 // NOTE: the shooter must be given enough time to get to full power, hence the wait time
-                if (time.milliseconds() >= 4000) {
+                if (time.milliseconds() >= 3750) {
                     // set shooterServo = 0, second half of shooting (eg: it closes)
                     shooterServo.setPosition(servoPos ? 0 : 1);
                     time.reset();
@@ -71,7 +72,7 @@ public class StartAuto extends AutoSuperOp {
                 }
 
                 drive.driveRobotCentric(0,0,.3);
-                if (time.milliseconds() >= 500) {
+                if (time.milliseconds() >= 300) {
                     resetDrive();
                     lock = false;
                     auto = AutoState.DRIVETOMID;
@@ -95,7 +96,7 @@ public class StartAuto extends AutoSuperOp {
                     // if time >= 1700 milliseconds, drive to end up over shooting line
                     // reset encoders and stop drive motors, increment park, switch state to
                     // DROPWOBBLE
-                    if (time.milliseconds() >= 3200) {
+                    if (time.milliseconds() >= 3100) {
                         lock = false;
                         resetDrive();
                         park++;
