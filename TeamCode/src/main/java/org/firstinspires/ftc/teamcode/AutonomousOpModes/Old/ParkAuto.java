@@ -17,6 +17,7 @@ public class ParkAuto extends AutoSuperOp {
         drive.driveRobotCentric(0, -0.5, 0);
         // once robot drives for >= 2.5 secs, it parks over shooting line
         if (time.milliseconds() >= 2500) {
+            // stop OpMode
             requestOpModeStop();
         }
     }
