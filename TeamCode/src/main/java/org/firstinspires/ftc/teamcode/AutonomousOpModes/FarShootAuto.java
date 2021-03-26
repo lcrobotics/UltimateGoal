@@ -51,7 +51,7 @@ public class FarShootAuto extends AutoSuperOp {
                     time.reset();
                 }
 
-                // turn away from goals, toward powershots
+                // turn away from goals, toward power shots
                 drive.driveRobotCentric(0,0, -0.3);
 
                 // stop driving after 300 milliseconds and switch to state DRIVEOVERMID
@@ -104,7 +104,7 @@ public class FarShootAuto extends AutoSuperOp {
                 }
 
                 // if time is between 100 milliseconds and 300 milliseconds check for location of robot and proceed into state movement
-                // if time > 500 milliseconds, proceed to turning states by conditionals using turnCount
+                // if time >= 500 milliseconds, proceed to turning states by conditionals using turnCount
                 if (time.milliseconds() <= 300 && time.milliseconds() >= 100) {
                     // attempt to get robot's location based on nav servoPos
                     objectLocator.updateRobotLocation();
@@ -130,7 +130,7 @@ public class FarShootAuto extends AutoSuperOp {
                         turnCount = 0;
                         auto = AutoState.FIXANGLE;
                     }
-                } else if (time.milliseconds() > 500) {
+                } else if (time.milliseconds() >= 500) {
                     lock = false;
                     // select next rotation based on rotations array (eg: is it in ROTATECCW or ROTATECW)
                     auto = rotations[turnCount];
@@ -156,8 +156,8 @@ public class FarShootAuto extends AutoSuperOp {
                 // turn counterclockwise (according to robot, not field view)
                 drive.driveRobotCentric(0, 0, 0.2);
 
-                // if time > 1000 milliseconds, switch to state UPDATE
-                if (time.milliseconds() > 1000) {
+                // if time >= 1000 milliseconds, switch to state UPDATE
+                if (time.milliseconds() >= 1000) {
                     lock = false;
                     auto = AutoState.UPDATE;
                 }
@@ -250,7 +250,6 @@ public class FarShootAuto extends AutoSuperOp {
 
             // drive forward and stop in box B (robot will be going diagonal from driver perspective)
             case CENTER:
-
                 // sequence of rotations that will be used after CENTER is completed
                 rotations = new AutoState[]{
                         AutoState.ROTATECW,
@@ -360,7 +359,7 @@ public class FarShootAuto extends AutoSuperOp {
                     // drive farther over shooting line
                     drive.driveRobotCentric(0, -0.43, 0);
 
-                    // if time >= 1700 milliseconds, drive to end up over shooting line
+                    // if time >= 1900 milliseconds, drive to end up over shooting line
                     // reset encoders and stop drive motors, increment park, switch state to
                     // DROPWOBBLE
                     if (time.milliseconds() >= 1900) {

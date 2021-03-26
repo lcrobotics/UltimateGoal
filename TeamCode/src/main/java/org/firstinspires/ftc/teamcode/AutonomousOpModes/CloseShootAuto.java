@@ -52,7 +52,7 @@ public class CloseShootAuto extends AutoSuperOp {
                     time.reset();
                 }
 
-                /// turn away from goals, toward powershots
+                /// turn away from goals, toward power shots
                 drive.driveRobotCentric(0,0, -0.3);
 
                 // stop driving after 300 milliseconds and switch to state DRIVEOVERMID
@@ -153,8 +153,8 @@ public class CloseShootAuto extends AutoSuperOp {
                 // turn counterclockwise (according to robot, not field view)
                 drive.driveRobotCentric(0, 0, 0.2);
 
-                // if time > 1000 milliseconds, switch to state UPDATE
-                if (time.milliseconds() > 1000) {
+                // if time >= 1000 milliseconds, switch to state UPDATE
+                if (time.milliseconds() >= 1000) {
                     lock = false;
                     auto = AutoState.UPDATE;
                 }
@@ -248,7 +248,6 @@ public class CloseShootAuto extends AutoSuperOp {
 
             // drive forward and stop in box B (robot will be going diagonal from driver perspective)
             case CENTER:
-
                 // sequence of rotations that will be used after CENTER is completed
                 rotations = new AutoState[]{
                         AutoState.ROTATECW,
@@ -294,7 +293,7 @@ public class CloseShootAuto extends AutoSuperOp {
                 // drive to behind shooting line
                 drive.driveRobotCentric(0, 0.3, 0);
 
-                // if time >= 3100 milliseconds, set lock to true and prompt above if statement
+                // if time >= 3300 milliseconds, set lock to true and prompt above if statement
                 if (time.milliseconds() >= 3300) {
                     lock = false;
                     resetDrive();
@@ -319,6 +318,7 @@ public class CloseShootAuto extends AutoSuperOp {
                 if (time.milliseconds() >= 1750) {
                     // set shooterServo = 0, second half of shooting (eg: it closes)
                     shooterServo.setPosition(servoPos ? 0 : 1);
+                    // reset time so that servo can toggle again
                     time.reset();
                     // toggle servoPos
                     servoPos = !servoPos;

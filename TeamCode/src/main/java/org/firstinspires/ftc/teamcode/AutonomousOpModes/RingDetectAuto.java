@@ -32,7 +32,7 @@ public class RingDetectAuto extends AutoSuperOp {
                         AutoState.DONE,
                 };
 
-                // make sure this only runs once
+                // make sure this only runs once and reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -41,7 +41,7 @@ public class RingDetectAuto extends AutoSuperOp {
                 // begin to drive forward, towards shooting line
                 drive.driveRobotCentric(0, -0.5, 0);
 
-                // when time > 3000 milliseconds, reset lock, stop robot, and go to state ROTATECCW
+                // when time >= 3000 milliseconds, reset lock, stop robot, and go to state ROTATECCW
                 if (time.milliseconds() >= 3000) {
                     lock = false;
                     drive.stop();
@@ -55,7 +55,7 @@ public class RingDetectAuto extends AutoSuperOp {
                 // add telemetry for turnCount value (so we know how many times the robot has turned)
                 telemetry.addData("turnCount", turnCount);
 
-                // make sure code only runs worse
+                // make sure code only runs once and reset time
                 if (!lock) {
                     drive.stop();
                     time.reset();
@@ -63,7 +63,7 @@ public class RingDetectAuto extends AutoSuperOp {
                 }
 
                 // if time is between 100 milliseconds and 300 milliseconds check for location of robot and proceed into state movement
-                // if time > 500 milliseconds, proceed to turning states by conditionals using turnCount
+                // if time >= 500 milliseconds, proceed to turning states by conditionals using turnCount
                 if (time.milliseconds() <= 300 && time.milliseconds() >= 100) {
                     // attempt to get robot's location based on nav servoPos
                     objectLocator.updateRobotLocation();
@@ -89,7 +89,7 @@ public class RingDetectAuto extends AutoSuperOp {
                         turnCount = 0;
                         auto = AutoState.FIXANGLE;
                     }
-                } else if (time.milliseconds() > 500) {
+                } else if (time.milliseconds() >= 500) {
                     lock = false;
                     // select next rotation based on rotations array
                     auto = rotations[turnCount];
@@ -106,7 +106,7 @@ public class RingDetectAuto extends AutoSuperOp {
 
             // turn robot clockwise slowly - for attempting to find nav targets
             case ROTATECCW:
-                // make sure code only runs once
+                // make sure code only runs once and reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -115,8 +115,8 @@ public class RingDetectAuto extends AutoSuperOp {
                 // turn clockwise (according to robot, not field view)
                 drive.driveRobotCentric(0, 0, 0.2);
 
-                // if time > 1000 milliseconds, switch state to UPDATE (this both switches the state and stops the robot)
-                if (time.milliseconds() > 1000) {
+                // if time >= 1000 milliseconds, switch state to UPDATE (this both switches the state and stops the robot)
+                if (time.milliseconds() >= 1000) {
                     lock = false;
                     auto = AutoState.UPDATE;
                 }
@@ -125,7 +125,7 @@ public class RingDetectAuto extends AutoSuperOp {
 
             // turn robot counter clockwise slowly - used if can't find nav targets while turning clockwise
             case ROTATECW:
-                // make sure code only runs once
+                // make sure code only runs once and reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -134,8 +134,8 @@ public class RingDetectAuto extends AutoSuperOp {
                 // turn counter clockwise (according to robot, not field view)
                 drive.driveRobotCentric(0, 0, -0.2);
 
-                // if time > 1000 milliseconds, switch state to UPDATE (this both switches the state and stops the robot)
-                if (time.milliseconds() > 1000) {
+                // if time >= 1000 milliseconds, switch state to UPDATE (this both switches the state and stops the robot)
+                if (time.milliseconds() >= 1000) {
                     lock = false;
                     auto = AutoState.UPDATE;
                 }
@@ -145,7 +145,7 @@ public class RingDetectAuto extends AutoSuperOp {
             // get the robot's position based on the nav servoPos and correct the angle until the robot
             // is facing the nav servoPos head on
             case FIXANGLE:
-                // make sure code only runs once
+                // make sure code only runs once and reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -227,7 +227,7 @@ public class RingDetectAuto extends AutoSuperOp {
                         AutoState.DONE,
                 };
 
-                // make sure code only runs once
+                // make sure code only runs once and reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -236,8 +236,8 @@ public class RingDetectAuto extends AutoSuperOp {
                 // drive forwards
                 drive.driveRobotCentric(0, -.5, 0);
 
-                // if time > 1000 milliseconds, stop and switch to state ROTATECW
-                if(time.milliseconds() > 1000) {
+                // if time >= 1000 milliseconds, stop and switch to state ROTATECW
+                if(time.milliseconds() >= 1000) {
                     drive.stop();
                     if(numberRings == 1) {
                         auto = AutoState.DROPWOBBLE;
@@ -249,7 +249,7 @@ public class RingDetectAuto extends AutoSuperOp {
 
             // drive to behind shooting line
             case DRIVEBEHINDMID:
-                // make sure code only runs once
+                // make sure code only runs once and reset time
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -258,7 +258,7 @@ public class RingDetectAuto extends AutoSuperOp {
                 // drive to behind shooting line
                 drive.driveRobotCentric(0, 0.3, 0);
 
-                // if time > 3000 milliseconds, reset variables, stop driving, and switch to state FIXANGLE
+                // if time >= 3000 milliseconds, reset variables, stop driving, and switch to state FIXANGLE
                 if (time.milliseconds() >= 3000) {
                     lock = false;
                     drive.stop();
@@ -269,7 +269,7 @@ public class RingDetectAuto extends AutoSuperOp {
 
             // shoot ring into mid or high goal (depending on how shitty the motor is being)
             case SHOOT:
-                // make sure code only runs once, set shooter to on, shooter runs until state is switched
+                // make sure code only runs once, set shooter to on, shooter runs until state is switched, and reset time
                 if (!lock) {
                     shooter.set(1);
                     time.reset();
@@ -277,11 +277,12 @@ public class RingDetectAuto extends AutoSuperOp {
                     servoPos = true;
                 }
 
-                // if time > 500 milliseconds, begin toggling shooterServo
+                // if time >= 500 milliseconds, begin toggling shooterServo
                 // NOTE: the shooter must be given enough time to get to full power, hence the wait time
-                if (time.milliseconds() > 500) {
+                if (time.milliseconds() >= 500) {
                     // set shooterServo = 0, second half of shooting (eg: it closes)
                     shooterServo.setPosition(servoPos ? 0 : 1);
+                    // reset time
                     time.reset();
                     // toggle servoPos
                     servoPos = !servoPos;
@@ -306,8 +307,9 @@ public class RingDetectAuto extends AutoSuperOp {
 
                 break;
 
-            // drive forward and drop the wobble goal in box B
+            // drive forward and drop the wobble goal in box associated with number of rings on field
             case DROPWOBBLE:
+                // drop in box A
                 if (numberRings == 0) {
                     drive.driveRobotCentric(0,0, .3);
                     if(time.milliseconds() >= 500) {
@@ -316,15 +318,17 @@ public class RingDetectAuto extends AutoSuperOp {
                     }
                 }
 
+                // drop in box B
                 if (numberRings == 1) {
-                    // if time > 2500 milliseconds, stop, release goal, and switch to state DRIVETOMID
-                    if (time.milliseconds() > 2500) {
+                    // if time >= 2500 milliseconds, stop, release goal, and switch to state DRIVETOMID
+                    if (time.milliseconds() >= 2500) {
                         drive.stop();
                         topHook.setPosition(1);
                         auto = AutoState.DRIVETOMID;
                     }
                 }
 
+                // drop in box C
                 if (numberRings == 4) {
                     // drive forward
                     drive.driveRobotCentric(0, 0.5, 0);
@@ -344,7 +348,7 @@ public class RingDetectAuto extends AutoSuperOp {
                     lock = true;
                 }
 
-                // if time > 1800 milliseconds, drive to end up over shooting line
+                // if time >= 1800 milliseconds, drive to end up over shooting line
                 if (time.milliseconds() >= 1800) {
                     drive.driveRobotCentric(0, 0.3, 0);
                 }
