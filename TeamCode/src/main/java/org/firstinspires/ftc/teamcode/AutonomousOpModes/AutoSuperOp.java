@@ -13,7 +13,7 @@ import examples.VuforiaSuperOp;
 
 public abstract class AutoSuperOp extends VuforiaSuperOp {
     // declare drive constants
-    final int cpr = 448;
+    public final int cpr = 448;
     final int rpm = 64;
 
     // declare drive motors
@@ -37,32 +37,32 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
      */
 
     // check if servo is going to 1 or 0
-    boolean servoPos;
+    public boolean servoPos;
     // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
-    boolean angleCorrect = false;
+    public boolean angleCorrect = false;
     // boolean to make sure that nothing runs 40 times
-    boolean lock = false;
+    public boolean lock = false;
     // in case TURNLEFT, some OpModes need to be there twice with different times, use to make sure that works
-    boolean turn = false;
+    public boolean turn = false;
     // makes sure that the hesitation time only runs once
-    boolean shoot = false;
+    public boolean shoot = false;
 
     /*
     declare and initialize all ints needed for Auto OpModes
      */
 
     // number of attempts to find nav servoPos
-    int turnCount = 0;
+    public int turnCount = 0;
     // count number
-    int servoMoveCount = 0;
+    public int servoMoveCount = 0;
     // 0 when adjusting angle the first time, 1 when adjusting angle the second time
-    int angleAdjustCount = 0;
+    public int angleAdjustCount = 0;
     // 0 when checking for servoPos during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
-    int checkMoveType = 0;
+    public int checkMoveType = 0;
     // keeps track of provided rings (for where to drop wobble goal)
-    int numberRings = 0;
+    public int numberRings = 0;
     // keep track of number of times code has been in park
-    int park = 0;
+    public int park = 0;
 
     /*
     declare and initialize all doubles needed for Auto OpModes
@@ -70,10 +70,10 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
 
     // declare desiredY position (eg: about where the robot so be in the y direction on the field)
     // NOTE: the Y is actually horizontal, due to rev
-    double desiredY = 33;
+    public double desiredY = 33;
     // declare desiredX position (eg: about where the robot so be in the x direction on the field)
     // NOTE: the X is actually vertical, due to rev
-    double desiredX = 44;
+    public double desiredX = 44;
 
     // declare drive
     public MecanumDrive drive;
@@ -82,7 +82,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     public ElapsedTime time;
 
     // declare lastPos
-    ObjectLocator.RobotPos lastPos;
+    public ObjectLocator.RobotPos lastPos;
 
     @Override
     public void init() {
@@ -131,7 +131,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     }
 
     // get battery voltage
-    double getBatteryVoltage() {
+    public double getBatteryVoltage() {
         double result = Double.POSITIVE_INFINITY;
         for (VoltageSensor sensor : hardwareMap.voltageSensor) {
             double voltage = sensor.getVoltage();
@@ -143,14 +143,14 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     }
 
     // stop all drive motors, set RunMode to STOP_AND_RESET_ENCODER, then set to RUN_WITHOUT_ENCODER
-    void resetDrive() {
+    public void resetDrive() {
         drive.stop();
         setDriveMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setDriveMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     // set drive motors to user specified RunMode (used in resetDrive() for clarity)
-    void setDriveMode(DcMotor.RunMode mode) {
+    public void setDriveMode(DcMotor.RunMode mode) {
         frontLeftDrive.motor.setMode(mode);
         frontRightDrive.motor.setMode(mode);
         backRightDrive.motor.setMode(mode);

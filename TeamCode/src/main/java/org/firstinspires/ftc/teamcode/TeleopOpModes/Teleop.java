@@ -1,6 +1,8 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleopOpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.TeleopOpModes.SuperOp;
 
 @TeleOp(name = "Competition TeleOp")
 public class Teleop extends SuperOp {

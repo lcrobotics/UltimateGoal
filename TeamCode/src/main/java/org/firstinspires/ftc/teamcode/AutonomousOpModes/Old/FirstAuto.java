@@ -1,6 +1,9 @@
-package org.firstinspires.ftc.teamcode.AutonomousOpModes;
+package org.firstinspires.ftc.teamcode.AutonomousOpModes.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
 
 @Autonomous
 public class FirstAuto extends AutoSuperOp {
