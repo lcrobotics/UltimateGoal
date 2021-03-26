@@ -14,7 +14,8 @@ public enum AutoState {
     DRIVEBEHINDMID(10),
     CENTER(11),
     DROPWOBBLE(12),
-    TURNABIT (13);
+    TURNLEFT(13),
+    TURNRIGHT(14);
 
     int val;
 

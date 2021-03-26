@@ -32,14 +32,24 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     public ServoEx topHook;
     public ServoEx shooterServo;
 
+    /*
+    declare and initialize all booleans needed for Auto OpModes
+     */
+
     // check if servo is going to 1 or 0
     boolean servoPos;
     // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
     boolean angleCorrect = false;
     // boolean to make sure that nothing runs 40 times
     boolean lock = false;
-
+    // in case TURNLEFT, some OpModes need to be there twice with different times, use to make sure that works
     boolean turn = false;
+    // makes sure that the hesitation time only runs once
+    boolean shoot = false;
+
+    /*
+    declare and initialize all ints needed for Auto OpModes
+     */
 
     // number of attempts to find nav servoPos
     int turnCount = 0;
@@ -53,6 +63,10 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     int numberRings = 0;
     // keep track of number of times code has been in park
     int park = 0;
+
+    /*
+    declare and initialize all doubles needed for Auto OpModes
+     */
 
     // declare desiredY position (eg: about where the robot so be in the y direction on the field)
     // NOTE: the Y is actually horizontal, due to rev
@@ -75,24 +89,27 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         super.init();
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
+        // set zero behavior to brake - so that the drive stops right away
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-
+        // reverse motor because Mr. Ross can't wire things
         frontLeftDrive.setInverted(true);
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
+        // set zero behavior to brake - so that the drive stops right away
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
+        // set zero behavior to brake - so that the drive stops right away
         backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
+        // set zero behavior to brake - so that the drive stops right away
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-
+        // reverse motor because Mr. Ross can't wire things
         backRightDrive.setInverted(true);
 
         // initialize non-drive motors
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
         rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
         shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
+        // set shooter to run with encoder (that way we can use velocity instead of the motor power)
         shooter.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // initialize servos
@@ -111,10 +128,9 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         telemetry.addData("Front Right Power", frontRightDrive::get);
         telemetry.addData("Back Left Power", backLeftDrive::get);
         telemetry.addData("Back Right Power", backRightDrive::get);
-
-        telemetry.addData("time", time);
     }
 
+    // get battery voltage
     double getBatteryVoltage() {
         double result = Double.POSITIVE_INFINITY;
         for (VoltageSensor sensor : hardwareMap.voltageSensor) {

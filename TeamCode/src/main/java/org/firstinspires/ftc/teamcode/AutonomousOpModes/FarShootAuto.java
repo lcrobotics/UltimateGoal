@@ -1,17 +1,15 @@
 package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @Autonomous
 public class FarShootAuto extends AutoSuperOp {
-    // ensure that TURNABIT actually runs
+    // ensure that TURNLEFT actually runs
     boolean started = false;
     // declare array to keep track of rotation states
     AutoState[] rotations;
-    // start the OpMode in state TURNABIT
-    AutoState auto = AutoState.TURNABIT;
+    // start the OpMode in state TURNLEFT
+    AutoState auto = AutoState.TURNLEFT;
 
     @Override
     public void init() {
@@ -46,7 +44,7 @@ public class FarShootAuto extends AutoSuperOp {
 
         switch (auto) {
             // turn a small bit to the right (this allows for the robot to be able to see the nav target better)
-            case TURNABIT:
+            case TURNLEFT:
                 // make sure state only runs once - run at beginning of state, reset time
                 if (!lock) {
                     lock = true;
@@ -304,7 +302,7 @@ public class FarShootAuto extends AutoSuperOp {
                     lock = false;
                     resetDrive();
                     turn = true;
-                    auto = AutoState.TURNABIT;
+                    auto = AutoState.TURNLEFT;
                 }
 
                 break;
