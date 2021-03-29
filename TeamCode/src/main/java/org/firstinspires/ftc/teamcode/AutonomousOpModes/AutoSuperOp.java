@@ -47,6 +47,8 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     // makes sure that the hesitation time only runs once
     public boolean shoot = false;
 
+    public boolean driven = false;
+
     /*
     declare and initialize all ints needed for Auto OpModes
      */
@@ -60,7 +62,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     // 0 when checking for servoPos during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
     public int checkMoveType = 0;
     // keeps track of provided rings (for where to drop wobble goal)
-    public int numberRings = 0;
+    public int numberRings = 4;
     // keep track of number of times code has been in park
     public int park = 0;
 

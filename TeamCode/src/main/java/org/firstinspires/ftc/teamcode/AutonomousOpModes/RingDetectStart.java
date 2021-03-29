@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @Autonomous
-public class StartAuto extends AutoSuperOp {
+public class RingDetectStart extends AutoSuperOp {
     // ensure that SHOOT actually runs
     boolean started = false;
     // start the OpMode in state SHOOT
@@ -38,15 +38,22 @@ public class StartAuto extends AutoSuperOp {
                 // NOTE: the shooter is running at the highest possible velocity, made possible by an
                 // encoder
                 if (!lock) {
-                    // cast shooter to DcMotorEx to set velocity to the max encoder tick per second
-                    // this runs faster than simply setting the power to 1, as the direct set relies
-                    // on battery voltage. velocity does not rely on this as heavily
-                    ((DcMotorEx)shooter.motor).setVelocity(shooter.motor.getMotorType().getAchieveableMaxTicksPerSecond());
+
                     servoPos = true;
                     time.reset();
                     lock = true;
                 }
 
+                drive.driveRobotCentric(0,-.2,0);
+                if(time.milliseconds() >= 100 && !driven) {
+                    resetDrive();
+                    time.reset();
+                    driven = true;
+                    // cast shooter to DcMotorEx to set velocity to the max encoder tick per second
+                    // this runs faster than simply setting the power to 1, as the direct set relies
+                    // on battery voltage. velocity does not rely on this as heavily
+                    ((DcMotorEx)shooter.motor).setVelocity(shooter.motor.getMotorType().getAchieveableMaxTicksPerSecond());
+                }
 
                 // give shooter time to spin up to full power
                 // use shoot to make sure this doesn't run again and reset time so shooter code works
@@ -113,31 +120,74 @@ public class StartAuto extends AutoSuperOp {
                     lock = true;
                 }
 
-                // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
-                // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
-                if (park == 0) {
-                    // drive farther over shooting line
-                    drive.driveRobotCentric(0, -0.48, 0);
+                if (numberRings == 0) {
+                    if (park == 0) {
+                        drive.driveRobotCentric(0,-.4,0);
+                        if(time.milliseconds() >= 3200) {
+                            lock = false;
+                            resetDrive();
+                            park++;
+                            auto = AutoState.DROPWOBBLE;
+                        }
+                    } else if (park == 1) {
+                        // drive to a bit more on the line
+                        drive.driveRobotCentric(0, 0.4, 0);
 
-                    // if time >= 3200 milliseconds, drive to end up over shooting line
-                    // reset encoders and stop drive motors, increment park, switch state to
-                    // DROPWOBBLE
-                    if (time.milliseconds() >= 3200) {
-                        lock = false;
-                        resetDrive();
-                        park++;
-                        auto = AutoState.DROPWOBBLE;
+                        // if time >= 700 milliseconds, stop drive motors & reset encoders, switch state
+                        // to DONE
+                        if(time.milliseconds() >= 200) {
+                            lock = false;
+                            resetDrive();
+                            auto = AutoState.DONE;
+                        }
                     }
-                } else if (park == 1) {
-                    // drive to a bit more on the line
-                    drive.driveRobotCentric(0, 0.35, 0);
+                }
+                if (numberRings == 1) {
+                    // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
+                    // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
+                    if (park == 0) {
+                        // drive farther over shooting line
+                        drive.driveRobotCentric(0, -0.48, 0);
 
-                    // if time >= 700 milliseconds, stop drive motors & reset encoders, switch state
-                    // to DONE
-                    if(time.milliseconds() >= 700) {
-                        lock = false;
-                        resetDrive();
-                        auto = AutoState.DONE;
+                        // if time >= 3200 milliseconds, drive to end up over shooting line
+                        // reset encoders and stop drive motors, increment park, switch state to
+                        // DROPWOBBLE
+                        if (time.milliseconds() >= 3200) {
+                            lock = false;
+                            resetDrive();
+                            park++;
+                            auto = AutoState.DROPWOBBLE;
+                        }
+                    } else if (park == 1) {
+                        // drive to a bit more on the line
+                        drive.driveRobotCentric(0, 0.35, 0);
+
+                        // if time >= 700 milliseconds, stop drive motors & reset encoders, switch state
+                        // to DONE
+                        if (time.milliseconds() >= 700) {
+                            lock = false;
+                            resetDrive();
+                            auto = AutoState.DONE;
+                        }
+                    }
+                }
+
+                if (numberRings == 4) {
+                    if (park == 0) {
+                        drive.driveRobotCentric(0, -.48, 0);
+                        if (time.milliseconds() >= 3000) {
+                            lock = false;
+                            resetDrive();
+                            park++;
+                            auto = AutoState.DROPWOBBLE;
+                        }
+                    } else if (park == 1) {
+                        drive.driveRobotCentric(0, .4, 0);
+                        if (time.milliseconds() >= 900) {
+                            lock = false;
+                            resetDrive();
+                            auto = AutoState.DONE;
+                        }
                     }
                 }
 
@@ -145,15 +195,18 @@ public class StartAuto extends AutoSuperOp {
 
             // drive forward and drop the wobble goal in box B
             case DROPWOBBLE:
-                // make sure state only runs once - run at beginning of state, reset time
+                // make sure state only  once - run at beginning of state, reset time
                 if (!lock) {
                     lock = true;
                     time.reset();
                     break;
                 }
 
-                // drive forward
-                drive.driveRobotCentric(0, 0, -0.3);
+                if (numberRings == 1) {
+                    // drive forward
+                    drive.driveRobotCentric(0, 0, -0.3);
+                }
+
                 // if time >= 600 milliseconds, stop driving, release wobble goal, and switch to state
                 // TURNRIGHT
                 if (time.milliseconds() >= 500) {
