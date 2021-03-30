@@ -1,5 +1,10 @@
 package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 
+/*
+ * declare all states for auto OpModes
+ * NOTE: not every state is used in each OpMode
+ */
+
 public enum AutoState {
     DRIVEOVERMID(0),
     ROTATECCW(1),
@@ -14,8 +19,8 @@ public enum AutoState {
     DRIVEBEHINDMID(10),
     CENTER(11),
     DROPWOBBLE(12),
-    TURNLEFT(13),
-    TURNRIGHT(14);
+    TURNABIT(13),
+    DRIVEABIT(14);
 
     int val;
 

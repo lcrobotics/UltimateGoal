@@ -75,18 +75,18 @@ public class StartAuto extends AutoSuperOp {
 
                 // caps the number of shots at 3 (servoMoveCount keeps track of how many times shooterServo
                 // has opened/closed, so the actual rings shot will be half of the value
-                // if servoMoveCount == 6, switch to state TURNLEFT
+                // if servoMoveCount == 6, switch to state ROTATECW
                 if (servoMoveCount == 6) {
                     lock = false;
                     shooter.set(0);
                     shooterServo.setPosition(0);
-                    auto = AutoState.TURNLEFT;
+                    auto = AutoState.ROTATECW;
                 }
 
                 break;
 
             // turn a small bit to the left - used to avoid the ring
-            case TURNLEFT:
+            case ROTATECW:
                 // make sure code only runs once and reset the time
                 if (!lock) {
                     lock = true;
@@ -155,18 +155,18 @@ public class StartAuto extends AutoSuperOp {
                 // drive forward
                 drive.driveRobotCentric(0, 0, -0.3);
                 // if time >= 600 milliseconds, stop driving, release wobble goal, and switch to state
-                // TURNRIGHT
+                // ROTATECCW
                 if (time.milliseconds() >= 500) {
                     lock = false;
                     resetDrive();
                     topHook.setPosition(0);
-                    auto = AutoState.TURNRIGHT;
+                    auto = AutoState.ROTATECCW;
                 }
 
                 break;
 
             // turn a small bit right - used so we don't run into the wall while parking
-            case TURNRIGHT:
+            case ROTATECCW:
                 // make sure code only runs once and reset time
                 if (!lock) {
                     lock = true;

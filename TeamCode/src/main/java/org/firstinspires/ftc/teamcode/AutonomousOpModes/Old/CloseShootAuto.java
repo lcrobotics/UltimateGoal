@@ -1,19 +1,22 @@
-package org.firstinspires.ftc.teamcode.AutonomousOpModes;
+package org.firstinspires.ftc.teamcode.AutonomousOpModes.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
+
 @Autonomous
-public class FarShootAuto extends AutoSuperOp {
-    // ensure that TURNLEFT actually runs
+public class CloseShootAuto extends AutoSuperOp {
+    // ensure that TURNABIT actually runs
     boolean started = false;
     // declare array to keep track of rotation states
     AutoState[] rotations;
-    // start the OpMode in state TURNLEFT
-    AutoState auto = AutoState.TURNLEFT;
+    // start the OpMode in state TURNABIT
+    AutoState auto = AutoState.TURNABIT;
 
     @Override
     public void init() {
-        // call init() in AutoSuperOp
+        // call the init() in SuperOp
         super.init();
 
         // sequence of rotations that will be used after DRIVEOVERMID is completed
@@ -40,36 +43,33 @@ public class FarShootAuto extends AutoSuperOp {
             started = true;
         }
 
+        // add telemetry for state the code is in
         telemetry.addData("state", auto);
 
         switch (auto) {
             // turn a small bit to the right (this allows for the robot to be able to see the nav target better)
-            case TURNLEFT:
+            case TURNABIT:
                 // make sure state only runs once - run at beginning of state, reset time
                 if (!lock) {
                     lock = true;
                     time.reset();
                 }
 
-                // turn away from goals, toward power shots
+                /// turn away from goals, toward power shots
                 drive.driveRobotCentric(0,0, -0.3);
 
                 // stop driving after 300 milliseconds and switch to state DRIVEOVERMID
-                if (time.milliseconds() >= 300 && !turn) {
+                if (time.milliseconds() >= 300) {
                     lock = false;
                     resetDrive();
                     auto = AutoState.DRIVEOVERMID;
-                } else if(time.milliseconds() >= 100 && turn) {
-                    lock = false;
-                    resetDrive();
-                    auto = AutoState.SHOOT;
                 }
 
                 break;
 
             // drive from starting position to just past shooting line, allowing camera to see servoPos
             case DRIVEOVERMID:
-                // make sure state only runs once - run at beginning of state, reset time
+                // stop driving after 300 milliseconds and switch to state DRIVEOVERMID
                 if (!lock) {
                     lock = true;
                     time.reset();
@@ -79,7 +79,7 @@ public class FarShootAuto extends AutoSuperOp {
                 drive.driveRobotCentric(0, -.5, 0);
 
                 // when time >= 3000 milliseconds or the frontLeftDrive's encoder is at about 2849
-                // stop driving and switch to state ROTATECCW
+                // switch to state ROTATECCW
                 // NOTE: magic number (2849) was found by testing our encoders for which had the most
                 // consistent value and picking the one that was lowest. In our case, that was the
                 // FrontLeftDrive, and it's lowest value was 2849
@@ -96,7 +96,7 @@ public class FarShootAuto extends AutoSuperOp {
                 // add telemetry for turnCount value (so we know how many times the robot has turned)
                 telemetry.addData("turnCount", turnCount);
 
-                // make sure state only runs once - run at beginning of state, reset time, and stop drive
+                // stop driving after 300 milliseconds and switch to state DRIVEOVERMID
                 if (!lock) {
                     resetDrive();
                     lock = true;
@@ -104,7 +104,7 @@ public class FarShootAuto extends AutoSuperOp {
                 }
 
                 // if time is between 100 milliseconds and 300 milliseconds check for location of robot and proceed into state movement
-                // if time >= 500 milliseconds, proceed to turning states by conditionals using turnCount
+                // if time > 500 milliseconds, proceed to turning states by conditionals using turnCount
                 if (time.milliseconds() <= 300 && time.milliseconds() >= 100) {
                     // attempt to get robot's location based on nav servoPos
                     objectLocator.updateRobotLocation();
@@ -130,7 +130,7 @@ public class FarShootAuto extends AutoSuperOp {
                         turnCount = 0;
                         auto = AutoState.FIXANGLE;
                     }
-                } else if (time.milliseconds() >= 500) {
+                } else if (time.milliseconds() > 500) {
                     lock = false;
                     // select next rotation based on rotations array (eg: is it in ROTATECCW or ROTATECW)
                     auto = rotations[turnCount];
@@ -193,7 +193,7 @@ public class FarShootAuto extends AutoSuperOp {
                 }
 
                 // the angle that we want to end up with
-                double desiredAngle = 79;
+                double desiredAngle = 90;
                 // adjust desiredAngle, so that the first time it runs, it goes further towards the center
                 if (angleAdjustCount == 0) {
                     desiredAngle = 140;
@@ -201,6 +201,7 @@ public class FarShootAuto extends AutoSuperOp {
 
                 // time that we want to rotate before checking position again using nav targets
                 double rotatingTime = 100;
+
                 // if we have a recorded last position
                 if (lastPos != null) {
                     // factor used to calculate approximate rotation time - NOT TESTED YET
@@ -273,7 +274,7 @@ public class FarShootAuto extends AutoSuperOp {
                 // drive forwards
                 drive.driveRobotCentric(0, -.5, 0);
 
-                // if time >= 1200 milliseconds, stop drive, and switch to state ROTATECW
+                // if time >= 1200 milliseconds, stop drive and switch to state ROTATECW
                 if(time.milliseconds() >= 1200) {
                     lock = false;
                     resetDrive();
@@ -284,35 +285,33 @@ public class FarShootAuto extends AutoSuperOp {
 
             // drive to behind shooting line
             case DRIVEBEHINDMID:
-                // make sure state only runs once - run at beginning of state, reset time, and run
-                // intake backwards - to make sure we don't run into the ring
+                // ensure code runs once, reset encoders and stop motors, reset time and switch to
+                // state FIXANGLE
+                // NOTE: this code only runs at the very end of the state, when lock is set to true
                 if (!lock) {
                     time.reset();
-                    intake.set(-1);
                     lock = true;
                 }
 
                 // drive to behind shooting line
-                drive.driveRobotCentric(0, 0.42, 0);
+                drive.driveRobotCentric(0, 0.3, 0);
 
-                // if time >= 3100 milliseconds, stop intake, stop drive, and switch to state SHOOT
-                if (time.milliseconds() >= 3100) {
-                    intake.set(0);
+                // if time >= 3300 milliseconds, set lock to true and prompt above if statement
+                if (time.milliseconds() >= 3300) {
                     lock = false;
                     resetDrive();
-                    turn = true;
-                    auto = AutoState.TURNLEFT;
+                    auto = AutoState.SHOOT;
                 }
 
                 break;
 
-            // shoot ring into mid goal
+            // shoot ring into mid or high goal (depending on how unreliable the motor is being)
             case SHOOT:
                 // make sure state only runs once - run at beginning of state, reset time, turn on
                 // shooter, initialize boolean servoPos
                 if (!lock) {
-                    shooter.set(1);
                     servoPos = true;
+                    shooter.set(1);
                     time.reset();
                     lock = true;
                 }
@@ -322,6 +321,7 @@ public class FarShootAuto extends AutoSuperOp {
                 if (time.milliseconds() >= 1750) {
                     // set shooterServo = 0, second half of shooting (eg: it closes)
                     shooterServo.setPosition(servoPos ? 0 : 1);
+                    // reset time so that servo can toggle again
                     time.reset();
                     // toggle servoPos
                     servoPos = !servoPos;
@@ -331,7 +331,6 @@ public class FarShootAuto extends AutoSuperOp {
                     // set servo to 1 = first half of shooting (eg: it opens)
                     shooterServo.setPosition(servoPos ? 1 : 0);
                 }
-
 
                 // caps the number of shots at 3 (servoMoveCount keeps track of how many times shooterServo
                 // has opened/closed, so the actual rings shot will be half of the value
@@ -347,7 +346,8 @@ public class FarShootAuto extends AutoSuperOp {
 
             // park over shooting line
             case DRIVETOMID:
-                // make sure state only runs once - run at beginning of state, reset time
+                // ensure code runs once, reset time
+                // NOTE: this code only runs at the very end of the state, when lock is set to tru
                 if (!lock) {
                     time.reset();
                     lock = true;
@@ -357,12 +357,12 @@ public class FarShootAuto extends AutoSuperOp {
                 // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
                 if (park == 0) {
                     // drive farther over shooting line
-                    drive.driveRobotCentric(0, -0.43, 0);
+                    drive.driveRobotCentric(0, -0.3, 0);
 
-                    // if time >= 1900 milliseconds, drive to end up over shooting line
+                    // if time >= 1600 milliseconds, drive to end up over shooting line
                     // reset encoders and stop drive motors, increment park, switch state to
                     // DROPWOBBLE
-                    if (time.milliseconds() >= 1900) {
+                    if (time.milliseconds() >= 1600) {
                         lock = false;
                         resetDrive();
                         park++;
@@ -372,9 +372,9 @@ public class FarShootAuto extends AutoSuperOp {
                     // drive to a bit more on the line
                     drive.driveRobotCentric(0, 0.3, 0);
 
-                    // if time >= 700 milliseconds, stop drive motors & reset encoders, switch state
+                    // if time >= 900 milliseconds, stop drive motors & reset encoders, switch state
                     // to DONE
-                    if(time.milliseconds() >= 700) {
+                    if(time.milliseconds() >= 900) {
                         lock = false;
                         resetDrive();
                         auto = AutoState.DONE;
@@ -392,10 +392,9 @@ public class FarShootAuto extends AutoSuperOp {
                     break;
                 }
 
-                // drive forward
+                // turn
                 drive.driveRobotCentric(0, 0, 0.3);
-                // if time >= 600 milliseconds, stop driving, release wobble goal, and switch to state
-                // DRIVETOMID
+                // if time >= 600 milliseconds, release wobble goal and switch to state DRIVETOMID
                 if (time.milliseconds() >= 600) {
                     lock = false;
                     resetDrive();

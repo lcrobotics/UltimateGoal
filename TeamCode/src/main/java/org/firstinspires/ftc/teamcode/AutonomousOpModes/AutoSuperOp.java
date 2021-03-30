@@ -33,7 +33,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     public ServoEx shooterServo;
 
     /*
-    declare and initialize all booleans needed for Auto OpModes
+     * declare and initialize all booleans needed for Auto OpModes
      */
 
     // check if servo is going to 1 or 0
@@ -42,15 +42,13 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     public boolean angleCorrect = false;
     // boolean to make sure that nothing runs 40 times
     public boolean lock = false;
-    // in case TURNLEFT, some OpModes need to be there twice with different times, use to make sure that works
+    // in case TURNABIT, some OpModes need to be there twice with different times, use to make sure that works
     public boolean turn = false;
     // makes sure that the hesitation time only runs once
     public boolean shoot = false;
 
-    public boolean driven = false;
-
     /*
-    declare and initialize all ints needed for Auto OpModes
+     * declare and initialize all ints needed for Auto OpModes
      */
 
     // number of attempts to find nav servoPos
@@ -67,7 +65,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     public int park = 0;
 
     /*
-    declare and initialize all doubles needed for Auto OpModes
+     * declare and initialize all doubles needed for Auto OpModes
      */
 
     // declare desiredY position (eg: about where the robot so be in the y direction on the field)
