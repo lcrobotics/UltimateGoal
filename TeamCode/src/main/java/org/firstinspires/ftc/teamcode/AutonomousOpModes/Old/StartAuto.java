@@ -1,7 +1,10 @@
-package org.firstinspires.ftc.teamcode.AutonomousOpModes;
+package org.firstinspires.ftc.teamcode.AutonomousOpModes.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
 
 @Autonomous
 public class StartAuto extends AutoSuperOp {
@@ -46,7 +49,6 @@ public class StartAuto extends AutoSuperOp {
                     time.reset();
                     lock = true;
                 }
-
 
                 // give shooter time to spin up to full power
                 // use shoot to make sure this doesn't run again and reset time so shooter code works

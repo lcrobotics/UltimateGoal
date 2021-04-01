@@ -36,13 +36,14 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
      * declare and initialize all booleans needed for Auto OpModes
      */
 
-    // check if servo is going to 1 or 0
+    // check if servo is going to position 1 or 0
     public boolean servoPos;
     // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
     public boolean angleCorrect = false;
     // boolean to make sure that nothing runs 40 times
     public boolean lock = false;
-    // in case TURNABIT, some OpModes need to be there twice with different times, use to make sure that works
+    // in some turning states (TURNABIT, ROTATECW, and ROTATECCW), some OpModes need to be there
+    // twice with different times/ending states, use to make sure that works
     public boolean turn = false;
     // makes sure that the hesitation time only runs once
     public boolean shoot = false;
@@ -53,7 +54,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
 
     // number of attempts to find nav servoPos
     public int turnCount = 0;
-    // count number
+    // count number of servo movements
     public int servoMoveCount = 0;
     // 0 when adjusting angle the first time, 1 when adjusting angle the second time
     public int angleAdjustCount = 0;
