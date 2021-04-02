@@ -29,6 +29,7 @@ public class RingDetectStart extends AutoSuperOp {
         telemetry.addData("state", auto);
         telemetry.addData("time", time);
         telemetry.addData("shoot", shoot);
+        telemetry.addData("voltage", getBatteryVoltage());
 
         switch(auto) {
             case DRIVEABIT:
@@ -41,7 +42,7 @@ public class RingDetectStart extends AutoSuperOp {
                 // drive forward
                 drive.driveRobotCentric(0,-.2,0);
                 // if time >= 100 milliseconds stop driving, set lock to false, and switch to state SHOOT
-                if (time.milliseconds() >= 100) {
+                if (time.milliseconds() >= 150) {
                     resetDrive();
                     lock = false;
                     auto = AutoState.SHOOT;
@@ -110,17 +111,31 @@ public class RingDetectStart extends AutoSuperOp {
                     time.reset();
                 }
 
-                // if turn is false (declared as false in AutoSuperOp) run this code - should be run
-                // on first time in state
-                if(!turn) {
-                    // turn to the left
-                    drive.driveRobotCentric(0,0,.32);
-                    // when time >= 450 milliseconds, reset drive, set lock to false, and switch to state
-                    // DRIVETOMID
-                    if (time.milliseconds() >= 450) {
-                        resetDrive();
-                        lock = false;
-                        auto = AutoState.DRIVETOMID;
+                if (getBatteryVoltage() >= 13 && !turn) {
+                    // if turn is false (declared as false in AutoSuperOp) run this code - should be run
+                    // on first time in state
+                    if(!turn) {
+                        // turn to the left
+                        drive.driveRobotCentric(0,0,.32);
+                        // when time >= 450 milliseconds, reset drive, set lock to false, and switch to state
+                        // DRIVETOMID
+                        if (time.milliseconds() >= 450) {
+                            resetDrive();
+                            lock = false;
+                            auto = AutoState.DRIVETOMID;
+                        }
+                    }
+                } else {
+                    if(!turn) {
+                        // turn to the left
+                        drive.driveRobotCentric(0,0,.32);
+                        // when time >= 350 milliseconds, reset drive, set lock to false, and switch to state
+                        // DRIVETOMID
+                        if (time.milliseconds() >= 350) {
+                            resetDrive();
+                            lock = false;
+                            auto = AutoState.DRIVETOMID;
+                        }
                     }
                 }
 
@@ -130,7 +145,7 @@ public class RingDetectStart extends AutoSuperOp {
                     drive.driveRobotCentric(0,0,.32);
                     // when time >= 450 milliseconds, reset drive, set lock to false, and switch to state
                     // DROPWOBBLE
-                    if (time.milliseconds() >= 450) {
+                    if (time.milliseconds() >= 650) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.DROPWOBBLE;
