@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.AutonomousOpModes.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
 
+@Disabled
 @Autonomous
 public class ParkAuto extends AutoSuperOp {
 

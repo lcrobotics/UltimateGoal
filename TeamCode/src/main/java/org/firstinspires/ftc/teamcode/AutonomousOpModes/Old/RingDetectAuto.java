@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.AutonomousOpModes.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
 import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
 import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
 
+@Disabled
 @Autonomous
 public class RingDetectAuto extends AutoSuperOp {
     // declare array to keep track of rotation states
