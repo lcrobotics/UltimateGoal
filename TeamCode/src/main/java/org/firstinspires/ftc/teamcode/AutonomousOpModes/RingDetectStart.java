@@ -111,31 +111,29 @@ public class RingDetectStart extends AutoSuperOp {
                     time.reset();
                 }
 
+                // if turn is false (declared as false in AutoSuperOp) run this code - should be run
+                // on first time in state
+                // if the battery is greater than 13 volts, it needs to turn less, due to battery power
+                // messing with the motors (that's why we have these if statements)
                 if (getBatteryVoltage() >= 13 && !turn) {
-                    // if turn is false (declared as false in AutoSuperOp) run this code - should be run
-                    // on first time in state
-                    if(!turn) {
-                        // turn to the left
-                        drive.driveRobotCentric(0,0,.32);
-                        // when time >= 450 milliseconds, reset drive, set lock to false, and switch to state
-                        // DRIVETOMID
-                        if (time.milliseconds() >= 450) {
-                            resetDrive();
-                            lock = false;
-                            auto = AutoState.DRIVETOMID;
-                        }
+                    // turn to the left
+                    drive.driveRobotCentric(0,0,.32);
+                    // when time >= 450 milliseconds, reset drive, set lock to false, and switch to state
+                    // DRIVETOMID
+                    if (time.milliseconds() >= 350) {
+                        resetDrive();
+                        lock = false;
+                        auto = AutoState.DRIVETOMID;
                     }
-                } else {
-                    if(!turn) {
-                        // turn to the left
-                        drive.driveRobotCentric(0,0,.32);
-                        // when time >= 350 milliseconds, reset drive, set lock to false, and switch to state
-                        // DRIVETOMID
-                        if (time.milliseconds() >= 350) {
-                            resetDrive();
-                            lock = false;
-                            auto = AutoState.DRIVETOMID;
-                        }
+                } else if (!turn) {
+                    // turn to the left
+                    drive.driveRobotCentric(0,0,.32);
+                    // when time >= 350 milliseconds, reset drive, set lock to false, and switch to state
+                    // DRIVETOMID
+                    if (time.milliseconds() >= 450) {
+                        resetDrive();
+                        lock = false;
+                        auto = AutoState.DRIVETOMID;
                     }
                 }
 
