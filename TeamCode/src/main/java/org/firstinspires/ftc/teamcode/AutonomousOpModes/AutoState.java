@@ -20,7 +20,8 @@ public enum AutoState {
     CENTER(11),
     DROPWOBBLE(12),
     TURNABIT(13),
-    DRIVEABIT(14);
+    DRIVEABIT(14),
+    DETECT(15);
 
     int val;
 

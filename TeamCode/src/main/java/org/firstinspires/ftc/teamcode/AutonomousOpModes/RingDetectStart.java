@@ -10,6 +10,7 @@ public class RingDetectStart extends AutoSuperOp {
     // start the OpMode in state DRIVEABIT
     AutoState auto = AutoState.DRIVEABIT;
 
+
     public void init() {
         // run AutoSuperOp's init()
         super.init();
