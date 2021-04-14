@@ -5,13 +5,18 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.lcrobotics.easyftclib.vision.ObjectLocator;
+import com.lcrobotics.easyftclib.vision.VuforiaFrameGetter;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.vuforia.PIXEL_FORMAT;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.external.stream.CameraStreamServer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
@@ -20,7 +25,7 @@ import java.util.List;
 
 import examples.VuforiaSuperOp;
 
-public abstract class AutoSuperOp extends VuforiaSuperOp {
+public abstract class AutoSuperOp extends OpMode {
 
     // declare drive constants
     public final int cpr = 448;
@@ -95,9 +100,19 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
     // declare lastPos
     public ObjectLocator.RobotPos lastPos;
 
+    public final static String VUFORIA_KEY = "ARgYuCf/////AAABmUYfc1+dVEQsgUBCPA2kCAFRmuTRB/XUfAJzLsRyFDRg6uMMjj6EXM8YNiY5l3oTw83H+PKgfF46gctdzrln2nnVXMebpgN9ULy1cOfdSsPk0hwSZqzcY0LWCj+rPPrZ3JyQT7gf2aw7bo8ZvWedWB7skuGIjg+9cyTJdDyXmXrQ8Bo4r4siTFNTVFxg21OH/Gd8wrVJF4RqjE+kcez3MzcnE2EPCqWTNixSge5yLg+tN87/R/dMPzqHWvmjE6F6J/7/sahPt7FQ9G6tYWnV1impzZsH7T/JT6pGr2SALwHdaNjBGbYY76ZfvAxixEdob9g6qMBhKOyLg6HTP9VzRZ06ksUhErmR2K2LSkyjxBBz";
+    public static final float mmPerInch = 25.4f;
+
+    public VuforiaLocalizer vuforia;
+    public TFObjectDetector tfod;
+
+    public static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
+    public static final String LABEL_FIRST_ELEMENT = "Quad";
+    public static final String LABEL_SECOND_ELEMENT = "Single";
+    public ObjectLocator objectLocator = null;
+
     @Override
     public void init() {
-        super.init();
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
         // set zero behavior to brake - so that the drive stops right away
@@ -134,6 +149,9 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         // initialize time
         time = new ElapsedTime();
 
+        initVuforia();
+        initTfod();
+
         // add drive telemetry
         telemetry.addData("Front Left Power", frontLeftDrive::get);
         telemetry.addData("Front Right Power", frontRightDrive::get);
@@ -168,7 +186,7 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         backLeftDrive.motor.setMode(mode);
     }
 
-    /*public void initVuforia() {
+    public void initVuforia() {
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
@@ -222,6 +240,5 @@ public abstract class AutoSuperOp extends VuforiaSuperOp {
         //tfod.shutdown();
         telemetry.update();
     }
-    */
 }
 
