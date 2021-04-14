@@ -205,7 +205,7 @@ public class RingDetectAuto extends AutoSuperOp {
                         auto = AutoState.CENTER;
                     } else if (angleAdjustCount == 1) { // if adjusting for the second time, switch to state DRIVEBEHINDMID
                         auto = AutoState.DRIVEBEHINDMID;
-                    } else if (angleAdjustCount == 2 && numberRings == 4) { // if adjusting for the third time, switch to state SHOOT
+                    } else if (angleAdjustCount == 2 && numRings == 4) { // if adjusting for the third time, switch to state SHOOT
                         auto = AutoState.DROPWOBBLE;
                     } else if (angleAdjustCount == 2) {
                         auto = AutoState.SHOOT;
@@ -244,7 +244,7 @@ public class RingDetectAuto extends AutoSuperOp {
                 // if time >= 1000 milliseconds, stop and switch to state ROTATECW
                 if(time.milliseconds() >= 1000) {
                     drive.stop();
-                    if(numberRings == 1) {
+                    if(numRings == 1) {
                         auto = AutoState.DROPWOBBLE;
                     }
                     auto = AutoState.ROTATECW;
@@ -303,9 +303,9 @@ public class RingDetectAuto extends AutoSuperOp {
                 // if servoMoveCount == 6, switch to state DRIVETOMID
                 if (servoMoveCount == 6) {
                     lock = false;
-                    if(numberRings == 0 || numberRings == 4) {
+                    if(numRings == 0 || numRings == 4) {
                         auto = AutoState.DRIVETOMID;
-                    } else if (numberRings == 1) {
+                    } else if (numRings == 1) {
                         auto = AutoState.DROPWOBBLE;
                     }
                 }
@@ -315,7 +315,7 @@ public class RingDetectAuto extends AutoSuperOp {
             // drive forward and drop the wobble goal in box associated with number of rings on field
             case DROPWOBBLE:
                 // drop in box A
-                if (numberRings == 0) {
+                if (numRings == 0) {
                     drive.driveRobotCentric(0,0, .3);
                     if(time.milliseconds() >= 500) {
                         drive.stop();
@@ -324,7 +324,7 @@ public class RingDetectAuto extends AutoSuperOp {
                 }
 
                 // drop in box B
-                if (numberRings == 1) {
+                if (numRings == 1) {
                     // if time >= 2500 milliseconds, stop, release goal, and switch to state DRIVETOMID
                     if (time.milliseconds() >= 2500) {
                         drive.stop();
@@ -334,7 +334,7 @@ public class RingDetectAuto extends AutoSuperOp {
                 }
 
                 // drop in box C
-                if (numberRings == 4) {
+                if (numRings == 4) {
                     // drive forward
                     drive.driveRobotCentric(0, 0.5, 0);
                     if (time.milliseconds() >= 500) {

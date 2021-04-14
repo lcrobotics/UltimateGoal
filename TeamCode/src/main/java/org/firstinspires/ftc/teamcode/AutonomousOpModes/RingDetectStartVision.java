@@ -8,13 +8,12 @@ public class RingDetectStartVision extends AutoSuperOp {
     // ensure that DRIVEABIT actually runs
     boolean started = false;
     // start the OpMode in state DRIVEABIT
-    AutoState auto = AutoState.DRIVEABIT;
+    AutoState auto = AutoState.DETECT;
 
 
     public void init() {
         // run AutoSuperOp's init()
         super.init();
-        detect();
     }
 
     @Override
@@ -32,8 +31,21 @@ public class RingDetectStartVision extends AutoSuperOp {
         telemetry.addData("time", time);
         telemetry.addData("shoot", shoot);
         telemetry.addData("voltage", getBatteryVoltage());
+        telemetry.addData("rings", numRings);
 
         switch(auto) {
+            case DETECT:
+                if(!lock) {
+                    lock = true;
+                    time.reset();
+                }
+
+                if (time.milliseconds() >= 2500) {
+                    detect();
+                    auto = AutoState.DRIVEABIT;
+                }
+                break;
+
             case DRIVEABIT:
                 // make sure code only runs once and reset the time
                 if(!lock) {
