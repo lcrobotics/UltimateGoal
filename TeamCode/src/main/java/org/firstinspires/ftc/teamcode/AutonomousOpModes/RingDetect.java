@@ -33,6 +33,7 @@ public class RingDetect extends OpMode {
     public void loop() {
         tfod.activate();
         tfod.setZoom(2.5, 16.0 / 9.0);
+        int numRings = 0;
 
         // getUpdatedRecognitions() will return null if no new information is available since
         // the last time that call was made.
@@ -47,11 +48,16 @@ public class RingDetect extends OpMode {
                         recognition.getLeft(), recognition.getTop());
                 telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                         recognition.getRight(), recognition.getBottom());
+                if(recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
+                    numRings = 4;
+                    telemetry.addData("rings4", numRings);
+                } else if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
+                    numRings = 1;
+                    telemetry.addData("rings1", numRings);
+                }
             }
             telemetry.update();
         }
-        //tfod.shutdown();
-
         telemetry.update();
     }
 

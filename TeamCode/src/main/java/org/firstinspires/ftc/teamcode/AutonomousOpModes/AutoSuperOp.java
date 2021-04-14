@@ -76,7 +76,7 @@ public abstract class AutoSuperOp extends OpMode {
     // 0 when checking for servoPos during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
     public int checkMoveType = 0;
     // keeps track of provided rings (for where to drop wobble goal)
-    public int numberRings = 4;
+    public int numRings = 0;
     // keep track of number of times code has been in park
     public int park = 0;
 
@@ -212,13 +212,6 @@ public abstract class AutoSuperOp extends OpMode {
 
     public void detect() {
         tfod.activate();
-
-        // The TensorFlow software will scale the input images from the camera to a lower resolution.
-        // This can result in lower detection accuracy at longer distances (> 55cm or 22").
-        // If your target is at distance greater than 50 cm (20") you can adjust the magnification value
-        // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
-        // should be set to the value of the images used to create the TensorFlow Object Detection model
-        // (typically 1.78 or 16/9).
         tfod.setZoom(2.5, 16.0 / 9.0);
 
         // getUpdatedRecognitions() will return null if no new information is available since
@@ -234,10 +227,16 @@ public abstract class AutoSuperOp extends OpMode {
                         recognition.getLeft(), recognition.getTop());
                 telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                         recognition.getRight(), recognition.getBottom());
+                if (recognition.getLabel().equals(LABEL_FIRST_ELEMENT)) {
+                    numRings = 4;
+                    telemetry.addData("rings4", numRings);
+                } else if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
+                    numRings = 1;
+                    telemetry.addData("rings1", numRings);
+                }
             }
             telemetry.update();
         }
-        //tfod.shutdown();
         telemetry.update();
     }
 }

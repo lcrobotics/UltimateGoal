@@ -163,7 +163,7 @@ public class RingDetectStart extends AutoSuperOp {
 
                 // run this code if there are 0 rings on the field and wobble goal is dropped in
                 // box A
-                if (numberRings == 0) {
+                if (numRings == 0) {
                     // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
                     // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
                     if (park == 0) {
@@ -194,7 +194,7 @@ public class RingDetectStart extends AutoSuperOp {
 
                 // run this code if there is 1 ring on the field and wobble goal is dropped in
                 // box B
-                if (numberRings == 1) {
+                if (numRings == 1) {
                     // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
                     // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
                     if (park == 0) {
@@ -226,7 +226,7 @@ public class RingDetectStart extends AutoSuperOp {
 
                 // run this code if there are 4 rings on the field and wobble goal is dropped in
                 // box C
-                if (numberRings == 4) {
+                if (numRings == 4) {
                     // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
                     // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
                     if (park == 0) {
@@ -267,7 +267,7 @@ public class RingDetectStart extends AutoSuperOp {
 
                 // if there is one ring on the field, turn towards box B (not needed for boxes A and C
                 // due to where the boxes are placed on the field)
-                if (numberRings == 1) {
+                if (numRings == 1) {
                     // turn towards box B
                     drive.driveRobotCentric(0, 0, -0.3);
                     // if time >= 500 milliseconds, stop driving
