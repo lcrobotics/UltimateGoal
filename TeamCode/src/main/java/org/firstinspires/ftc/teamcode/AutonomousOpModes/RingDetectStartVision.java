@@ -3,11 +3,15 @@ package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+
+import java.util.List;
+
 @Autonomous
 public class RingDetectStartVision extends AutoSuperOp {
-    // ensure that DRIVEABIT actually runs
+    // ensure that DETECT actually runs
     boolean started = false;
-    // start the OpMode in state DRIVEABIT
+    // start the OpMode in state DETECT
     AutoState auto = AutoState.DETECT;
 
 
@@ -35,17 +39,24 @@ public class RingDetectStartVision extends AutoSuperOp {
 
         switch(auto) {
             case DETECT:
+                // make sure code only runs once and reset the time
                 if(!lock) {
                     lock = true;
                     time.reset();
                 }
 
-                if (time.milliseconds() >= 2500) {
-                    detect();
+                detect();
+
+                // give vision code 2000 milliseconds to run, then switch to state DRIVEABIT and
+                // reset lock
+                if (time.milliseconds() >= 2000) {
+                    lock = false;
                     auto = AutoState.DRIVEABIT;
                 }
+
                 break;
 
+            // drive forward a small bit at the very beginning of OpMode
             case DRIVEABIT:
                 // make sure code only runs once and reset the time
                 if(!lock) {
