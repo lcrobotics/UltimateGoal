@@ -63,7 +63,7 @@ public abstract class AutoSuperOp extends OpMode {
     // makes sure that the hesitation time only runs once
     public boolean shoot = false;
 
-    public boolean single = false;
+    public boolean zero = false;
 
     /*
      * declare and initialize all ints needed for Auto OpModes
@@ -242,7 +242,6 @@ public abstract class AutoSuperOp extends OpMode {
                     telemetry.addData("rings4", numRings);
                 } else if (recognition.getLabel().equals(LABEL_SECOND_ELEMENT)) {
                     numRings = 1;
-                    single = true;
                     telemetry.addData("rings1", numRings);
                 }
             }
