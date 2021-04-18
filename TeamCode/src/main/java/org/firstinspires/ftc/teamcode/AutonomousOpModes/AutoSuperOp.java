@@ -58,12 +58,16 @@ public abstract class AutoSuperOp extends OpMode {
     // boolean to make sure that nothing runs 40 times
     public boolean lock = false;
     // in some turning states (TURNABIT, ROTATECW, and ROTATECCW), some OpModes need to be there
-    // twice with different times/ending states, use to make sure that works
+    // twice with different times/ending states, use to make sure that works (used when 4 rings)
     public boolean turn = false;
     // makes sure that the hesitation time only runs once
     public boolean shoot = false;
-
-    public boolean zero = false;
+    // in some turning states (ROTATECW and ROTATECCW), some OpModes need to be there
+    // twice with different times/ending states, use to make sure that works (used when 0 rings)
+    public boolean zeroOne = false;
+    // in some turning states (ROTATECW and ROTATECCW), some OpModes need to be there
+    // twice with different times/ending states, use to make sure that works (used when 0 rings)
+    public boolean zeroTwo = false;
 
     /*
      * declare and initialize all ints needed for Auto OpModes
@@ -102,12 +106,16 @@ public abstract class AutoSuperOp extends OpMode {
     // declare lastPos
     public ObjectLocator.RobotPos lastPos;
 
+    // delcare vuforia lisense key
     public final static String VUFORIA_KEY = "ARgYuCf/////AAABmUYfc1+dVEQsgUBCPA2kCAFRmuTRB/XUfAJzLsRyFDRg6uMMjj6EXM8YNiY5l3oTw83H+PKgfF46gctdzrln2nnVXMebpgN9ULy1cOfdSsPk0hwSZqzcY0LWCj+rPPrZ3JyQT7gf2aw7bo8ZvWedWB7skuGIjg+9cyTJdDyXmXrQ8Bo4r4siTFNTVFxg21OH/Gd8wrVJF4RqjE+kcez3MzcnE2EPCqWTNixSge5yLg+tN87/R/dMPzqHWvmjE6F6J/7/sahPt7FQ9G6tYWnV1impzZsH7T/JT6pGr2SALwHdaNjBGbYY76ZfvAxixEdob9g6qMBhKOyLg6HTP9VzRZ06ksUhErmR2K2LSkyjxBBz";
     public static final float mmPerInch = 25.4f;
 
+    // declare vuforia
     public VuforiaLocalizer vuforia;
+    // declare tensorflow
     public TFObjectDetector tfod;
 
+    // declare labels for ring stacks and the model asset
     public static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     public static final String LABEL_FIRST_ELEMENT = "Quad";
     public static final String LABEL_SECOND_ELEMENT = "Single";
@@ -117,18 +125,18 @@ public abstract class AutoSuperOp extends OpMode {
     public void init() {
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
-        // set zero behavior to brake - so that the drive stops right away
+        // set zeroOne behavior to brake - so that the drive stops right away
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // reverse motor because Mr. Ross can't wire things
         frontLeftDrive.setInverted(true);
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
-        // set zero behavior to brake - so that the drive stops right away
+        // set zeroOne behavior to brake - so that the drive stops right away
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
-        // set zero behavior to brake - so that the drive stops right away
+        // set zeroOne behavior to brake - so that the drive stops right away
         backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
-        // set zero behavior to brake - so that the drive stops right away
+        // set zeroOne behavior to brake - so that the drive stops right away
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // reverse motor because Mr. Ross can't wire things
         backRightDrive.setInverted(true);
@@ -151,6 +159,7 @@ public abstract class AutoSuperOp extends OpMode {
         // initialize time
         time = new ElapsedTime();
 
+        // call methods that initialize vuforia and tensorflow
         initVuforia();
         initTfod();
 
@@ -188,8 +197,8 @@ public abstract class AutoSuperOp extends OpMode {
         backLeftDrive.motor.setMode(mode);
     }
 
+    // initialize vuforia
     public void initVuforia() {
-
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
@@ -203,6 +212,7 @@ public abstract class AutoSuperOp extends OpMode {
         CameraStreamServer.getInstance().setSource(vuforia);
     }
 
+    // initialize tensorflow
     public void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -212,6 +222,7 @@ public abstract class AutoSuperOp extends OpMode {
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
 
+    // detect rings
     public void detect() {
         // activate tensorflow
         tfod.activate();
