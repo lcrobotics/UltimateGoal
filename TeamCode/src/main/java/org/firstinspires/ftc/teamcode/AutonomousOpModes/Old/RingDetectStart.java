@@ -1,8 +1,13 @@
-package org.firstinspires.ftc.teamcode.AutonomousOpModes;
+package org.firstinspires.ftc.teamcode.AutonomousOpModes.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
+
+@Disabled
 @Autonomous
 public class RingDetectStart extends AutoSuperOp {
     // ensure that DRIVEABIT actually runs
