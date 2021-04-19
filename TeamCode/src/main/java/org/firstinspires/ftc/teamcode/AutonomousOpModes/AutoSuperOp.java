@@ -69,6 +69,8 @@ public abstract class AutoSuperOp extends OpMode {
     // twice with different times/ending states, use to make sure that works (used when 0 rings)
     public boolean zeroTwo = false;
 
+    public boolean single = false;
+
     /*
      * declare and initialize all ints needed for Auto OpModes
      */
