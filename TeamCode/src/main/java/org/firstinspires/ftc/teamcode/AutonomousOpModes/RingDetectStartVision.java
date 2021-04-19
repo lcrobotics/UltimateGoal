@@ -10,7 +10,6 @@ public class RingDetectStartVision extends AutoSuperOp {
     // start the OpMode in state DETECT
     AutoState auto = AutoState.DETECT;
 
-
     public void init() {
         // run AutoSuperOp's init()
         super.init();
