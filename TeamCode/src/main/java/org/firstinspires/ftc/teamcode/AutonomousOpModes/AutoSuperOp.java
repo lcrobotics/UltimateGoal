@@ -5,25 +5,17 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.lcrobotics.easyftclib.vision.ObjectLocator;
-import com.lcrobotics.easyftclib.vision.VuforiaFrameGetter;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.vuforia.PIXEL_FORMAT;
-
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.external.stream.CameraStreamServer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-
 import java.util.List;
-
-import examples.VuforiaSuperOp;
 
 public abstract class AutoSuperOp extends OpMode {
 
@@ -55,21 +47,22 @@ public abstract class AutoSuperOp extends OpMode {
     public boolean servoPos;
     // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
     public boolean angleCorrect = false;
-    // boolean to make sure that nothing runs 40 times
+    // make sure each state only runs once (since all of our OpModes are iterative)
     public boolean lock = false;
-    // in some turning states (TURNABIT, ROTATECW, and ROTATECCW), some OpModes need to be there
-    // twice with different times/ending states, use to make sure that works (used when 4 rings)
-    public boolean turn = false;
     // makes sure that the hesitation time only runs once
     public boolean shoot = false;
-    // in some turning states (ROTATECW and ROTATECCW), some OpModes need to be there
-    // twice with different times/ending states, use to make sure that works (used when 0 rings)
-    public boolean zeroOne = false;
-    // in some turning states (ROTATECW and ROTATECCW), some OpModes need to be there
-    // twice with different times/ending states, use to make sure that works (used when 0 rings)
-    public boolean zeroTwo = false;
-
-    public boolean single = false;
+    // when there are zero rings, the code must go back to state ROTATECW, this boolean makes sure
+    // the code run in the first instance of the state does not run again
+    public boolean rotateZeroCW = false;
+    // when there are zero rings, the code must go back to state ROTATECCW, this boolean makes sure
+    // the code run in the first instance of the state does not run again
+    public boolean rotateZeroCCW = false;
+    // when there is one ring, the code must go back to state ROTATECW, this boolean makes sure
+    // the code run in the first instance of the state does not run again
+    public boolean rotateSingle = false;
+    // when there are four rings, the code must go back to state ROTATECW, this boolean makes sure
+    // the code run in the first instance of the state does not run again
+    public boolean rotateQuad = false;
 
     /*
      * declare and initialize all ints needed for Auto OpModes
@@ -127,18 +120,18 @@ public abstract class AutoSuperOp extends OpMode {
     public void init() {
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
-        // set zeroOne behavior to brake - so that the drive stops right away
+        // set rotateZeroCW behavior to brake - so that the drive stops right away
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // reverse motor because Mr. Ross can't wire things
         frontLeftDrive.setInverted(true);
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
-        // set zeroOne behavior to brake - so that the drive stops right away
+        // set rotateZeroCW behavior to brake - so that the drive stops right away
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
-        // set zeroOne behavior to brake - so that the drive stops right away
+        // set rotateZeroCW behavior to brake - so that the drive stops right away
         backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
-        // set zeroOne behavior to brake - so that the drive stops right away
+        // set rotateZeroCW behavior to brake - so that the drive stops right away
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // reverse motor because Mr. Ross can't wire things
         backRightDrive.setInverted(true);

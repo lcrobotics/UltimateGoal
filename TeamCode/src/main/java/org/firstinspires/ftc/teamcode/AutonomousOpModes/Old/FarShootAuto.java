@@ -60,11 +60,11 @@ public class FarShootAuto extends AutoSuperOp {
                 drive.driveRobotCentric(0,0, -0.3);
 
                 // stop driving after 300 milliseconds and switch to state DRIVEOVERMID
-                if (time.milliseconds() >= 300 && !turn) {
+                if (time.milliseconds() >= 300 && !rotateQuad) {
                     lock = false;
                     resetDrive();
                     auto = AutoState.DRIVEOVERMID;
-                } else if(time.milliseconds() >= 100 && turn) {
+                } else if(time.milliseconds() >= 100 && rotateQuad) {
                     lock = false;
                     resetDrive();
                     auto = AutoState.SHOOT;
@@ -305,7 +305,7 @@ public class FarShootAuto extends AutoSuperOp {
                     intake.set(0);
                     lock = false;
                     resetDrive();
-                    turn = true;
+                    rotateQuad = true;
                     auto = AutoState.TURNABIT;
                 }
 

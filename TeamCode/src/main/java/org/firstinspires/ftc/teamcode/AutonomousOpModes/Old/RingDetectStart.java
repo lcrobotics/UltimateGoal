@@ -121,7 +121,7 @@ public class RingDetectStart extends AutoSuperOp {
                 // on first time in state
                 // if the battery is greater than 13 volts, it needs to turn less, due to battery power
                 // messing with the motors (that's why we have these if statements)
-                if (getBatteryVoltage() >= 13 && !turn) {
+                if (getBatteryVoltage() >= 13 && !rotateQuad) {
                     // turn to the left
                     drive.driveRobotCentric(0,0,.32);
                     // when time >= 450 milliseconds, reset drive, set lock to false, and switch to state
@@ -131,7 +131,7 @@ public class RingDetectStart extends AutoSuperOp {
                         lock = false;
                         auto = AutoState.DRIVETOMID;
                     }
-                } else if (!turn) {
+                } else if (!rotateQuad) {
                     // turn to the left
                     drive.driveRobotCentric(0,0,.32);
                     // when time >= 350 milliseconds, reset drive, set lock to false, and switch to state
@@ -145,7 +145,7 @@ public class RingDetectStart extends AutoSuperOp {
 
                 // if turn is true (set to true in state DRIVETOMID when there are 4 rings) - should
                 // run on second time in state
-                if(turn) {
+                if(rotateQuad) {
                     drive.driveRobotCentric(0,0,.32);
                     // when time >= 450 milliseconds, reset drive, set lock to false, and switch to state
                     // DROPWOBBLE
@@ -244,7 +244,7 @@ public class RingDetectStart extends AutoSuperOp {
                             lock = false;
                             resetDrive();
                             park++;
-                            turn = true;
+                            rotateQuad = true;
                             auto = AutoState.ROTATECW;
                         }
                     } else if (park == 1) {
