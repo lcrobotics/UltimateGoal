@@ -32,6 +32,7 @@ public class RingDetectStartVision extends AutoSuperOp {
         telemetry.addData("voltage", getBatteryVoltage());
         telemetry.addData("rings", numRings);
 
+        // the state machine for this OpMode
         switch(auto) {
             // detect rings
             case DETECT:
