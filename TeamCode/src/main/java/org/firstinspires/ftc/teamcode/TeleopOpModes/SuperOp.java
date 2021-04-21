@@ -6,12 +6,13 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.RevIMU;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public abstract class SuperOp extends OpMode {
-        // power constants1
-        final float INTAKE_POWER = 1f;
-        final float INTAKE_POWER_SLOW = .6f;
+        // power constants
+        final double INTAKE_POWER = 1;
+        final double INTAKE_POWER_SLOW = .35;
         final float SHOOTER_POWER = 1f;
 
         // value used to make triggers buttons (for intake)
@@ -79,9 +80,10 @@ public abstract class SuperOp extends OpMode {
             frontLeftDrive.setInverted(true);
             frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
             // multipliers on frontRightDrive and backLeftDrive are because of the weight imbalance on our robot
-            frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, .7);
+            frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, .6);
             frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-            backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, .9);
+            frontRightDrive.setInverted(true);
+            backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, .95);
             backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
             backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
             backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
@@ -100,9 +102,9 @@ public abstract class SuperOp extends OpMode {
             // initialize servos
             frontHook = new SimpleServo(hardwareMap, "FrontHook");
             topHook = new SimpleServo(hardwareMap, "TopHook");
-            vertical = new SimpleServo(hardwareMap, "Vertical");
+            //vertical = new SimpleServo(hardwareMap, "Vertical");
             shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
-            shooterControl = new SimpleServo(hardwareMap, "ShooterControl");
+            //shooterControl = new SimpleServo(hardwareMap, "ShooterControl");
 
             // initialize imu (needed for field centric driving)
             imu = new RevIMU(hardwareMap, "imu");
@@ -110,6 +112,12 @@ public abstract class SuperOp extends OpMode {
 
             // initialize drive (so we can drive)
             drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
+
+            // add drive telemetry
+            telemetry.addData("Front Left Power", frontLeftDrive::get);
+            telemetry.addData("Front Right Power", frontRightDrive::get);
+            telemetry.addData("Back Left Power", backLeftDrive::get);
+            telemetry.addData("Back Right Power", backRightDrive::get);
         }
 
         // drive according to controller inputs from driver's sticks
@@ -131,7 +139,14 @@ public abstract class SuperOp extends OpMode {
         // binds intake to left trigger, reverse intake to right
         // both driver and operator can intake, but driver has precedence
         public void intake() {
-            float intakePower = 0;
+            double intakePower = 0;
+
+            if (gamepad2.left_bumper) {
+                intakePower = -INTAKE_POWER_SLOW;
+            } else if (gamepad2.right_bumper) {
+                intakePower = INTAKE_POWER_SLOW;
+            }
+
             // set intake as a button on right trigger and reverse intake on left trigger (button)
             if (gamepad2.right_trigger > THRESHOLD) {
                 intakePower = INTAKE_POWER;
@@ -146,6 +161,11 @@ public abstract class SuperOp extends OpMode {
             } else if (gamepad1.left_trigger > THRESHOLD) {
                 intakePower = -INTAKE_POWER;
             }
+
+            if (Math.abs(gamepad2.left_stick_y) > THRESHOLD) {
+                intakePower = gamepad2.left_stick_y * 0.5;
+            }
+
 
             intake.set(intakePower);
             intake2.set(-intakePower);
@@ -168,7 +188,7 @@ public abstract class SuperOp extends OpMode {
                     shooter.set(0);
                 } else {
                     // if the shooter is off and left bumper is pressed, turn shooter on
-                    shooter.set(SHOOTER_POWER);
+                    ((DcMotorEx)shooter.motor).setVelocity(shooter.motor.getMotorType().getAchieveableMaxTicksPerSecond());
                 }
                 shooterOn = !shooterOn;
             }
@@ -184,18 +204,18 @@ public abstract class SuperOp extends OpMode {
             rotate.set(gamepad2.right_stick_y * .4);
 
             // bind slow outtake (for wobble goal locking in) to operator's left bumper
-            if (gamepad2.left_bumper) {
-                intake.set(-INTAKE_POWER_SLOW);
-            } else {
-                intake.set(0);
-            }
-
-            // bind slow intake (for wobble goal locking in) to operator's right bumper
-            if (gamepad2.right_bumper) {
-                intake.set(INTAKE_POWER_SLOW);
-            } else {
-                intake.set(0);
-            }
+//            if (gamepad2.left_bumper) {
+//                intake.set(-INTAKE_POWER_SLOW);
+//            } else {
+//                intake.set(0);
+//            }
+//
+//            // bind slow intake (for wobble goal locking in) to operator's right bumper
+//            if (gamepad2.right_bumper) {
+//                intake.set(INTAKE_POWER_SLOW);
+//            } else {
+//                intake.set(0);
+//            }
 
             // toggles front servo on operator's x press
             if ((isA = gamepad2.a) && !wasA) {
@@ -223,6 +243,7 @@ public abstract class SuperOp extends OpMode {
             }
             wasY = isY;
 
+            /*
             // toggles vertical servo on operator's b press
             if ((isB = gamepad2.b) && !wasB) {
                 if (vertOn) {
@@ -246,8 +267,7 @@ public abstract class SuperOp extends OpMode {
                     shooterControl.setPosition(.8);
                 }
                 controlOn = !controlOn;
-            }
-            wasa = isa;
+            } */
         }
 
 

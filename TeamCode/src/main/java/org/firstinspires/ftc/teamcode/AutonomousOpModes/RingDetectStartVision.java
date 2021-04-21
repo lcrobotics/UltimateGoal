@@ -387,7 +387,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                     lock = false;
                     time.reset();
                     auto = AutoState.ROTATECCW;
-                } else if (time.milliseconds() >= 1000 & rotateSingle) {
+                } else if (time.milliseconds() >= 1000 && rotateSingle) {
                     // release servo holding wobble goal
                     topHook.setPosition(0);
                     lock = false;

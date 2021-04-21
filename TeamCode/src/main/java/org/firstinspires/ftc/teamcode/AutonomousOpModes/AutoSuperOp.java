@@ -127,6 +127,7 @@ public abstract class AutoSuperOp extends OpMode {
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
         // set rotateZeroCW behavior to brake - so that the drive stops right away
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        frontRightDrive.setInverted(true);
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
         // set rotateZeroCW behavior to brake - so that the drive stops right away
         backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
