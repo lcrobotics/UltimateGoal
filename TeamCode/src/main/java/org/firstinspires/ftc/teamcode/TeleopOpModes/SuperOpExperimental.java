@@ -110,12 +110,11 @@ public abstract class SuperOpExperimental extends OpMode {
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-
         if (Math.abs(gamepad1.left_stick_x) > THRESHOLD) {
-            frontRightDrive.setMultiplier(.775);
-            frontLeftDrive.setMultiplier(1);
-            backLeftDrive.setMultiplier(.55);
-            backRightDrive.setMultiplier(1);
+            frontRightDrive.setMultiplier(.6);
+            frontLeftDrive.setMultiplier(.3);
+            backLeftDrive.setMultiplier(1);
+            backRightDrive.setMultiplier(.8);
         } else {
             frontRightDrive.setMultiplier(1);
             frontLeftDrive.setMultiplier(.8);
@@ -127,13 +126,19 @@ public abstract class SuperOpExperimental extends OpMode {
         double forwardPower = Math.abs(gamepad1.left_stick_y) < 0.1 ? 0 : gamepad1.left_stick_y;
         double turnPower = Math.abs(gamepad1.right_stick_x) < 0.1 ? 0 : gamepad1.right_stick_x;
 
+        frontLeftDrive.set((turnPower * .8) + (strafePower * .55) + (forwardPower * .8));
+        frontRightDrive.set((turnPower * .8) - (strafePower * .8) - (forwardPower * .8));
+        backLeftDrive.set((turnPower * .8) - (strafePower * 1) + (forwardPower * .8));
+        backRightDrive.set((turnPower * .8) + (strafePower * .8) - (forwardPower * .8));
+
         // call drive robot centric (meaning that the front is always the front, no matter where the robot is on the field)
         // multipliers slow down the robot so we don't run into things (it needs to be controlled)
-        drive.driveRobotCentric(
-                strafePower * .9,
+        /*drive.driveRobotCentric(
+                strafePower  * .8,
                 forwardPower * .8,
                 -turnPower * .8,
-                true);
+                true); */
+        //drive.driveRobotCentric(gamepad1.left_stick_x * .8, gamepad1.left_stick_y * .8, -gamepad1.right_stick_x *.8, true);
     }
 
     // binds intake to left trigger, reverse intake to right
