@@ -150,7 +150,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                         drive.driveRobotCentric(0,0,-.34);
                         // when time >= 300 milliseconds, reset drive, set lock to false, and switch to state
                         // DRIVETOMID
-                        if (time.milliseconds() >= 300) {
+                        if (time.milliseconds() >= 400) {
                             resetDrive();
                             lock = false;
                             auto = AutoState.DRIVETOMID;
@@ -160,7 +160,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                         drive.driveRobotCentric(0,0,-.34);
                         // when time >= 400 milliseconds, reset drive, set lock to false, and switch to state
                         // DRIVETOMID
-                        if (time.milliseconds() >= 400) {
+                        if (time.milliseconds() >= 500) {
                             resetDrive();
                             lock = false;
                             auto = AutoState.DRIVETOMID;
@@ -173,7 +173,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                         drive.driveRobotCentric(0,0,-.36);
                         // when time >= 600 milliseconds, reset drive, set lock to false, and
                         // switch to state DROPWOBBLE
-                        if (time.milliseconds() >= 600) {
+                        if (time.milliseconds() >= 700) {
                             resetDrive();
                             lock = false;
                             auto = AutoState.DROPWOBBLE;
@@ -188,7 +188,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                     // when time >= 575 milliseconds, reset drive, set lock to false, set rotateZeroCCW
                     // to true (used when there are zero rings on the field in ROTATECCW), and switch
                     // to state DROPWOBBLE
-                    if (time.milliseconds() >= 575) {
+                    if (time.milliseconds() >= 675) {
                         resetDrive();
                         lock = false;
                         rotateZeroCCW = true;
@@ -200,7 +200,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                 if (rotateSingle) {
                     if (time.milliseconds() >= 200) {
                         drive.driveRobotCentric(0, 0, -.32);
-                        if (time.milliseconds() >= 800) {
+                        if (time.milliseconds() >= 900) {
                             resetDrive();
                             lock = false;
                             auto = AutoState.DRIVETOMID;
@@ -230,7 +230,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                         // if time >= 2400 milliseconds, drive to end up over shooting line
                         // reset encoders and stop drive motors, increment park, switch state to
                         // ROTATECW, and set rotateZeroCW to true
-                        if(time.milliseconds() >= 2400) {
+                        if(time.milliseconds() >= 2500) {
                             lock = false;
                             resetDrive();
                             park++;
@@ -243,7 +243,7 @@ public class RingDetectStartVision extends AutoSuperOp {
 
                         // if time >= 850 milliseconds, stop drive motors & reset encoders, switch state
                         // to DONE
-                        if(time.milliseconds() >= 850) {
+                        if(time.milliseconds() >= 950) {
                             lock = false;
                             resetDrive();
                             auto = AutoState.DONE;
@@ -263,7 +263,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                         // if time >= 3200 milliseconds, drive to end up over shooting line
                         // reset encoders and stop drive motors, increment park, switch state to
                         // ROTATECCW, and set rotateSingle to true
-                        if (time.milliseconds() >= 3200) {
+                        if (time.milliseconds() >= 3300) {
                             lock = false;
                             rotateSingle = true;
                             resetDrive();
@@ -276,7 +276,7 @@ public class RingDetectStartVision extends AutoSuperOp {
 
                         // if time >= 950 milliseconds, stop drive motors & reset encoders, switch state
                         // to DONE
-                        if (time.milliseconds() >= 950) {
+                        if (time.milliseconds() >= 1050) {
                             lock = false;
                             resetDrive();
                             auto = AutoState.DONE;
@@ -296,7 +296,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                         // if time >= 3800 milliseconds, drive to end up over shooting line
                         // reset encoders and stop drive motors, increment park, switch state to
                         // ROTATECW, and set rotateQuad to true
-                        if (time.milliseconds() >= 3800) {
+                        if (time.milliseconds() >= 3900) {
                             lock = false;
                             resetDrive();
                             park++;
@@ -309,7 +309,7 @@ public class RingDetectStartVision extends AutoSuperOp {
 
                         // if time >= 2100 milliseconds, stop drive motors & reset encoders, switch state
                         // to DONE
-                        if (time.milliseconds() >= 2100) {
+                        if (time.milliseconds() >= 2200) {
                             lock = false;
                             resetDrive();
                             auto = AutoState.DONE;
@@ -335,7 +335,7 @@ public class RingDetectStartVision extends AutoSuperOp {
 
                     // if time >= 550 milliseconds, stop driving, set lock to false, and switch to
                     // state DROPWOBBLE
-                    if (time.milliseconds() >= 550) {
+                    if (time.milliseconds() >= 650) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.DROPWOBBLE;
@@ -345,13 +345,13 @@ public class RingDetectStartVision extends AutoSuperOp {
                 // run if rotateZeroCCW is true (after ROTATECW when the correct box for the wobble goal
                 // is A)
                 if (rotateZeroCCW) {
-                    if (time.milliseconds() >= 200) {
+                    if (time.milliseconds() >= 300) {
                         // turn right
                         drive.driveRobotCentric(0, 0, .36);
 
                         // when time is >= 1200 milliseconds, stop driving, set lock to false, and switch
                         // to state DRIVETOMID
-                        if (time.milliseconds() >= 1200) {
+                        if (time.milliseconds() >= 1300) {
                             resetDrive();
                             lock = false;
                             auto = AutoState.DRIVETOMID;
