@@ -2,12 +2,10 @@ package org.firstinspires.ftc.teamcode.TeleopOpModes;
 
 import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
-import com.lcrobotics.easyftclib.commandCenter.hardware.RevIMU;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 public abstract class SuperOp extends OpMode {
     // power constants
@@ -21,32 +19,24 @@ public abstract class SuperOp extends OpMode {
     // drive constants
     final int cpr = 448;
     final int rpm = 64;
-
+    // declare drive constructor
+    public MecanumDrive drive;
     // declare drive motors
     Motor frontLeftDrive;
     Motor frontRightDrive;
     Motor backLeftDrive;
     Motor backRightDrive;
-
     // declare non-drive motors
     Motor intake;
     Motor intake2;
     Motor rotate;
     Motor shooter;
-
     // declare servos
     ServoEx frontHook;
     ServoEx vertical;
     ServoEx topHook;
     ServoEx shooterServo;
     ServoEx shooterControl;
-
-    // declare drive constructor
-    public MecanumDrive drive;
-
-    // declare imu
-    RevIMU imu;
-
     // frontHook booleans (for toggle)
     boolean frontOn = false;
     boolean isA = false;
@@ -58,14 +48,9 @@ public abstract class SuperOp extends OpMode {
     boolean wasY = false;
 
     // stick booleans (for toggle)
-    boolean stickOn = false;
+    int reverse = -1;
     boolean isStick = false;
     boolean wasStick = false;
-
-    // shootControl booleans (for toggle)
-    boolean controlOn = false;
-    boolean isa = false;
-    boolean wasa = false;
 
     // shooter booleans (for toggle)
     boolean shooterOn = false;
@@ -75,21 +60,18 @@ public abstract class SuperOp extends OpMode {
     @Override
     public void init() {
         // initialize drive motors
-        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, .9);
-        // reverse motor (mr. ross can't wire things)
-//        frontLeftDrive.setInverted(false);
+        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, 0.9);
+
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // multipliers on frontRightDrive and backLeftDrive are because of the weight imbalance on our robot
         // was .6
-        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, .9);
+        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 0.9);
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         frontRightDrive.setInverted(true);
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1);
         backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm, 1);
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        // reverse motor (mr. ross can't wire things)
-        //backRightDrive.setInverted(false);
 
         // initialize non-drive motors
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
@@ -103,13 +85,7 @@ public abstract class SuperOp extends OpMode {
         // initialize servos
         frontHook = new SimpleServo(hardwareMap, "FrontHook");
         topHook = new SimpleServo(hardwareMap, "TopHook");
-        //vertical = new SimpleServo(hardwareMap, "Vertical");
         shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
-        //shooterControl = new SimpleServo(hardwareMap, "ShooterControl");
-
-        // initialize imu (needed for field centric driving)
-        imu = new RevIMU(hardwareMap, "imu");
-        imu.init();
 
         // initialize drive (so we can drive)
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
@@ -128,29 +104,16 @@ public abstract class SuperOp extends OpMode {
         double forwardPower = Math.abs(gamepad1.left_stick_y) < 0.1 ? 0 : gamepad1.left_stick_y;
         double turnPower = Math.abs(gamepad1.right_stick_x) < 0.1 ? 0 : gamepad1.right_stick_x;
 
-        // toggles front servo on operator's x press
-
         if (((isStick = gamepad1.left_stick_button) && !wasStick)) {
-            stickOn = !stickOn;
+            reverse *= -1;
         }
 
-        if (stickOn) {
-            // call drive robot centric (meaning that the front is always the front, no matter where the robot is on the field)
-            // multipliers slow down the robot so we don't run into things (it needs to be controlled)
-            drive.driveRobotCentric(
-                    strafePower * .8,
-                    forwardPower * .8,
-                    turnPower * .7,
-                    true);
-        } else {
-            // call drive robot centric (meaning that the front is always the front, no matter where the robot is on the field)
-            // multipliers slow down the robot so we don't run into things (it needs to be controlled)
-            drive.driveRobotCentric(
-                    -strafePower * .8,
-                    -forwardPower * .8,
-                    turnPower * .7,
-                    true);
-        }
+        drive.driveRobotCentric(
+                strafePower * 0.8 * reverse,
+                forwardPower * 0.8 * reverse,
+                turnPower * 0.7,
+                true
+        );
         wasStick = isStick;
     }
 
@@ -206,7 +169,7 @@ public abstract class SuperOp extends OpMode {
                 shooter.set(0);
             } else {
                 // if the shooter is off and left bumper is pressed, turn shooter on
-                ((DcMotorEx)shooter.motor).setVelocity(shooter.motor.getMotorType().getAchieveableMaxTicksPerSecond());
+                ((DcMotorEx) shooter.motor).setVelocity(shooter.motor.getMotorType().getAchieveableMaxTicksPerSecond());
             }
             shooterOn = !shooterOn;
         }
@@ -221,20 +184,6 @@ public abstract class SuperOp extends OpMode {
         // multiplier slows motor down so it doesn't kill the robot
         rotate.set(gamepad2.right_stick_y * .4);
 
-        // bind slow outtake (for wobble goal locking in) to operator's left bumper
-//            if (gamepad2.left_bumper) {
-//                intake.set(-INTAKE_POWER_SLOW);
-//            } else {
-//                intake.set(0);
-//            }
-//
-//            // bind slow intake (for wobble goal locking in) to operator's right bumper
-//            if (gamepad2.right_bumper) {
-//                intake.set(INTAKE_POWER_SLOW);
-//            } else {
-//                intake.set(0);
-//            }
-
         // toggles front servo on operator's x press
         if ((isA = gamepad2.a) && !wasA) {
             if (frontOn) {
@@ -242,7 +191,7 @@ public abstract class SuperOp extends OpMode {
                 frontHook.setPosition(0);
             } else {
                 // if servo is closed, open on x press
-                frontHook.setPosition(.65);
+                frontHook.setPosition(0.65);
             }
             frontOn = !frontOn;
         }
@@ -260,37 +209,11 @@ public abstract class SuperOp extends OpMode {
             topOn = !topOn;
         }
         wasY = isY;
-
-            /*
-            // toggles vertical servo on operator's b press
-            if ((isB = gamepad2.b) && !wasB) {
-                if (vertOn) {
-                    // if servo is open, close on b press
-                    vertical.setPosition(0.3);
-                } else {
-                    // if servo is closed, open on b press
-                    vertical.setPosition(1);
-                }
-                vertOn = !vertOn;
-            }
-            wasB = isB;
-
-            // toggles front servo on operator's x press
-            if ((isa = gamepad1.a) && !wasa) {
-                if (controlOn) {
-                    // if servo is open, close on x press
-                    shooterControl.setPosition(0);
-                } else {
-                    // if servo is closed, open on x press
-                    shooterControl.setPosition(.8);
-                }
-                controlOn = !controlOn;
-            } */
     }
 
 
     // bind stoppage of motors/servos that each person controls to dpad down
-    public void stop() {
+    public void driverStop() {
         // if driver presses dpad down, stop motors they control
         if (gamepad1.dpad_down) {
             // stop non-drive motors
