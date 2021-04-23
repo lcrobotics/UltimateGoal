@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public abstract class SuperOp extends OpMode {
     // power constants
     final double INTAKE_POWER = 1;
-    final double INTAKE_POWER_SLOW = .35;
+    final double INTAKE_POWER_SLOW = .425;
     final float SHOOTER_POWER = 1f;
 
     // value used to make triggers buttons (for intake)
@@ -57,10 +57,10 @@ public abstract class SuperOp extends OpMode {
     boolean isY = false;
     boolean wasY = false;
 
-    // vertical booleans (for toggle)
-    boolean vertOn = false;
-    boolean isB = false;
-    boolean wasB = false;
+    // stick booleans (for toggle)
+    boolean stickOn = false;
+    boolean isStick = false;
+    boolean wasStick = false;
 
     // shootControl booleans (for toggle)
     boolean controlOn = false;
@@ -89,7 +89,7 @@ public abstract class SuperOp extends OpMode {
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm, 1);
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // reverse motor (mr. ross can't wire things)
-//        backRightDrive.setInverted(false);
+        //backRightDrive.setInverted(false);
 
         // initialize non-drive motors
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
@@ -124,18 +124,34 @@ public abstract class SuperOp extends OpMode {
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-
         double strafePower = Math.abs(gamepad1.left_stick_x) < 0.1 ? 0 : gamepad1.left_stick_x;
         double forwardPower = Math.abs(gamepad1.left_stick_y) < 0.1 ? 0 : gamepad1.left_stick_y;
         double turnPower = Math.abs(gamepad1.right_stick_x) < 0.1 ? 0 : gamepad1.right_stick_x;
 
-        // call drive robot centric (meaning that the front is always the front, no matter where the robot is on the field)
-        // multipliers slow down the robot so we don't run into things (it needs to be controlled)
-        drive.driveRobotCentric(
-                -strafePower * .8,
-                -forwardPower * .8,
-                turnPower * .8,
-                true);
+        // toggles front servo on operator's x press
+
+        if (((isStick = gamepad1.left_stick_button) && !wasStick)) {
+            stickOn = !stickOn;
+        }
+
+        if (stickOn) {
+            // call drive robot centric (meaning that the front is always the front, no matter where the robot is on the field)
+            // multipliers slow down the robot so we don't run into things (it needs to be controlled)
+            drive.driveRobotCentric(
+                    strafePower * .8,
+                    forwardPower * .8,
+                    turnPower * .7,
+                    true);
+        } else {
+            // call drive robot centric (meaning that the front is always the front, no matter where the robot is on the field)
+            // multipliers slow down the robot so we don't run into things (it needs to be controlled)
+            drive.driveRobotCentric(
+                    -strafePower * .8,
+                    -forwardPower * .8,
+                    turnPower * .7,
+                    true);
+        }
+        wasStick = isStick;
     }
 
     // binds intake to left trigger, reverse intake to right
@@ -226,7 +242,7 @@ public abstract class SuperOp extends OpMode {
                 frontHook.setPosition(0);
             } else {
                 // if servo is closed, open on x press
-                frontHook.setPosition(1);
+                frontHook.setPosition(.65);
             }
             frontOn = !frontOn;
         }

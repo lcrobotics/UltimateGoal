@@ -119,23 +119,21 @@ public abstract class AutoSuperOp extends OpMode {
     @Override
     public void init() {
         // initialize drive motors
-        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm);
-        // set rotateZeroCW behavior to brake - so that the drive stops right away
+        frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, .9);
+        // reverse motor (mr. ross can't wire things)
+//        frontLeftDrive.setInverted(false);
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        // reverse motor because Mr. Ross can't wire things
-        frontLeftDrive.setInverted(true);
-        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm);
-        // set rotateZeroCW behavior to brake - so that the drive stops right away
+        // multipliers on frontRightDrive and backLeftDrive are because of the weight imbalance on our robot
+        // was .6
+        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, .9);
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         frontRightDrive.setInverted(true);
-        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm);
-        // set rotateZeroCW behavior to brake - so that the drive stops right away
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1);
         backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm);
-        // set rotateZeroCW behavior to brake - so that the drive stops right away
+        backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm, 1);
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        // reverse motor because Mr. Ross can't wire things
-        backRightDrive.setInverted(true);
+        // reverse motor (mr. ross can't wire things)
+        //backRightDrive.setInverted(false);
 
         // initialize non-drive motors
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
