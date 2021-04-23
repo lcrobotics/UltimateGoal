@@ -345,7 +345,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                 // run if rotateZeroCCW is true (after ROTATECW when the correct box for the wobble goal
                 // is A)
                 if (rotateZeroCCW) {
-                    if (time.milliseconds() >= 300) {
+                    if (time.milliseconds() >= 200) {
                         // turn right
                         drive.driveRobotCentric(0, 0, .36);
 
