@@ -188,10 +188,10 @@ public abstract class SuperOp extends OpMode {
         if ((isA = gamepad2.a) && !wasA) {
             if (frontOn) {
                 // if servo is open, close on x press
-                frontHook.setPosition(0);
+                frontHook.setPosition(.9);
             } else {
                 // if servo is closed, open on x press
-                frontHook.setPosition(0.65);
+                frontHook.setPosition(.3);
             }
             frontOn = !frontOn;
         }
