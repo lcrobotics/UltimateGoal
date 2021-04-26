@@ -29,13 +29,16 @@ public abstract class AutoSuperOp extends OpMode {
                     + "/dMPzqHWvmjE6F6J/7/sahPt7FQ9G6tYWnV1impzZsH7T"
                     + "/JT6pGr2SALwHdaNjBGbYY76ZfvAxixEdob9g6qMBhKOyLg6HTP9VzRZ06ksUhErmR2K2LSkyjxBBz";
     public static final float mmPerInch = 25.4f;
+
     // declare labels for ring stacks and the model asset
     public static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
     public static final String LABEL_FIRST_ELEMENT = "Quad";
     public static final String LABEL_SECOND_ELEMENT = "Single";
+
     // declare drive constants
     public final int cpr = 448;
     final int rpm = 64;
+
     // declare drive motors
     public Motor frontLeftDrive;
     public Motor backLeftDrive;
@@ -43,26 +46,23 @@ public abstract class AutoSuperOp extends OpMode {
     public Motor backRightDrive;
     // declare non-drive motors
     public Motor intake;
+    public Motor rotate;
+    public Motor shooter;
+
+    // declare servos
+    public ServoEx topHook;
+    public ServoEx shooterServo;
 
     /*
      * declare and initialize all booleans needed for Auto OpModes
      */
-    public Motor rotate;
-    public Motor shooter;
-    // declare servos
-    public ServoEx frontHook;
-    public ServoEx topHook;
-    public ServoEx shooterServo;
+
     // check if servo is going to position 1 or 0
     public boolean servoPos;
     // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
     public boolean angleCorrect = false;
     // make sure each state only runs once (since all of our OpModes are iterative)
     public boolean lock = false;
-
-    /*
-     * declare and initialize all ints needed for Auto OpModes
-     */
     // makes sure that the hesitation time only runs once
     public boolean shoot = false;
     // when there are zero rings, the code must go back to state ROTATECW, this boolean makes sure
@@ -81,8 +81,9 @@ public abstract class AutoSuperOp extends OpMode {
     public int turnCount = 0;
 
     /*
-     * declare and initialize all doubles needed for Auto OpModes
+     * declare and initialize all ints needed for Auto OpModes
      */
+
     // count number of servo movements
     public int servoMoveCount = 0;
     // 0 when adjusting angle the first time, 1 when adjusting angle the second time
@@ -93,12 +94,22 @@ public abstract class AutoSuperOp extends OpMode {
     public int numRings = 0;
     // keep track of number of times code has been in park
     public int park = 0;
+
+    /*
+     * declare and initialize all doubles needed for Auto OpModes
+     */
+
     // declare desiredY position (eg: about where the robot so be in the y direction on the field)
     // NOTE: the Y is actually horizontal, due to rev
     public double desiredY = 33;
     // declare desiredX position (eg: about where the robot so be in the x direction on the field)
     // NOTE: the X is actually vertical, due to rev
     public double desiredX = 44;
+
+    /*
+     * declare constructors needed in auto Opmodes
+     */
+
     // declare drive
     public MecanumDrive drive;
     // declare elapsed time
@@ -115,7 +126,6 @@ public abstract class AutoSuperOp extends OpMode {
     public void init() {
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, 0.9);
-
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         // multipliers on frontRightDrive and backLeftDrive are because of the weight imbalance on our robot
         // was .6
