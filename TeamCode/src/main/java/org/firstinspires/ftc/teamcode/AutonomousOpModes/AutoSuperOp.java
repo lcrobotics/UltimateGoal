@@ -44,18 +44,16 @@ public abstract class AutoSuperOp extends OpMode {
     public Motor backLeftDrive;
     public Motor frontRightDrive;
     public Motor backRightDrive;
+
     // declare non-drive motors
     public Motor intake;
-    public Motor rotate;
     public Motor shooter;
 
     // declare servos
     public ServoEx topHook;
     public ServoEx shooterServo;
 
-    /*
-     * declare and initialize all booleans needed for Auto OpModes
-     */
+    /* declare all booleans needed for auto opmodes */
 
     // check if servo is going to position 1 or 0
     public boolean servoPos;
@@ -77,13 +75,11 @@ public abstract class AutoSuperOp extends OpMode {
     // when there are four rings, the code must go back to state ROTATECW, this boolean makes sure
     // the code run in the first instance of the state does not run again
     public boolean rotateQuad = false;
+
+    /* declare all ints needed for auto opmodes */
+
     // number of attempts to find nav servoPos
     public int turnCount = 0;
-
-    /*
-     * declare and initialize all ints needed for Auto OpModes
-     */
-
     // count number of servo movements
     public int servoMoveCount = 0;
     // 0 when adjusting angle the first time, 1 when adjusting angle the second time
@@ -95,9 +91,7 @@ public abstract class AutoSuperOp extends OpMode {
     // keep track of number of times code has been in park
     public int park = 0;
 
-    /*
-     * declare and initialize all doubles needed for Auto OpModes
-     */
+    /* declare all doubles needed for auto opmodes */
 
     // declare desiredY position (eg: about where the robot so be in the y direction on the field)
     // NOTE: the Y is actually horizontal, due to rev
@@ -106,29 +100,27 @@ public abstract class AutoSuperOp extends OpMode {
     // NOTE: the X is actually vertical, due to rev
     public double desiredX = 44;
 
-    /*
-     * declare constructors needed in auto Opmodes
-     */
+    /* declare all constructors needed for auto opmodes */
 
     // declare drive
     public MecanumDrive drive;
-    // declare elapsed time
+    // declare time
     public ElapsedTime time;
     // declare lastPos
     public ObjectLocator.RobotPos lastPos;
     // declare vuforia
     public VuforiaLocalizer vuforia;
-    // declare tensorflow
+    // declare tfod
     public TFObjectDetector tfod;
+    // delcare objectLocator
     public ObjectLocator objectLocator = null;
 
     @Override
     public void init() {
         // initialize drive motors
+        // NOTE: scalars on frontLeftDrive and frontRightDrive are due to robot weight imbalance
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, 0.9);
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        // multipliers on frontRightDrive and backLeftDrive are because of the weight imbalance on our robot
-        // was .6
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 0.9);
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         frontRightDrive.setInverted(true);
@@ -139,7 +131,6 @@ public abstract class AutoSuperOp extends OpMode {
 
         // initialize non-drive motors
         intake = new Motor(hardwareMap, "Intake", cpr, rpm);
-        rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
         shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
         // set shooter to run with encoder (that way we can use velocity instead of the motor power)
         shooter.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
