@@ -71,7 +71,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                         lock = false;
                         auto = AutoState.SHOOT;
                     }
-                } else if (rotateQuad) {
+                } /*else if (rotateQuad) {
                     // drive forward
                     drive.driveRobotCentric(0, -.43, 0);
                     // if time >= 300 milliseconds stop driving, set lock to false, and switch to state SHOOT
@@ -80,7 +80,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                         lock = false;
                         auto = AutoState.DROPWOBBLE;
                     }
-                }
+                } */
 
                 break;
 
@@ -188,7 +188,7 @@ public class RingDetectStartVision extends AutoSuperOp {
                             if (time.milliseconds() >= 1300) {
                                 resetDrive();
                                 lock = false;
-                                auto = AutoState.DRIVEABIT;
+                                auto = AutoState.DROPWOBBLE;
                             }
                         }
                     }
@@ -324,7 +324,7 @@ public class RingDetectStartVision extends AutoSuperOp {
 
                         // if time >= 2100 milliseconds, stop drive motors & reset encoders, switch state
                         // to DONE
-                        if (time.milliseconds() >= 2100) {
+                        if (time.milliseconds() >= 1600) {
                             lock = false;
                             resetDrive();
                             auto = AutoState.DONE;
@@ -335,7 +335,7 @@ public class RingDetectStartVision extends AutoSuperOp {
 
                         // if time >= 2100 milliseconds, stop drive motors & reset encoders, switch state
                         // to DONE
-                        if (time.milliseconds() >= 2300) {
+                        if (time.milliseconds() >= 1800) {
                             lock = false;
                             resetDrive();
                             auto = AutoState.DONE;
