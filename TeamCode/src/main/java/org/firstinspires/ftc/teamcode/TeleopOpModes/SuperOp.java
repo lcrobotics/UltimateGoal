@@ -37,6 +37,8 @@ public abstract class SuperOp extends OpMode {
     ServoEx topHook;
     ServoEx shooterServo;
     ServoEx shooterControl;
+
+    ServoEx wobbleLock;
     // frontHook booleans (for toggle)
     boolean frontOn = false;
     boolean isA = false;
@@ -56,6 +58,8 @@ public abstract class SuperOp extends OpMode {
     boolean shooterOn = false;
     boolean isLB = false;
     boolean wasLB = false;
+
+
 
     @Override
     public void init() {
@@ -78,6 +82,8 @@ public abstract class SuperOp extends OpMode {
         intake2 = new Motor(hardwareMap, "Intake2", cpr, rpm);
         rotate = new Motor(hardwareMap, "Rotate", cpr, rpm);
         shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
+
+        wobbleLock = new SimpleServo(hardwareMap, "WobbleLock");
 
         // set shooter to float so that we don't murder another motor
         shooter.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
@@ -176,6 +182,11 @@ public abstract class SuperOp extends OpMode {
         wasLB = isLB;
     }
 
+
+    final double wobbleLockOpenPosition = .2;
+    final double wobbleLockClosePosition = 0;
+    boolean wobbleArmActuated = false;
+    boolean lastGamepad2Bpress = false;
     // bind rotate to operator's right stick
     // create toggle for front servo to operator's x
     // create toggle for top servo to operator's a
@@ -188,7 +199,7 @@ public abstract class SuperOp extends OpMode {
         if ((isA = gamepad2.a) && !wasA) {
             if (frontOn) {
                 // if servo is open, close on x press
-                frontHook.setPosition(.9);
+                frontHook.setPosition(.93);
             } else {
                 // if servo is closed, open on x press
                 frontHook.setPosition(.3);
@@ -209,6 +220,14 @@ public abstract class SuperOp extends OpMode {
             topOn = !topOn;
         }
         wasY = isY;
+
+        wobbleArmActuated = (!lastGamepad2Bpress && gamepad2.b) ? !wobbleArmActuated : wobbleArmActuated ;
+        telemetry.addData("actuated?: ", wobbleArmActuated);
+        telemetry.addData("last press?: ", lastGamepad2Bpress);
+        telemetry.addData("gamepad2.b?: ", gamepad2.b);
+        wobbleLock.setPosition(wobbleArmActuated ? wobbleLockClosePosition : wobbleLockOpenPosition);
+        lastGamepad2Bpress = gamepad2.b;
+        telemetry.addData("pos: ", wobbleLock.getPosition());
     }
 
 
