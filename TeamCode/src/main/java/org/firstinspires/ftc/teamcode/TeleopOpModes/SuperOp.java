@@ -5,6 +5,7 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
 import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 public abstract class SuperOp extends OpMode {
@@ -185,15 +186,13 @@ public abstract class SuperOp extends OpMode {
 
     final double wobbleLockOpenPosition = .2;
     final double wobbleLockClosePosition = 0;
-    boolean wobbleArmActuated = false;
+    boolean wobbleLockActuated = false;
     boolean lastGamepad2Bpress = false;
     // bind rotate to operator's right stick
     // create toggle for front servo to operator's x
     // create toggle for top servo to operator's a
     public void wobbleGoals() {
-        // bind rotate power to right stick of operator
-        // multiplier slows motor down so it doesn't kill the robot
-        rotate.set(gamepad2.right_stick_y * .4);
+
 
         // toggles front servo on operator's x press
         if ((isA = gamepad2.a) && !wasA) {
@@ -221,13 +220,19 @@ public abstract class SuperOp extends OpMode {
         }
         wasY = isY;
 
-        wobbleArmActuated = (!lastGamepad2Bpress && gamepad2.b) ? !wobbleArmActuated : wobbleArmActuated ;
-        telemetry.addData("actuated?: ", wobbleArmActuated);
-        telemetry.addData("last press?: ", lastGamepad2Bpress);
-        telemetry.addData("gamepad2.b?: ", gamepad2.b);
-        wobbleLock.setPosition(wobbleArmActuated ? wobbleLockClosePosition : wobbleLockOpenPosition);
+        // bind rotate power to right stick of operator
+        // multiplier slows motor down so it doesn't kill the robot
+        // if wobbleArm is moving up, disengage lock
+        double temp = gamepad2.right_stick_y;
+        rotate.set(temp * 0.35);
+        if (temp > .5) {
+            wobbleLockActuated = false;
+        } else if (!lastGamepad2Bpress && gamepad2.b) {
+            wobbleLockActuated = !wobbleLockActuated;
+        }
+
+        wobbleLock.setPosition(wobbleLockActuated ? wobbleLockClosePosition : wobbleLockOpenPosition);
         lastGamepad2Bpress = gamepad2.b;
-        telemetry.addData("pos: ", wobbleLock.getPosition());
     }
 
 
