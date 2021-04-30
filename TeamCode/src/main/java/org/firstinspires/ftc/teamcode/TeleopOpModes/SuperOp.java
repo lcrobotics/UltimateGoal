@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 public abstract class SuperOp extends OpMode {
     // power constants
     final double INTAKE_POWER = 1;
@@ -60,7 +62,8 @@ public abstract class SuperOp extends OpMode {
     boolean isLB = false;
     boolean wasLB = false;
 
-
+    boolean isDpad = false;
+    boolean wasDpad = false;
 
     @Override
     public void init() {
@@ -103,8 +106,12 @@ public abstract class SuperOp extends OpMode {
         telemetry.addData("Front Right Power", frontRightDrive::get);
         telemetry.addData("Back Left Power", backLeftDrive::get);
         telemetry.addData("Back Right Power", backRightDrive::get);
+        telemetry.addData("Shooter Velocity", this::getShooterVelocity);
     }
 
+    double getShooterVelocity() {
+        return ((DcMotorEx)shooter.motor).getVelocity(AngleUnit.DEGREES) / 360 * 60;
+    }
     // drive according to controller inputs from driver's sticks
     public void drive() {
         double strafePower = Math.abs(gamepad1.left_stick_x) < 0.1 ? 0 : gamepad1.left_stick_x;
@@ -219,7 +226,7 @@ public abstract class SuperOp extends OpMode {
             topOn = !topOn;
         }
         wasY = isY;
-
+        
         // bind rotate power to right stick of operator
         // multiplier slows motor down so it doesn't kill the robot
         // if wobbleArm is moving up, disengage lock
