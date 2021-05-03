@@ -94,6 +94,7 @@ public class FirstAuto extends AutoSuperOp {
                 } else if (time.milliseconds() >= 500) {
                     lock = false;
 
+
                     // if turnCount == 3, 4, 5, 6 switch to state ROTATECW
                     // if turnCount == 9, switch to state DONE (code is over)
                     // if turnCount == 1, 2, 7, 8 switch to state ROTATECCW

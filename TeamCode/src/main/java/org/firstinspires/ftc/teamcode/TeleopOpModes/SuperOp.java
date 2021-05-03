@@ -52,10 +52,12 @@ public abstract class SuperOp extends OpMode {
     boolean isY = false;
     boolean wasY = false;
 
+
     // stick booleans (for toggle)
     int reverse = -1;
     boolean isStick = false;
     boolean wasStick = false;
+
 
     // shooter booleans (for toggle)
     boolean shooterOn = false;
@@ -95,7 +97,9 @@ public abstract class SuperOp extends OpMode {
         // initialize servos
         frontHook = new SimpleServo(hardwareMap, "FrontHook");
         topHook = new SimpleServo(hardwareMap, "TopHook");
+        vertical = new SimpleServo(hardwareMap, "Vertical");
         shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
+        shooterControl = new SimpleServo(hardwareMap, "ShooterControl");
 
         // initialize drive (so we can drive)
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
@@ -129,6 +133,7 @@ public abstract class SuperOp extends OpMode {
                 true
         );
         wasStick = isStick;
+
     }
 
     // binds intake to left trigger, reverse intake to right
