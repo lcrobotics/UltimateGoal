@@ -157,9 +157,9 @@ public abstract class SuperOp extends OpMode {
             intakePower = -INTAKE_POWER;
         }
 
-        if (Math.abs(gamepad2.left_stick_y) > THRESHOLD) {
-            intakePower = gamepad2.left_stick_y * 0.5;
-        }
+//        if (Math.abs(gamepad2.left_stick_y) > THRESHOLD) {
+//            intakePower = gamepad2.left_stick_y * 0.5;
+//        }
 
 
         intake.set(intakePower);
@@ -221,19 +221,19 @@ public abstract class SuperOp extends OpMode {
                 topHook.setPosition(0);
             } else {
                 // if servo is closed, open on a press
-                topHook.setPosition(1);
+                topHook.setPosition(0.5);
             }
             topOn = !topOn;
         }
         wasY = isY;
-        
+
         // bind rotate power to right stick of operator
         // multiplier slows motor down so it doesn't kill the robot
         // if wobbleArm is moving up, disengage lock
         double temp = gamepad2.right_stick_y;
         rotate.set(temp * 0.35);
-        if (temp > .5) {
-            wobbleLockActuated = false;
+        if (temp < -.86) {
+//            wobbleLockActuated = false;
         } else if (!lastGamepad2Bpress && gamepad2.b) {
             wobbleLockActuated = !wobbleLockActuated;
         }
