@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.TeleopOpModes;
 
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-// Extends OpMode not SuperOp because the prototype doesn't have any of the other motors
+@TeleOp
+// extends OpMode instead of SuperOp because the prototype doesn't have any of the other motors
 public class ShooterTest extends OpMode {
     // declare motor constants
     final int cpr = 448;
@@ -23,14 +25,16 @@ public class ShooterTest extends OpMode {
         // initialize motors
         spin = new Motor(hardwareMap, "spin", cpr, rpm);
         shoot = new Motor(hardwareMap, "shoot", cpr, rpm);
+        // set shoot to reverse (to correct hardware issue)
+        shoot.setInverted(true);
         // set zero power to float instead of brake so the motors don't burn out trying to stop
         spin.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         shoot.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
     }
 
-   // run teleOp methods (in this case, just newShooter())
-    public void loop() {
-        // call teleOp methods
+   // run TeleOp methods (in this case, just newShooter())
+   public void loop() {
+        // call TeleOp methods
         newShooter();
    }
 
@@ -43,6 +47,7 @@ public class ShooterTest extends OpMode {
                 shoot.set(0);
                 spin.set(0);
             } else {
+                // if the shooter is off and left bumper is pressed, turn shoot and spin off
                 shoot.set(1);
                 spin.set(1);
             }
