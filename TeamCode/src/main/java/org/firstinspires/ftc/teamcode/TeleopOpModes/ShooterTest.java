@@ -29,6 +29,7 @@ public class ShooterTest extends OpMode {
        newShooter();
    }
 
+   // run both motors on driver's left bumper press
    public void newShooter() {
        // track history of button
        if ((isLB = gamepad1.left_bumper) && !wasLB) {
