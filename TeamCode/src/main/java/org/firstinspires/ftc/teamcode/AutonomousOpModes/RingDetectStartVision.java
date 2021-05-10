@@ -62,14 +62,30 @@ public class RingDetectStartVision extends AutoSuperOp {
                     time.reset();
                 }
 
-                // drive forward
-                drive.driveRobotCentric(0,-.3,0);
-                // if time >= 200 milliseconds stop driving, set lock to false, and switch to state SHOOT
-                if (time.milliseconds() >= 200) {
-                    resetDrive();
-                    lock = false;
-                    auto = AutoState.SHOOT;
+                // if at very beginning of the code (rotateQuad false) drive forward for 200 milliseconds
+                // if rotateQuad is true, go forward for 700 milliseconds
+                if (!rotateQuad) {
+                    // drive forward
+                    drive.driveRobotCentric(0,-.3,0);
+                    // if time >= 200 milliseconds stop driving, set lock to false, and switch
+                    // to state SHOOT
+                    if (time.milliseconds() >= 200) {
+                        resetDrive();
+                        lock = false;
+                        auto = AutoState.SHOOT;
+                    }
+                } else {
+                    // drive forward
+                    drive.driveRobotCentric(0,-.35,0);
+                    // if time >= 700 milliseconds stop driving, set lock to false, and switch
+                    // to state DROPWOBBLE
+                    if (time.milliseconds() >= 700) {
+                        resetDrive();
+                        lock = false;
+                        auto = AutoState.DROPWOBBLE;
+                    }
                 }
+
 
                 break;
 
@@ -141,14 +157,14 @@ public class RingDetectStartVision extends AutoSuperOp {
                 // Note: the same boolean theory that applies to rotateZeroCW applies to rotateZeroCCW,
                 // rotateSingle, and rotateQuad
                 if (!rotateZeroCW && !rotateSingle && !rotateQuad) {
-                    // if the battery is greater than 12.7 volts, it needs to turn less, due to battery power
+                    // if the battery is greater than 12.5 volts, it needs to turn less, due to battery power
                     // messing with the motors (that's why we have these if statements) run the code below
-                    // if the battery is less than 12.7 volts, run the else statement
-                    if (getBatteryVoltage() >= 12.7) {
+                    // if the battery is less than 12.5 volts, run the else statement
+                    if (getBatteryVoltage() >= 12.5) {
                         // turn to the left
                         drive.driveRobotCentric(0,0,-.34);
-                        // when time >= 300 milliseconds, reset drive, set lock to false, and switch to state
-                        // DRIVETOMID
+                        // when time >= 300 milliseconds, reset drive, set lock to false, and switch
+                        // to stateDRIVETOMID
                         if (time.milliseconds() >= 300) {
                             resetDrive();
                             lock = false;
@@ -157,8 +173,8 @@ public class RingDetectStartVision extends AutoSuperOp {
                     } else {
                         // turn to the left
                         drive.driveRobotCentric(0,0,-.34);
-                        // when time >= 500 milliseconds, reset drive, set lock to false, and switch to state
-                        // DRIVETOMID
+                        // when time >= 500 milliseconds, reset drive, set lock to false, and switch
+                        // to state DRIVETOMID
                         if (time.milliseconds() >= 500) {
                             resetDrive();
                             lock = false;
@@ -206,16 +222,16 @@ public class RingDetectStartVision extends AutoSuperOp {
                     if (time.milliseconds() >= 300) {
                         // turn to the left
                         drive.driveRobotCentric(0,0,-.4);
-                        // if the battery is greater than 12.7 volts, it needs to turn less, due to battery power
+                        // if the battery is greater than 12.5 volts, it needs to turn less, due to battery power
                         // messing with the motors (that's why we have these if statements) check if
-                        // time >= 1000 milliseconds, reset drive, set lock to false, and switch to
-                        // state DROPWOBBLE. if battery is less than 12.7 volts, wait until time >= 1300
+                        // time >= 1100 milliseconds, reset drive, set lock to false, and switch to
+                        // state DRIVEABIT. If battery is less than 12.5 volts, wait until time >= 1300
                         // milliseconds to reset and switch to state DROPWOBBLE
-                        if (getBatteryVoltage() >= 12.7) {
-                            if (time.milliseconds() >= 1000) {
+                        if (getBatteryVoltage() >= 12.5) {
+                            if (time.milliseconds() >= 1100) {
                                 resetDrive();
                                 lock = false;
-                                auto = AutoState.DROPWOBBLE;
+                                auto = AutoState.DRIVEABIT;
                             }
                         } else {
                             if (time.milliseconds() >= 1300) {
@@ -273,18 +289,34 @@ public class RingDetectStartVision extends AutoSuperOp {
                 if (numRings == 1) {
                     // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
                     // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
+                    // NOTE: the code splits depending on whether or not the voltage is
+                    // greater than 12.6
                     if (park == 0) {
                         // drive forward
                         drive.driveRobotCentric(0, -0.48, 0);
-                        // if time >= 3400 milliseconds, drive to end up over shooting line
-                        // reset encoders, stop drive motors, increment park, set rotateSingle to true,
-                        // and switch to state ROTATECCW
-                        if (time.milliseconds() >= 3400) {
-                            lock = false;
-                            rotateSingle = true;
-                            resetDrive();
-                            park++;
-                            auto = AutoState.ROTATECCW;
+                        // check value of battery's voltage and proceed to the statement that makes sense
+                        if (getBatteryVoltage() >= 12.6) {
+                            // if time >= 3200 milliseconds, drive to end up over shooting line
+                            // reset encoders, stop drive motors, increment park, set rotateSingle
+                            // to true, and switch to state DROPWOBBLE
+                            if (time.milliseconds() >= 3200) {
+                                lock = false;
+                                rotateSingle = true;
+                                resetDrive();
+                                park++;
+                                auto = AutoState.DROPWOBBLE;
+                            }
+                        } else {
+                            // if time >= 3400 milliseconds, drive to end up over shooting line
+                            // reset encoders, stop drive motors, increment park, set rotateSingle
+                            // to true, and switch to state ROTATECCW
+                            if (time.milliseconds() >= 3400) {
+                                lock = false;
+                                rotateSingle = true;
+                                resetDrive();
+                                park++;
+                                auto = AutoState.ROTATECCW;
+                            }
                         }
                     } else if (park == 1) {
                         // drive to a bit more on the line
@@ -305,14 +337,14 @@ public class RingDetectStartVision extends AutoSuperOp {
                     // if first time in DRIVETOMID, drive farther over line (to drop wobble - park == 0)
                     // if second time in DRIVETOMID, drive backwards to properly park (park == 1)
                     // NOTE: the code splits depending on the whether or not the voltage
-                    // is greater than or less than 12.7
-                    if (park == 0 && getBatteryVoltage() >= 12.7) {
+                    // is greater than or less than 12.5
+                    if (park == 0 && getBatteryVoltage() >= 12.5) {
                         // drive forward
                         drive.driveRobotCentric(0, -.53, 0);
-                        // if time >= 3500 milliseconds, drive to end up over shooting line
+                        // if time >= 3600 milliseconds, drive to end up over shooting line
                         // reset encoders, stop drive motors, set rotateQuad to true,
                         // increment park, and switch to state ROTATECW
-                        if (time.milliseconds() >= 3500) {
+                        if (time.milliseconds() >= 3600) {
                             lock = false;
                             resetDrive();
                             park++;
@@ -332,12 +364,12 @@ public class RingDetectStartVision extends AutoSuperOp {
                             rotateQuad = true;
                             auto = AutoState.ROTATECW;
                         }
-                    } else if (park == 1 && getBatteryVoltage() >= 12.7) {
+                    } else if (park == 1 && getBatteryVoltage() >= 12.5) {
                         // drive forward
                         drive.driveRobotCentric(0, .45, 0);
-                        // if time >= 900 milliseconds, stop drive motors, reset encoders,
+                        // if time >= 1000 milliseconds, stop drive motors, reset encoders,
                         // and switch state to DONE
-                        if (time.milliseconds() >= 900) {
+                        if (time.milliseconds() >= 1000) {
                             lock = false;
                             resetDrive();
                             auto = AutoState.DONE;
