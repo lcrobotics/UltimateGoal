@@ -39,6 +39,7 @@ public class ShooterIntake extends OpMode {
     public void loop() {
         // call TeleOp methods
         newShooter();
+        newIntake();
     }
 
     // shooter booleans (for toggle)
@@ -67,5 +68,25 @@ public class ShooterIntake extends OpMode {
             shooterOn = !shooterOn;
         }
         wasLB = isLB;
+    }
+
+    // takes care of motors pertaining to the intake (intake, reverse intake, and spin)
+    public void newIntake () {
+        // if driver presses right trigger, turn on intake
+        // if driver presses left trigger, reverse intake (useful if rings get stuck somehow)
+        if(gamepad1.right_trigger > .12) {
+            intake.set(1);
+        } else if (gamepad1.left_trigger > .12) {
+            intake.set(-1);
+        } else {
+            intake.set(0);
+        }
+
+        // if driver presses right bumper, turn on spin (allowing rings to be pulled up before shooting)
+        if (gamepad1.right_bumper) {
+            spin.set(1);
+        } else {
+            spin.set(0);
+        }
     }
 }
