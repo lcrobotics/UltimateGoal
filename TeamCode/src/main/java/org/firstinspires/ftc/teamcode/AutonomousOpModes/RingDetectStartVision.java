@@ -3,6 +3,15 @@ package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+/*
+ * Auto OpMode that uses ring detection to inform the robot's pathing
+ *
+ * BASIC PATHING: at start, detect rings. Drive forward a small bit, shoot preloaded rings.
+ * turn away from rings in center and drive forward (length of time based on number of rings and
+ * robot's voltage). Turn towards correct box for wobble goal (determined by the rings on the field) and
+ * drop the wobble goal. Turn to avoid hitting the goal/walls, and drive to park over the shooting line.
+ */
+
 @Autonomous
 public class RingDetectStartVision extends AutoSuperOp {
     // ensure that DETECT actually runs
