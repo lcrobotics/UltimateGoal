@@ -345,9 +345,9 @@ public class RingDetectStartVision extends AutoSuperOp {
                     } else if (park == 1) {
                         // drive forward
                         drive.driveRobotCentric(0, .6, 0);
-                        // if time >= 1700 milliseconds, stop drive motors, reset encoders,
+                        // if time >= 1400 milliseconds, stop drive motors, reset encoders,
                         // and switch state to DONE
-                        if (time.milliseconds() >= 1700) {
+                        if (time.milliseconds() >= 1400) {
                             lock = false;
                             resetDrive();
                             auto = AutoState.DONE;
