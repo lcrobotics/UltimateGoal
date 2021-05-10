@@ -36,10 +36,10 @@ public abstract class SuperOp extends OpMode {
     Motor shooter;
     // declare servos
     ServoEx frontHook;
-    ServoEx vertical;
+    //ServoEx vertical;
     ServoEx topHook;
     ServoEx shooterServo;
-    ServoEx shooterControl;
+    //ServoEx shooterControl;
 
     ServoEx wobbleLock;
     // frontHook booleans (for toggle)
@@ -97,9 +97,9 @@ public abstract class SuperOp extends OpMode {
         // initialize servos
         frontHook = new SimpleServo(hardwareMap, "FrontHook");
         topHook = new SimpleServo(hardwareMap, "TopHook");
-        vertical = new SimpleServo(hardwareMap, "Vertical");
+        //vertical = new SimpleServo(hardwareMap, "Vertical");
         shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
-        shooterControl = new SimpleServo(hardwareMap, "ShooterControl");
+        //shooterControl = new SimpleServo(hardwareMap, "ShooterControl");
 
         // initialize drive (so we can drive)
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
