@@ -3,11 +3,12 @@ package org.firstinspires.ftc.teamcode.TeleopOpModes;
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp
-// extends OpMode instead of SuperOp because the prototype doesn't have any of the other motors
-public class ShooterIntake extends OpMode {
+public class ShooterIntakeSensor extends OpMode {
     // declare motor constants
     final int cpr = 448;
     final int rpm = 64;
@@ -19,8 +20,9 @@ public class ShooterIntake extends OpMode {
 
     // declare new ElapsedTime (needed for shooter)
     ElapsedTime time;
+    // declare new color sensor
+    NormalizedColorSensor colorSensor;
 
-    // initialize hardware and constructors
     public void init() {
         // initialize motors
         spin = new Motor(hardwareMap, "spin", cpr, rpm);
@@ -34,13 +36,20 @@ public class ShooterIntake extends OpMode {
 
         // initialize time constructor
         time = new ElapsedTime();
+
+        // initialize color sensor
+        colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
     }
 
-    // run TeleOp methods (in this case, just newShooter())
+    @Override
     public void loop() {
         // call TeleOp methods
         newShooter();
         newIntake();
+
+        if (!gamepad1.left_bumper) {
+            spin();
+        }
     }
 
     // shooter booleans (for toggle)
@@ -59,11 +68,10 @@ public class ShooterIntake extends OpMode {
                 // if the shooter is off and left bumper is pressed, turn shoot on
                 shoot.set(1);
                 // give the shoot motor a second to spin up before putting any rings in
-                // the spin motor and intake turn on after a second of the shooter running
+                // the spin motor turn on after a second of the shooter running
                 // this allows shoot to get up to full speed
                 if (time.milliseconds() >= 1000) {
                     spin.set(1);
-                    intake.set(1);
                 }
             }
             shooterOn = !shooterOn;
@@ -89,5 +97,51 @@ public class ShooterIntake extends OpMode {
         } else {
             spin.set(0);
         }
+    }
+
+    // Get the normalized colors from the sensor
+    NormalizedRGBA colors = colorSensor.getNormalizedColors();
+    // declare experimental rbg thresholds for the ring
+    double redThreshold;
+    double greenThreshold;
+    double blueThreshold;
+
+    // used to make sure spin turns off at the right time
+    boolean spinOn = false;
+    int notRing = 0;
+    int ringCount = 0;
+    public void spin() {
+        // shooter should override, counter of ring indices on last ring does not run spin
+        // if first time seeing ring turn on spin
+        // if second time seeing ring wait until can't see it again
+        if (ringCount != 2) {
+            if(colors.red >= redThreshold && colors.green >= greenThreshold
+                    && colors.blue >= blueThreshold && !spinOn) {
+                spin.set(.4);
+                spinOn = true;
+            } else if (colors.red < redThreshold && colors.green < greenThreshold
+                    && colors.blue < blueThreshold && spinOn && notRing == 1) {
+                spin.set(0);
+                spinOn = false;
+                notRing = 0;
+                ringCount++;
+
+            }  else if (colors.red < redThreshold && colors.green < greenThreshold
+                    && colors.blue < blueThreshold && spinOn && notRing == 0) {
+                notRing++;
+            }
+        }
+    }
+
+    public void getColor() {
+        // Get the normalized colors from the sensor
+        NormalizedRGBA colors = colorSensor.getNormalizedColors();
+
+        // print rbg values as telemetry
+        telemetry.addLine()
+                .addData("Red", colors.red)
+                .addData("Green",  colors.green)
+                .addData("Blue", colors.blue);
+        telemetry.update();
     }
 }
