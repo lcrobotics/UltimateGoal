@@ -3,6 +3,15 @@ package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+/*
+ * Auto OpMode that uses ring detection to inform the robot's pathing
+ *
+ * BASIC PATHING: at start, detect rings. Drive forward a small bit, shoot preloaded rings.
+ * turn away from rings in center and drive forward (length of time based on number of rings and
+ * robot's voltage). Turn towards correct box for wobble goal (determined by the rings on the field) and
+ * drop the wobble goal. Turn to avoid hitting the goal/walls, and drive to park over the shooting line.
+ */
+
 @Autonomous
 public class CleanAuto extends AutoSuperOp {
     // initialize boolean that ensures that loop() only runs once
@@ -80,7 +89,7 @@ public class CleanAuto extends AutoSuperOp {
                         auto = AutoState.SHOOT;
                     }
                 } else {
-                    // drive forward at -.35
+                    // drive forward at -.35 power
                     drive.driveRobotCentric(0,-.35,0);
                     // wait 700 milliseconds then stop motors, reset encoders, set lock to false,
                     // and switch to state DROPWOBBLE
@@ -149,9 +158,9 @@ public class CleanAuto extends AutoSuperOp {
 
                 break;
 
-            // runs at the beginning of the OpMode, after state SHOOT and runs at some point depending
-            // on the number of rings on the field. turns clockwise based on the robot, in
-            // this OpMode clockwise is to the left
+            // runs at the beginning of the OpMode, after state SHOOT and runs after states
+            // DRIVEOVERMID and DROPWOBBLE, depending on the number of rings on the field. turns
+            // clockwise based on the robot, in this OpMode clockwise is to the left
             case ROTATECW:
                 // ensure that ROTATECW runs once per time in the state (runs at the end of the state,
                 // resets time for the next state)
@@ -166,14 +175,20 @@ public class CleanAuto extends AutoSuperOp {
                 if (!rotateZeroCW && !rotateSingle && !rotateQuad) {
                     // check if the battery's voltage is greater than 12.5
                     if (getBatteryVoltage() >= 12.5) {
+                        // turn to the left at -.34 power
                         drive.driveRobotCentric(0,0,-.34);
+                        // wait 300 milliseconds then stop motors, reset encoders, set lock to false
+                        // and switch to state DRIVEOVERMID
                         if (time.milliseconds() >= 300) {
                             resetDrive();
                             lock = false;
                             auto = AutoState.DRIVEOVERMID;
                         }
                     } else {
+                        // turn to the left at -.34 power
                         drive.driveRobotCentric(0,0,-.34);
+                        // wait 500 milliseconds then stop motors, reset encoders, set lock to false,
+                        // and switch to state DRIVEOVERMID
                         if (time.milliseconds() >= 500) {
                             resetDrive();
                             lock = false;
@@ -182,8 +197,15 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if rotateZeroCW is true (set to true when there are zero rings on the field in
+                // state DRIVEOVERMID) turn to the left for 675 milliseconds then stop motors, reset
+                // encoders, set lock to false, set rotateZeroCCW to true (needed in state ROTATECCW),
+                // and switch to state DROPWOBBLE
                 if(rotateZeroCW) {
+                    // turn to the left at -.32 power
                     drive.driveRobotCentric(0,0,-.32);
+                    // wait 675 milliseconds then stop motors, reset encoders, set lock to false,
+                    // set rotateZeroCCW to true, and switch to state DROPWOBBLE
                     if (time.milliseconds() >= 675) {
                         resetDrive();
                         lock = false;
@@ -192,11 +214,21 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if rotateSingle is true (set to true when there is one ring on the field in state
+                // DRIVEOVERMID) wait 300 milliseconds (to let the wobble goal fall) then turn left
+                // for 600 milliseconds. After 600 milliseconds, stop motors, reset encoders, and wait
+                // 300 more milliseconds (wobble can tip into robot instead of falling over when
+                // the robot pauses), then set lock to false, and switch to state DRIVETOMID
                 if (rotateSingle) {
+                    // wait for 300 milliseconds to allow wobble goal time to fall
                     if (time.milliseconds() >= 300) {
+                        // turn to the left at -.32 power
                         drive.driveRobotCentric(0, 0, -.32);
+                        // wait 600 milliseconds then stop motors and reset encoders
                         if (time.milliseconds() >= 900) {
                             resetDrive();
+                            // wait 300 more milliseconds (to allow wobble goal to stabilize)then
+                            // set lock to false and switch to state DRIVETOMID
                             if (time.milliseconds() >= 1200) {
                                 lock = false;
                                 auto = AutoState.DRIVETOMID;
@@ -205,16 +237,32 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if rotateQuad is true (set to true when there are four rings on the field in state
+                // DRIVEOVERMID) wait 300 milliseconds (to control wobble goal's fall) then check if
+                // the battery's voltage is greater than 12.5. if it is turn left for 800
+                // milliseconds, if it isn't turn left for 1000 milliseconds. After turning for the
+                // correct time motors, reset encoders, set lock to false, and if battery >= 12.5
+                // switch to state DRIVEABIT, if battery < 12.5 switch to state DROPWOBBLE
                 if(rotateQuad) {
+                    // wait 300 milliseconds (to control wobble goal's fall)
                     if (time.milliseconds() >= 300) {
+                        // turn to the left at -.4 power
                         drive.driveRobotCentric(0,0,-.4);
+                        // check if the battery's voltage is greater than 12.5. if it is turn left for 800
+                        // milliseconds, if it isn't turn left for 1000 milliseconds. After turning for the
+                        // correct time motors, reset encoders, set lock to false, and if battery >= 12.5
+                        // switch to state DRIVEABIT, if battery < 12.5 switch to state DROPWOBBLE
                         if (getBatteryVoltage() >= 12.5) {
+                            // wait for 800 milliseconds then stop motors, reset encoders, set lock
+                            // to false, and switch to state DRIVEABIT
                             if (time.milliseconds() >= 1100) {
                                 resetDrive();
                                 lock = false;
                                 auto = AutoState.DRIVEABIT;
                             }
                         } else {
+                            // wait for 1000 milliseconds then stop motors, reset encoders, set lock
+                            // to false, and switch to state DROPWOBBLE
                             if (time.milliseconds() >= 1300) {
                                 resetDrive();
                                 lock = false;
@@ -226,14 +274,24 @@ public class CleanAuto extends AutoSuperOp {
 
                 break;
 
+            // runs once per OpMode call, right after the first time in state ROTATECW. drives to
+            // the correct wobble goal box, based on ring detection
             case DRIVEOVERMID:
+                // ensure that DRIVEOVERMID runs once per time in the state (runs at the end of the
+                // state, resets time for the next state)
                 if (!lock) {
                     time.reset();
                     lock = true;
                 }
 
+                // if there are zero rings on the field, drive forward for 2600 milliseconds, stop
+                // motors, reset encoders, set lock to false, set rotateZeroCW to true, and switch
+                // to state ROTATECW
                 if (numRings == 0) {
+                    // drive forward at -.42 power
                     drive.driveRobotCentric(0,-.42,0);
+                    // wait 2600 milliseconds then stop motors, reset encoders, set lock to false,
+                    // set rotateZeroCW to true, and switch to state ROTATECW
                     if(time.milliseconds() >= 2600) {
                         lock = false;
                         resetDrive();
@@ -242,9 +300,22 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if there is one ring on the field, check if the battery's voltage is greater than
+                // 12.6. if it is, drive forward for 3200 milliseconds. if it isn't, drive forward
+                // for 3400 milliseconds. After driving, stop motors, reset encoders, set lock to
+                // false, and set rotateSingle to true. if voltage >= 12.6, switch to state DROPWOBBLE.
+                // if voltage < 12.6, switch to state ROTATECCW
                 if (numRings == 1) {
+                    // drive forward at -.48 power
                     drive.driveRobotCentric(0, -0.48, 0);
+                    // check if the battery's voltage is greater than 12.6. if it is, drive forward
+                    // for 3200 milliseconds. if it isn't, drive forward for 3400 milliseconds. After
+                    // driving, stop motors, reset encoders, set lock to false, and set rotateSingle
+                    // to true. if voltage >= 12.6, switch to state DROPWOBBLE. if voltage < 12.6,
+                    // switch to state ROTATECCW
                     if (getBatteryVoltage() >= 12.6) {
+                        // wait for 3200 milliseconds then stop motors, reset encoders, set lock to
+                        // false, set rotateSingle to true, and switch to state DROPWOBBLE
                         if (time.milliseconds() >= 3200) {
                             lock = false;
                             rotateSingle = true;
@@ -252,6 +323,8 @@ public class CleanAuto extends AutoSuperOp {
                             auto = AutoState.DROPWOBBLE;
                         }
                     } else {
+                        // wait for 3400 milliseconds then stop motors, reset encoders, set lock to
+                        // false, set rotateSingle to true, and switch to state ROTATECCW
                         if (time.milliseconds() >= 3400) {
                             lock = false;
                             rotateSingle = true;
@@ -261,9 +334,20 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if there are four rings on the field, check if battery voltage is greater than
+                // 12.5. if it is, drive forward for 3600 milliseconds. if it isn't drive forward for
+                // 3800 milliseconds. After driving, stop motors, reset encoders, set lock to false,
+                // set rotateQuad to true, and switch to state ROTATECW
                 if (numRings == 4) {
+                    // drive forward at -.53 power
+                    drive.driveRobotCentric(0, -.53, 0);
+                    // check if battery voltage is greater than 12.5. if it is, drive forward for
+                    // 3600 milliseconds. if it isn't drive forward for3800 milliseconds. After
+                    // driving, stop motors, reset encoders, set lock to false, set rotateQuad to
+                    // true, and switch to state ROTATECW
                     if (getBatteryVoltage() >= 12.5) {
-                        drive.driveRobotCentric(0, -.53, 0);
+                        // wait 3600 milliseconds then stop motors, reset encoders, set lock to
+                        // false, set rotateQuad to true, and switch to state ROTATECW
                         if (time.milliseconds() >= 3600) {
                             lock = false;
                             resetDrive();
@@ -271,7 +355,8 @@ public class CleanAuto extends AutoSuperOp {
                             auto = AutoState.ROTATECW;
                         }
                     } else {
-                        drive.driveRobotCentric(0, -.53, 0);
+                        // wait 3800 milliseconds then stop motors, reset encoders, set lock to
+                        // false, set rotateQuad to true, and switch to state ROTATECW
                         if (time.milliseconds() >= 3800) {
                             lock = false;
                             resetDrive();
@@ -283,15 +368,28 @@ public class CleanAuto extends AutoSuperOp {
 
                 break;
 
+            // runs after some instances of states DRIVEOVERMID and DROPWOBBLE, depending on the
+            // number of rings on the field. turns counterclockwise based on the robot, in this OpMode
+            // counterclockwise is to the right
             case ROTATECCW:
+                // ensure that ROTATECCW runs once per time in the state (runs at the end of the
+                // state, resets time for the next state)
                 if(!lock) {
                     lock = true;
                     time.reset();
                 }
 
+                // if rotateZeroCCW is true (set to true in state ROTATECW when there are zero rings
+                // on the field) pause for 200 milliseconds (to allow wobble goal to stabilize by
+                // hitting the robot) then turn right for 1100 milliseconds. After turning stop motors,
+                // reset encoders, set lock to false, and switch to state DRIVETOMID
                 if (rotateZeroCCW) {
+                    // wait 200 milliseconds (to allow wobble goal to stabilize by hitting the robot)
                     if (time.milliseconds() >= 200) {
+                        // turn to the right at .36 power
                         drive.driveRobotCentric(0, 0, .36);
+                        // wait for 1100 milliseconds then stop motors, reset encoders, set lock to
+                        // false, and switch to state DRIVETOMID
                         if (time.milliseconds() >= 1300) {
                             resetDrive();
                             lock = false;
@@ -300,8 +398,14 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if rotateSingle is true (set to true in state DRIVEOVERMID when there is one ring
+                // on the field) turn right for 300 milliseconds, then stop motors, reset encoders,
+                // set lock to false, and switch to state DROPWOBBLE
                 if (rotateSingle) {
+                    // turn to the right at .45 power
                     drive.driveRobotCentric(0, 0, 0.45);
+                    // wait 300 milliseconds then stops motors, reset encoders, set lock to false,
+                    // and switch to state DROPWOBBLE
                     if (time.milliseconds() >= 300) {
                         resetDrive();
                         lock = false;
@@ -309,8 +413,14 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if rotateQuad is true (set to true in state DRIVEOVERMID when there are four rings
+                // on the field) turn right for 700 milliseconds then stop motors, reset encoders,
+                // set lock to false, and switch to state DRIVETOMID
                 if (rotateQuad) {
+                    // turn to the right at .36 power
                     drive.driveRobotCentric(0,0, .36);
+                    // wait 700 milliseconds then stop motors, reset encoders, set lock to false, and
+                    // switch to state DRIVETOMID
                     if(time.milliseconds() >= 700) {
                         resetDrive();
                         lock = false;
@@ -320,12 +430,20 @@ public class CleanAuto extends AutoSuperOp {
 
                 break;
 
+            // runs after states DRIVEABIT, ROTATECW, DRIVEOVERMID, and ROTATECCW depending on the
+            // number of rings on the field. drops wobble goal in correct square
             case DROPWOBBLE:
+                // ensure that DROPWOBBLE runs once per time in the state (runs at the end of the
+                // state, resets time for the next state)
                 if (!lock) {
                     lock = true;
                     time.reset();
                 }
 
+                // if time is greater than 1000 milliseconds and either rotateZeroCCW (set to true in
+                // state ROTATECW when there are zero rings on the field) or rotateQuad (set to true
+                // in state DRIVEOVERMID when there are four rings on the field) are true, release
+                // wobble goal, reset time, set lock to false, and switch to state ROTATECCW
                 if(time.milliseconds() >= 1000 && (rotateZeroCCW || rotateQuad)) {
                     topHook.setPosition(0);
                     lock = false;
@@ -333,6 +451,9 @@ public class CleanAuto extends AutoSuperOp {
                     auto = AutoState.ROTATECCW;
                 }
 
+                // if time is greater than 1000 milliseconds and rotateSingle (set to true in state
+                // DRIVEOVERMID when there is one ring on the field) is true, release wobble goal,
+                // reset time, set lock to false, and switch to state ROTATECW
                 if (time.milliseconds() >= 1000 && rotateSingle) {
                     topHook.setPosition(0);
                     lock = false;
@@ -342,14 +463,22 @@ public class CleanAuto extends AutoSuperOp {
 
                 break;
 
+            // runs after states ROTATECW and ROTATECCW, drives to midline and parks
             case DRIVETOMID:
+                // ensure that DRIVETOMID runs once per time in the state (runs at the end of the
+                // state, resets time for the next state)
                 if (!lock) {
                     time.reset();
                     lock = true;
                 }
 
+                // if there are zero rings on the field, drive forward for 1050 milliseconds. After
+                // driving, stop motors, reset encoders, set lock to false, and switch to state DONE
                 if (numRings == 0) {
+                    // drive forward at -.4 power
                     drive.driveRobotCentric(0, -0.4, 0);
+                    // wait 1050 milliseconds then stop motors, reset encoders, set lock to false,
+                    // and switch to state DONE
                     if(time.milliseconds() >= 1050) {
                         lock = false;
                         resetDrive();
@@ -357,8 +486,13 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if there is one ring on the field, drive backward for 950 milliseconds then stop
+                // motors, reset encoders, set lock to false, and switch to state DONE
                 if (numRings == 1) {
+                    // drive backward at .35 power
                     drive.driveRobotCentric(0, 0.35, 0);
+                    // wait 950 milliseconds then stop motors, reset encoders, set lock to false,
+                    // and switch to state DONE
                     if (time.milliseconds() >= 950) {
                         lock = false;
                         resetDrive();
@@ -366,16 +500,29 @@ public class CleanAuto extends AutoSuperOp {
                     }
                 }
 
+                // if there are four rings on the field, check if the voltage is greater than 12.5.
+                // if it is, drive backward for 1000 milliseconds. if not, drive backward for 1400
+                // milliseconds. After driving, stop motors, reset encoders, set lock to false, and
+                // switch to state DONE
                 if (numRings == 4) {
+                    // check if the voltage is greater than 12.5. if it is, drive backward for 1000
+                    // milliseconds. if not, drive backward for 1400 milliseconds. After driving,
+                    // stop motors, reset encoders, set lock to false, and switch to state DONE
                     if (getBatteryVoltage() >= 12.5) {
+                        // drive backward at .45 power
                         drive.driveRobotCentric(0, .45, 0);
+                        // wait 1000 milliseconds then stop motors, reset encoders, set lock to
+                        // false, and switch to state DONE
                         if (time.milliseconds() >= 1000) {
                             lock = false;
                             resetDrive();
                             auto = AutoState.DONE;
                         }
                     } else {
+                        // drive backward at .6 power
                         drive.driveRobotCentric(0, .6, 0);
+                        // wait 1400 milliseconds then stop motors, reset encoders, set lock to
+                        // false, and switch to state DONE
                         if (time.milliseconds() >= 1400) {
                             lock = false;
                             resetDrive();
@@ -386,7 +533,10 @@ public class CleanAuto extends AutoSuperOp {
 
                 break;
 
+            // runs after DRIVETOMID and is the final state of the OpMode. stops OpMode, not just
+            // the motors
             case DONE:
+                // call OpModeStop from First's OpMode class
                 requestOpModeStop();
 
                 break;
