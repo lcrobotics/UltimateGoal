@@ -4,6 +4,7 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -31,8 +32,6 @@ public class ShooterIntakeSensor extends OpMode {
         spin = new Motor(hardwareMap, "spin", cpr, rpm);
         shoot = new Motor(hardwareMap, "shoot", cpr, rpm);
         intake = new Motor(hardwareMap, "intake", cpr, rpm);
-        // set shoot to reverse (to correct hardware issue)
-        shoot.setInverted(true);
         // set zero power to float instead of brake so the motors don't burn out trying to stop
         spin.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         shoot.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
@@ -52,30 +51,43 @@ public class ShooterIntakeSensor extends OpMode {
         newShooter();
         newIntake();
         spin();
+
+        telemetry.addData("time", time.milliseconds());
+        telemetry.update();
+
     }
 
     // shooter booleans (for toggle)
     boolean shooterOn = false;
     boolean isLB = false;
     boolean wasLB = false;
+    boolean LBPress = false;
     // run shoot on driver's left bumper press and run spin a second later
     public void newShooter() {
-        telemetry.addData("time", time.milliseconds());
-        telemetry.update();
-        // track history of button
         if ((isLB = gamepad1.left_bumper) && !wasLB) {
-            if (shooterOn) {
-                // if the shooter is on and left bumper is pressed, turn shoot and spin off
+            if (!shooterOn) {
+                // if the shooter is on and left bumper is pressed, turn shooter off
+                spin.set(0);
                 shoot.set(0);
+                LBPress = false;
             } else {
-                while (time.milliseconds() < 1000) {
-                    shoot.set(1);
+                // if the shooter is off and left bumper is pressed, turn shooter on
+                if (!LBPress) {
+                    time.reset();
+                    LBPress = true;
                 }
 
-                if (time.milliseconds() >= 1000) {
-                    spin.set(.9);
+                while(LBPress) {
+                    if (time.milliseconds() < 1000) {
+                        spin.set(0);
+                    } else {
+                        spin.set(.9);
+                    }
                     shoot.set(1);
-                    ringCount = 0;
+
+                    if(time.milliseconds() >= 3000) {
+                        LBPress = false;
+                    }
                 }
             }
             shooterOn = !shooterOn;
@@ -112,7 +124,6 @@ public class ShooterIntakeSensor extends OpMode {
     boolean spinOn = false;
     int notRing = 0;
     int ringCount = 0;
-
     public void spin() {
         NormalizedRGBA colors = colorSensorNormalized.getNormalizedColors();
 
@@ -120,7 +131,7 @@ public class ShooterIntakeSensor extends OpMode {
         telemetry.addData("Green", colorSensor.green());
         telemetry.addData("Blue", colorSensor.blue());
         telemetry.addData("Alpha", colorSensor.alpha()); */
-        telemetry.addLine()
+        /*telemetry.addLine()
                 .addData("RedNormalized", colors.red)
                 .addData("GreenNormalized",  colors.green)
                 .addData("BlueNormalized", colors.blue);
@@ -130,7 +141,7 @@ public class ShooterIntakeSensor extends OpMode {
         telemetry.addData("notRing", notRing);
         telemetry.addData("ring count", ringCount);
         telemetry.addData("spin on?", spinOn);
-        telemetry.update();
+        telemetry.update(); */
 
         if (ringCount != 2) {
             if((colors.red >= redThreshold || colors.green >= greenThreshold
