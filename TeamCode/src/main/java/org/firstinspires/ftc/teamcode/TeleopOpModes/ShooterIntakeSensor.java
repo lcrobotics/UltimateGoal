@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp
@@ -33,7 +32,7 @@ public class ShooterIntakeSensor extends OpMode {
     // declare new ElapsedTime (needed for shooter)
     ElapsedTime time;
     // declare new NormalizedColorSensor (needed to index rings)
-    NormalizedColorSensor colorSensorNormalized;
+    //NormalizedColorSensor colorSensorNormalized;
     // declare new ColorSensor (needed to index rings)
     ColorSensor colorSensor;
 
@@ -50,9 +49,9 @@ public class ShooterIntakeSensor extends OpMode {
         time = new ElapsedTime();
 
         // initialize NormalizedColorSensor
-        colorSensorNormalized = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
+        //colorSensorNormalized = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         // initialize ColorSensor
-        //colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
+        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
     }
 
     @Override
@@ -62,9 +61,11 @@ public class ShooterIntakeSensor extends OpMode {
         newIntake();
         index();
 
-        telemetry.addData("time", time.milliseconds());
-        telemetry.addData("wait", carouselActivationWaitTime);
+        telemetry.addData("Alpha", colorSensor.alpha());
         telemetry.addData("carousel", carousel.get());
+        telemetry.addData("notRing", notRing);
+        telemetry.addData("ring count", ringCount);
+        telemetry.addData("carousel on?", isCarouselRunning);
     }
 
 
@@ -141,87 +142,76 @@ public class ShooterIntakeSensor extends OpMode {
         }
     }
 
-    // declare experimental rbg thresholds for the ring (need to be found)
-    double redThreshold = .02;
-    double greenThreshold = .02;
-    double blueThreshold = .02;
-    double alphaThreshold = 450;
-    // used to make sure spin turns off at the right time
-    boolean spinOn = false;
+    // declare threshold for color sensor data
+    double alphaThreshold = 300;
+    // check whether or not carousel is running, ensures that carousel turns off at the correct time
+    boolean isCarouselRunning = false;
+    // keeps track of how many times the color sensor hasn't seen a ring
     int notRing = 0;
+    // keep track of rings indexed
     int ringCount = 0;
+    // autonomously index rings as they're pulled in by the intake
     public void index() {
-        NormalizedRGBA colors = colorSensorNormalized.getNormalizedColors();
-
-        /*telemetry.addData("Red", colorSensor.red());
-        telemetry.addData("Green", colorSensor.green());
-        telemetry.addData("Blue", colorSensor.blue());
-        telemetry.addData("Alpha", colorSensor.alpha()); */
-        /*telemetry.addLine()
-                .addData("RedNormalized", colors.red)
-                .addData("GreenNormalized",  colors.green)
-                .addData("BlueNormalized", colors.blue);
-        telemetry.addData("red threshold", redThreshold);
-        telemetry.addData("green threshold", greenThreshold);
-        telemetry.addData("blue threshold", blueThreshold);
-        telemetry.addData("notRing", notRing);
-        telemetry.addData("ring count", ringCount);
-        telemetry.addData("spin on?", spinOn);
-        telemetry.update(); */
-
-        if (ringCount != 2) {
-            if((colors.red >= redThreshold || colors.green >= greenThreshold
-                    || colors.blue >= blueThreshold) && spinOn) {
-                carousel.set(1);
-                spinOn = true;
-            } else if ((colors.red < redThreshold || colors.green < greenThreshold
-                    || colors.blue < blueThreshold) && spinOn && notRing == 1) {
-                carousel.set(0);
-                spinOn = false;
-                notRing = 0;
-                ringCount++;
-
-            }  else if ((colors.red < redThreshold || colors.green < greenThreshold
-                    || colors.blue < blueThreshold) && spinOn && notRing == 0) {
-                notRing++;
-                carousel.set(1);
+        // check if driver's a is pressed. if it is, begin indexing
+        if(gamepad1.a) {
+            // if there are 0, 1, or 2 rings currently indexed, turn carousel off after the color
+            // sensor doesn't see the ring a second time
+            // if there are 3 rings indexed/pulled in by the intake, turn carousel off after the
+            // second time the color sensor sees the ring
+            if (ringCount < 3) {
+                // if the ring is seen and the carousel is not yet running, turn on the carousel and
+                // set isCarouselRunning to true
+                // if the ring is not seen and it's the first time it hasn't seen a ring, increment
+                // notRing
+                // if the ring is not seen an d it's the second time it hasn't seen the ring, turn
+                // off carousel, reset notRing, increment ringCount, and reset isCarouselRunning
+                // if all else fails, stop carousel
+                if (colorSensor.alpha() > alphaThreshold && !isCarouselRunning) {
+                    // turn on carousel and set isCarouselRunning to true
+                    carousel.set(.4);
+                    isCarouselRunning = true;
+                } else if (colorSensor.alpha() < alphaThreshold && notRing == 0 && isCarouselRunning) {
+                    // increment notRing
+                    carousel.set(.4);
+                    notRing = 1;
+                } else if (colorSensor.alpha() > alphaThreshold && isCarouselRunning) {
+                    carousel.set(.4);
+                } else if (colorSensor.alpha() < alphaThreshold && notRing == 1 && isCarouselRunning) {
+                    // turn off carousel, reset notRing, increment ringCount, and reset isCarouselRunning
+                    carousel.set(0);
+                    notRing = 0;
+                    ringCount++;
+                    isCarouselRunning = false;
+                } else {
+                    // stop carousel
+                    carousel.set(0);
+                }
+            } else if (ringCount == 3) {
+                // if the ring is seen and the carousel is not yet running, turn on the carousel and
+                // set isCarouselRunning to true
+                // if the ring is not seen and it's the first time it hasn't seen a ring, increment
+                // notRing
+                // if the ring is seen for a second time, turn off carousel, reset notRing, reset
+                // ringCount, and reset isCarouselRunning
+                // if all else fails, stop carousel
+                if (colorSensor.alpha() > alphaThreshold && !isCarouselRunning) {
+                    // turn on carousel and set isCarouselRunning to true
+                    carousel.set(CAROUSEL_POWER);
+                    isCarouselRunning = true;
+                } else if (colorSensor.alpha() < alphaThreshold && notRing == 0 && isCarouselRunning) {
+                    // increment not ring
+                    notRing = 1;
+                } else if (colorSensor.alpha() > alphaThreshold && notRing == 1 && isCarouselRunning) {
+                    // turn off carousel, reset notRing, reset ringCount, and reset isCarouselRunning
+                    carousel.set(0);
+                    notRing = 0;
+                    isCarouselRunning = false;
+                    ringCount = 0;
+                } else {
+                    // turn off carousel
+                    carousel.set(0);
+                }
             }
         }
-        // shooter should override, counter of ring indices on last ring does not run spin
-        // if first time seeing ring turn on spin
-        // if second time seeing ring wait until can't see it again
-        /*if (ringCount < 3) {
-            if (colorSensor.alpha > alphaThreshold && !spinOn) {
-                spin.set(1);
-                spinOn = true;
-            } else if (colorSensor.alpha < alphaThreshold && notRing == 0) {
-                notRing = 1;
-                spin.set(1);
-            } else if (colorSensor.alpha > alphaThreshold && notRing == 1) {
-                spin.set(1);
-            } else if (colorSensor.alpha < alphaThreshold && notRing == 1) {
-                spin.set(0);
-                notRing = 0;
-                ringCount++;
-                spinOn = false;
-            } else {
-                spin.set(0);
-            }
-        } else if (ringCount == 3) {
-            if (colors.red > redThreshold && !spinOn) {
-                spin.set(1);
-                spinOn = true;
-            } else if (colors.red < redThreshold && notRing == 0) {
-                notRing = 1;
-                spin.set(1);
-            } else if (colors.red > redThreshold && notRing == 1) {
-                spin.set(0);
-                notRing = 0;
-                spinOn = false;
-                ringCount++;
-            } else {
-                spin.set(0);
-            }
-        } */
     }
 }
