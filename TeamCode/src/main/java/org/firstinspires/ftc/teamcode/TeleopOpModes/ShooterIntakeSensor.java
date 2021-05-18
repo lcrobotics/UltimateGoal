@@ -10,12 +10,23 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp
 public class ShooterIntakeSensor extends OpMode {
+    // declare class constants
+    // constant used to update the current time and get a wait time for carousel activation
+    final double CAROUSEL_ACTIVATION_TIME = 1000.0;
+    // constant used for the shooter power
+    final double SHOOTER_POWER = 1;
+    // constant used for the carousel's power
+    final double CAROUSEL_POWER = .9;
+    // constant used for the intake's power
+    final double INTAKE_POWER = 1;
+    final double THRESHOLD = .12;
+
     // declare motor constants
     final int cpr = 448;
     final int rpm = 64;
 
     // declare motors
-    Motor spin;
+    Motor carousel;
     Motor shoot;
     Motor intake;
 
@@ -28,11 +39,11 @@ public class ShooterIntakeSensor extends OpMode {
 
     public void init() {
         // initialize motors
-        spin = new Motor(hardwareMap, "spin", cpr, rpm);
+        carousel = new Motor(hardwareMap, "spin", cpr, rpm);
         shoot = new Motor(hardwareMap, "shoot", cpr, rpm);
         intake = new Motor(hardwareMap, "intake", cpr, rpm);
         // set zero power to float instead of brake so the motors don't burn out trying to stop
-        spin.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        carousel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
         shoot.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
 
         // initialize time constructor
@@ -50,80 +61,83 @@ public class ShooterIntakeSensor extends OpMode {
         newShooter();
         newIntake();
         index();
+
+        telemetry.addData("time", time.milliseconds());
+        telemetry.addData("wait", carouselActivationWaitTime);
+        telemetry.addData("carousel", carousel.get());
     }
 
+
+    // will be set to value of necessary wait time in method (eg: now + 1000 milliseconds)
+    double carouselActivationWaitTime = 0.0;
     // shooter booleans (for toggle)
-    boolean shooterOn = false;
-    boolean isLB = false;
-    boolean wasLB = false;
-    boolean LBPress = false;
+    boolean isShooterRunning = false;
+    // set equal to the previous value of driver's left bumper
+    boolean prevLB = false;
+    // ensure that the carousel's wait time is only set once per toggle
+    boolean isCarouselWaitSet = false;
     // run shoot on driver's left bumper press and run spin a second later
     public void newShooter() {
-        // track history of left bumper
-        if ((isLB = gamepad1.left_bumper) && !wasLB) {
-            // if the shooter is on and left bumper is pressed, turn off spin and shoot, and set
-            // LBPress back to false
-            // if the shooter is off and left bumper is pressed, turn on shoot, then wait a second
-            // and turn on spin
-            if (!shooterOn) {
-                // turn off spin and shoot and set LBPress to false
-                spin.set(0);
-                shoot.set(0);
-                LBPress = false;
-            } else {
-                // if LBPress is false, reset time and set LBPress to true (makes sure that time
-                // only gets reset once per time shooting)
-                if (!LBPress) {
-                    // reset time and set LBPress to true
-                    time.reset();
-                    LBPress = true;
-                }
-
-                // while LBPress is true wait 1000 milliseconds and then turn spin on, all while
-                // keeping shoot running. after 3000 milliseconds, set LBPress to false and break out
-                // of while loop
-                while(LBPress) {
-                    // if time is less than 1000 milliseconds, keep spin off. once time is greater
-                    // than 1000 milliseconds, turn spin on
-                    if (time.milliseconds() < 1000) {
-                        // keep spin off
-                        spin.set(0);
-                    } else {
-                        // turn spin on
-                        spin.set(.9);
-                    }
-                    // keep shoot on, regardless of spin's power level
-                    shoot.set(1);
-
-                    // once time is greater than 3000 milliseconds, set LBPress to false and stop
-                    // while loop
-                    if(time.milliseconds() >= 3000) {
-                        LBPress = false;
-                    }
-                }
-            }
-            shooterOn = !shooterOn;
+        // check if the driver's left bumper is pressed and if it's previous value is false (prevLB)
+        // if both conditions are met, toggle boolean isShooterRunning, causing the shooter to either
+        // turn on or off
+        if(gamepad1.left_bumper && !prevLB) {
+            // toggle boolean isShooterRunning, causing the shooter to either turn on or off
+            isShooterRunning = !isShooterRunning;
         }
-        wasLB = isLB;
+
+        // if isShooterRunning is false, stop both motors and reset isCarouselWaitSet back to false
+        if(!isShooterRunning) {
+            // stop both motors and reset isCarouselWaitSet back to false
+            carousel.set(0);
+            shoot.set(0);
+            isCarouselWaitSet = false;
+        }
+
+        // if isShooterRunning is true, turn on shooter
+        if(isShooterRunning) {
+            // turn on shooter
+            shoot.set(SHOOTER_POWER);
+        }
+
+        // if isCarouselWaitSet (initialized as false) is false and isShooterRunning is true set the
+        // carouselActivationWaitTime to the current time + CAROUSEL_ACTIVATION_TIME (set to 1000),
+        // and set isCarouselWaitSet to true, ensuring the activation time is only set once per toggle
+        if (!isCarouselWaitSet && isShooterRunning) {
+            // set carousel wait time to now + 1000 milliseconds (value of constant
+            // CAROUSEL_ACTIVATION_TIME) and set isCarouselWaitSet to true
+            carouselActivationWaitTime = time.milliseconds() + CAROUSEL_ACTIVATION_TIME;
+            isCarouselWaitSet = true;
+        }
+
+        // if the wait time has been completed (time is greater than the wait time) and the wait time
+        // has already been set, run carousel
+        if(time.milliseconds() > carouselActivationWaitTime && isCarouselWaitSet) {
+            // run carousel
+            carousel.set(CAROUSEL_POWER);
+        }
+
+        // set prevLB to the driver's left bumper
+        prevLB = gamepad1.left_bumper;
     }
 
     // takes care of motors pertaining to the intake (intake, reverse intake, and spin)
     public void newIntake () {
         // if driver presses right trigger, turn on intake
         // if driver presses left trigger, reverse intake (useful if rings get stuck somehow)
-        if(gamepad1.right_trigger > .12) {
-            intake.set(1);
-        } else if (gamepad1.left_trigger > .12) {
-            intake.set(-1);
+        if(gamepad1.right_trigger > THRESHOLD) {
+            intake.set(INTAKE_POWER);
+        } else if (gamepad1.left_trigger > THRESHOLD) {
+            intake.set(-INTAKE_POWER);
         } else {
             intake.set(0);
         }
 
         // if driver presses right bumper, turn on spin (allowing rings to be pulled up before shooting)
         if (gamepad1.right_bumper) {
-            spin.set(.9);
+            carousel.set(CAROUSEL_POWER);
         } else {
-            spin.set(0);
+            carousel.set(0);
         }
     }
 
@@ -131,7 +145,7 @@ public class ShooterIntakeSensor extends OpMode {
     double redThreshold = .02;
     double greenThreshold = .02;
     double blueThreshold = .02;
-    double alphaThreshold;
+    double alphaThreshold = 450;
     // used to make sure spin turns off at the right time
     boolean spinOn = false;
     int notRing = 0;
@@ -158,11 +172,11 @@ public class ShooterIntakeSensor extends OpMode {
         if (ringCount != 2) {
             if((colors.red >= redThreshold || colors.green >= greenThreshold
                     || colors.blue >= blueThreshold) && spinOn) {
-                spin.set(1);
+                carousel.set(1);
                 spinOn = true;
             } else if ((colors.red < redThreshold || colors.green < greenThreshold
                     || colors.blue < blueThreshold) && spinOn && notRing == 1) {
-                spin.set(0);
+                carousel.set(0);
                 spinOn = false;
                 notRing = 0;
                 ringCount++;
@@ -170,7 +184,7 @@ public class ShooterIntakeSensor extends OpMode {
             }  else if ((colors.red < redThreshold || colors.green < greenThreshold
                     || colors.blue < blueThreshold) && spinOn && notRing == 0) {
                 notRing++;
-                spin.set(1);
+                carousel.set(1);
             }
         }
         // shooter should override, counter of ring indices on last ring does not run spin
