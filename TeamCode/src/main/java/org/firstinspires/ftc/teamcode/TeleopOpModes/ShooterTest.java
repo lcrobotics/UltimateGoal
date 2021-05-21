@@ -10,7 +10,7 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
 
 @TeleOp
 public class ShooterTest extends OpMode {
-    Motor shoot;
+    Motor shooter;
     // declare motor constants
     final int cpr = 448;
     final int rpm = 64;
@@ -20,7 +20,7 @@ public class ShooterTest extends OpMode {
     DcMotorController controller;
 
     public void init() {
-        shoot = new Motor(hardwareMap, "shoot", cpr, rpm);
+        shooter = new Motor(hardwareMap, "shoot", cpr, rpm);
         implEx = new DcMotorImplEx(controller, portNumber, FORWARD);     }
 
     public void loop() {

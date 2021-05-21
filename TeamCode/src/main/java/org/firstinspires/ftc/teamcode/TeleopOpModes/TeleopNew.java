@@ -2,26 +2,36 @@ package org.firstinspires.ftc.teamcode.TeleopOpModes;
 
 import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
+import com.lcrobotics.easyftclib.commandCenter.hardware.ServoEx;
+import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp
 public class TeleopNew extends OpMode {
     // declare class constants
-    // constant used to update the current time and get a wait time for carousel activation
-    final double CAROUSEL_ACTIVATION_TIME = 1000.0;
+    // threshold used for deadzones on joysticks and making the triggers into buttons
+    final double THRESHOLD = .12;
+    // constant used for the intake's power
+    final double INTAKE_POWER = 1;
+    // constant used to update the current time and get a wait time for carousel activation during
+    // index() - makes sure the sensor doesn't see any false positives
+    final double FALSE_POSITIVE_BUFFER = 50.0;
+    // constant used to update the current time and get the correct run time for the carousel while
+    // indexing
+    final double CAROUSEL_INDEX_LENGTH = 500.0;
+    // constant used for the carousel's power while indexing
+    final double CAROUSEL_INDEXING_POWER = .5;
     // constant used for the shooter power
     final double SHOOTER_POWER = 1;
     // constant used for the carousel's power while shooting
     final double CAROUSEL_SHOOTING_POWER = 1;
-    // constant used for the intake's power
-    final double INTAKE_POWER = 1;
-    // constant used for the carousel's power while indexing
-    final double CAROUSEL_INDEXING_POWER = .5;
-    // threshold used for deadzones on joysticks and making the triggers into buttons
-    final double THRESHOLD = .12;
+    // constant used to update the current time and get a wait time for carousel activation during
+    // shooter()
+    final double CAROUSEL_ACTIVATION_TIME = 1000.0;
     // declare motor constants
     final int cpr = 448;
     final int rpm = 64;
@@ -33,42 +43,57 @@ public class TeleopNew extends OpMode {
     Motor backRightDrive;
     // declare non-drive motors
     Motor carousel;
-    Motor shoot;
+    Motor shooter;
     Motor intake;
+    Motor wobbleRotate;
+    // declare servos
+    ServoEx teleopWobble;
+    ServoEx autoWobble;
 
     // declare new ElapsedTime (needed for shooter)
     ElapsedTime time;
     // declare new ColorSensor (needed to index rings)
     ColorSensor colorSensor;
+    // declare new TouchSensor (needed to ensure wobbleRotate doesn't slam into camera)
+    TouchSensor touchSensor;
     // declare drive constructor
     public MecanumDrive drive;
 
     public void init() {
         // initialize drive motors
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, 0.9);
-        frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        // multipliers on frontRightDrive and backLeftDrive are because of the weight imbalance on our robot
-        // was .6
         frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 0.9);
-        frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        frontRightDrive.setInverted(true);
         backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1);
-        backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm, 1);
+        // set drive motors' zero power to brake so the driving is more accurate
+        frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        // set motors that need to be reversed due to hardware to inverted
+        frontRightDrive.setInverted(true);
         backRightDrive.setInverted(true);
+
         // initialize non-drive motors
         carousel = new Motor(hardwareMap, "carousel", cpr, rpm);
-        shoot = new Motor(hardwareMap, "shoot", cpr, rpm);
+        shooter = new Motor(hardwareMap, "shooter", cpr, rpm);
         intake = new Motor(hardwareMap, "intake", cpr, rpm);
-        // set zero power to float instead of brake so the motors don't burn out trying to stop
+        wobbleRotate = new Motor(hardwareMap, "wobbleRotate", cpr, rpm);
+        // set non-drive motors' zero power to float instead of brake so the motors don't burn out
+        // trying to stop
         carousel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
-        shoot.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+        shooter.setZeroPowerBehavior(Motor.ZeroPowerBehavior.FLOAT);
+
+        // initialize servos
+        teleopWobble = new SimpleServo(hardwareMap, "teleopWobble");
+        autoWobble = new SimpleServo(hardwareMap, "autoWobble");
 
         // initialize time constructor
         time = new ElapsedTime();
         // initialize ColorSensor
         colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
+        // initialize TouchSensor
+        touchSensor = hardwareMap.get(TouchSensor.class, "sensor_touch");
         // initialize drive (so we can drive)
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
         drive.setMaxSpeed(1);
@@ -77,35 +102,38 @@ public class TeleopNew extends OpMode {
     @Override
     public void loop() {
         // call TeleOp methods
-        index();
-        newShooter();
-        newIntake();
         drive();
+        intake();
+        index();
+        shooter();
+        wobbleGoals();
+        emergencyStop();
 
-        // add index telemetry
-        telemetry.addData("Alpha", colorSensor.alpha());
-        telemetry.addData("carousel", carousel.get());
-        telemetry.addData("ringSightings", ringSightings);
-        telemetry.addData("ring count", ringCount);
-        telemetry.addData("time", time.milliseconds());
-        telemetry.addData("wait time", carouselActivationWaitTime);
-        telemetry.addData("manual carousel", isCarouselManuallyStopped);
-        telemetry.addData("index wait", indexWaitSet);
         // add drive telemetry
         telemetry.addData("Front Left Power", frontLeftDrive.get());
         telemetry.addData("Front Right Power", frontRightDrive.get());
         telemetry.addData("Back Left Power", backLeftDrive.get());
         telemetry.addData("Back Right Power", backRightDrive.get());
-        telemetry.addData("Shooter Power", shoot.motor.getPower());
+        // add index telemetry
+        telemetry.addData("Alpha", colorSensor.alpha());
+        telemetry.addData("carousel", carousel.get());
+        telemetry.addData("ring count", ringCount);
+        telemetry.addData("wait time", carouselActivationWaitTime);
+        telemetry.addData("index wait", indexWaitSet);
+        // add shooter telemetry
+        telemetry.addData("Shooter Power", shooter.motor.getPower());
+        telemetry.addData("manual carousel", isCarouselManuallyStopped);
+        telemetry.addData("time", time.milliseconds());
     }
-
 
     // drive according to controller inputs from driver's sticks
     public void drive() {
-        double strafePower = Math.abs(gamepad1.left_stick_x) < 0.1 ? 0 : gamepad1.left_stick_x;
-        double forwardPower = Math.abs(gamepad1.left_stick_y) < 0.1 ? 0 : gamepad1.left_stick_y;
-        double turnPower = Math.abs(gamepad1.right_stick_x) < 0.1 ? 0 : gamepad1.right_stick_x;
-
+        // set the driver's sticks to correspond with the drive method
+        // left stick y = forward/ backward; left stick x = strafing; right stick x = turning
+        double strafePower = Math.abs(gamepad1.left_stick_x) < THRESHOLD ? 0 : gamepad1.left_stick_x;
+        double forwardPower = Math.abs(gamepad1.left_stick_y) < THRESHOLD ? 0 : gamepad1.left_stick_y;
+        double turnPower = Math.abs(gamepad1.right_stick_x) < THRESHOLD ? 0 : gamepad1.right_stick_x;
+        // call drive robot centric and set to the values found above
         drive.driveRobotCentric(
                 -strafePower * 0.8,
                 -forwardPower * 0.8,
@@ -114,18 +142,86 @@ public class TeleopNew extends OpMode {
         );
     }
 
-    // will be set to value of necessary wait time in method (eg: now + 1000 milliseconds)
-    double carouselActivationWaitTime = 0.0;
-    // shooter booleans (for toggle)
-    boolean isShooterRunning = false;
+    // allows for the power to only be set once, making the code more efficient
+    double intakePower = 0;
+    // binds intake to right trigger, reverse intake to left trigger
+    // both driver and operator can intake, but driver has precedence
+    public void intake() {
+        // set intake as a button on right trigger and reverse intake on left trigger (button)
+        if (gamepad2.right_trigger > THRESHOLD) {
+            intakePower = INTAKE_POWER;
+        } else if (gamepad2.left_trigger > THRESHOLD) {
+            intakePower = -INTAKE_POWER;
+        }
+
+        // set intake as a button on right trigger and reverse intake on left trigger (button)
+        // and override operator
+        if (gamepad1.right_trigger > THRESHOLD) {
+            intakePower = INTAKE_POWER;
+        } else if (gamepad1.left_trigger > THRESHOLD) {
+            intakePower = -INTAKE_POWER;
+        }
+
+        // set intake to the double intake power
+        intake.set(intakePower);
+    }
+
+    // declare threshold for color sensor data
+    double alphaThreshold = 250;
+    // keep track of rings indexed
+    int ringCount = 0;
+    // keep track of whether or not a wait time has been set
+    boolean indexWaitSet = false;
+    // will be set to value of necessary wait time in method (eg: now + 50 milliseconds)
+    double carouselIndexWaitTime = 0.0;
+    // index rings (can be done manually on driver's right bumper or automatically after driver's x press)
+    public void index() {
+        // if the driver's x button is pressed and there are less than 2 rings indexed, set a wait time
+        // (to ensure no false positives), then use color sensor to detect the ring. If the color
+        // sensor sees the ring and the wait time is finished, then turn on carousel until it has
+        // finished indexing (determined by the time)
+        if(gamepad1.x && ringCount < 2) {
+            // if a wait time has not been set, set carouselIndexWaitTime to now + the buffer time
+            // and set the boolean to true
+            if (!indexWaitSet) {
+                carouselIndexWaitTime = time.milliseconds() + FALSE_POSITIVE_BUFFER;
+                indexWaitSet = true;
+            }
+
+            // if the color sensor sees the ring and has waited the correct amount of time, turn on
+            // the carousel as until the time is greater than the assigned indexing time. after the
+            // time is up, turn off carousel, increment ringCount, and declare that the wait time has
+            // not been set
+            if (alphaThreshold < colorSensor.alpha() && carouselIndexWaitTime < time.milliseconds()) {
+                if(time.milliseconds() < time.milliseconds() + CAROUSEL_INDEX_LENGTH) {
+                    carousel.set(CAROUSEL_INDEXING_POWER);
+                } else {
+                    carousel.set(0);
+                    ringCount++;
+                    indexWaitSet = false;
+                }
+            }
+        }
+
+        // if driver presses right bumper, turn on carousel at half power, otherwise stop carousel
+        if(gamepad1.right_bumper) {
+            carousel.set(CAROUSEL_INDEXING_POWER);
+        } else {
+            carousel.set(0);
+        }
+    }
     // set equal to the previous value of driver's left bumper
     boolean prevLB = false;
-    // ensure that the carousel's wait time is only set once per toggle
-    boolean isCarouselWaitSet = false;
+    // keep track of whether or not the shooter is currently running
+    boolean isShooterRunning = false;
     // ensure that if the carousel is run manually, the carousel will not run again on the same toggle
     boolean isCarouselManuallyStopped = false;
-    // run shoot on driver's left bumper press and run spin a second later
-    public void newShooter() {
+    // ensure that the carousel's wait time is only set once per toggle
+    boolean isCarouselWaitSet = false;
+    // will be set to value of necessary wait time in method (eg: now + 1000 milliseconds)
+    double carouselActivationWaitTime = 0.0;
+    // run shooter on driver's left bumper press and run spin a second later
+    public void shooter() {
         // check if the driver's left bumper is pressed and if it's previous value is false (prevLB)
         // if both conditions are met, toggle boolean isShooterRunning, causing the shooter to either
         // turn on or off and toggle boolean isCarouselManuallyStopped, ensuring the driver can manually
@@ -141,14 +237,14 @@ public class TeleopNew extends OpMode {
         if(!isShooterRunning) {
             // stop both motors and reset isCarouselWaitSet back to false
             carousel.set(0);
-            shoot.set(0);
+            shooter.set(0);
             isCarouselWaitSet = false;
         }
 
         // if isShooterRunning is true, turn on shooter
         if(isShooterRunning) {
             // turn on shooter
-            shoot.set(SHOOTER_POWER);
+            shooter.set(SHOOTER_POWER);
         }
 
         // if the driver's right bumper (manual index) isn't pressed and hasn't been pressed during
@@ -183,88 +279,88 @@ public class TeleopNew extends OpMode {
         prevLB = gamepad1.left_bumper;
     }
 
-    // takes care of motors pertaining to the intake (intake, reverse intake, and spin)
-    public void newIntake () {
-        // if driver presses right trigger, turn on intake
-        // if driver presses left trigger, reverse intake (useful if rings get stuck somehow)
-        if(gamepad1.right_trigger > THRESHOLD) {
-            intake.set(INTAKE_POWER);
-        } else if (gamepad1.left_trigger > THRESHOLD) {
-            intake.set(-INTAKE_POWER);
-        } else {
-            intake.set(0);
+    // set equal to the previous value of operator's a button
+    boolean prevA = false;
+    // keep track of whether or not the teleopServo is currently open
+    boolean isTeleopServo = false;
+    // set equal to the previous value of operator's y button
+    boolean prevY = false;
+    // keep track of whether or not the autoServo is currently open
+    boolean isAutoServo = false;
+    // bind autoWobble to operator's a, bind teleopWobble to operator's y, and bind wobbleRotate to
+    // operator's right stick y (also uses the touch sensor to stop wobbleRotate)
+    public void wobbleGoals() {
+        // double that allows for neater method code (checks for threshold)
+        double wobbleRotatePower = Math.abs(gamepad2.right_stick_y) < THRESHOLD ? 0 : gamepad2.right_stick_y;
+
+        // if operator's a button is pressed and it's previous value is false (prevA), check if
+        // teleopServo is open (isTeleopServo). if it is, close it and if it isn't, open it. No
+        // matter what, toggle isTeleopServo
+        if (gamepad2.a && !prevA) {
+            // if
+            if (isTeleopServo) {
+                // if servo is open, close on a press
+                teleopWobble.setPosition(.93);
+            } else {
+                // if servo is closed, open on a press
+                teleopWobble.setPosition(.3);
+            }
+            // set isTeleopServo to it's opposite (toggle)
+            isTeleopServo = !isTeleopServo;
+        }
+        // set prevA to the current value of operator's a
+        prevA = gamepad2.a;
+
+        // if operator's y button is pressed and it's previous value is false (prevY), check if
+        // autoServo is open (isAutoServo). if it is, close it and if it isn't, open it. No matter
+        // what, toggle isAutoServo
+        if (gamepad2.y && !prevY) {
+            if (isAutoServo) {
+                // if servo is open, close on y press
+                autoWobble.setPosition(0);
+            } else {
+                // if servo is closed, open on y press
+                autoWobble.setPosition(0.5);
+            }
+            // set isAutoServo to it's opposite (toggle)
+            isAutoServo = !isAutoServo;
+        }
+        // set prevY to the current value of operator's y
+        prevY = gamepad2.y;
+
+        // set wobble rotate to wobbleRotatePower (declared above, is equal to operator's right stick
+        // y as long as it's above the threshold)
+        wobbleRotate.set(wobbleRotatePower);
+        // if the touch sensor is pressed and the wobbleRotatePower isn't positive (meaning if the
+        // operator isn't bringing the goal up), stop wobbleRotate
+        if(touchSensor.isPressed() && wobbleRotatePower < 0) {
+            wobbleRotate.set(0);
         }
     }
 
+    // allows driver and operator to stop all of the hardware they control on dpad down press
+    public void emergencyStop() {
+        if(gamepad1.dpad_down) {
+            // stop drive motors
+            frontLeftDrive.set(0);
+            frontRightDrive.set(0);
+            backLeftDrive.set(0);
+            backRightDrive.set(0);
 
-    // declare threshold for color sensor data
-    double alphaThreshold = 250;
-    // keeps track of how many times the color sensor hasn't seen a ring
-    int ringSightings = 0;
-    // keep track of rings indexed
-    int ringCount = 0;
-
-    boolean indexWaitSet = false;
-    double carouselIndexWaitTime = 0.0;
-    final double FALSE_POSITIVE_BUFFER = 50.0;
-    // autonomously index rings as they are pulled in by the intake
-    public void index() {
-        /*if(ringCount < 2) {
-            if(!indexWaitSet) {
-                carouselIndexWaitTime = time.milliseconds() + FALSE_POSITIVE_BUFFER;
-                indexWaitSet = true;
-            }
-
-            if(alphaThreshold < colorSensor.alpha() && carouselIndexWaitTime < time.milliseconds()) {
-                ringSightings++;
-                carousel.set(CAROUSEL_INDEXING_POWER);
-                indexWaitSet = false;
-            }
-
-            if(!indexWaitSet) {
-                carouselIndexWaitTime = time.milliseconds() + FALSE_POSITIVE_BUFFER;
-                indexWaitSet = true;
-            }
-
-            if (alphaThreshold > colorSensor.alpha() && ringSightings == 1
-                    && carouselIndexWaitTime < time.milliseconds()) {
-                carousel.set(CAROUSEL_INDEXING_POWER);
-                indexWaitSet = false;
-            }
-
-            if(!indexWaitSet) {
-                carouselIndexWaitTime = time.milliseconds() + FALSE_POSITIVE_BUFFER;
-                indexWaitSet = true;
-            }
-
-            if(alphaThreshold < colorSensor.alpha() && ringSightings == 1
-                    && carouselIndexWaitTime < time.milliseconds()) {
-                ringSightings++;
-                carousel.set(CAROUSEL_INDEXING_POWER);
-                indexWaitSet = false;
-            }
-
-            if(!indexWaitSet) {
-                carouselIndexWaitTime = time.milliseconds() + FALSE_POSITIVE_BUFFER;
-                indexWaitSet = true;
-            }
-
-            if (alphaThreshold > colorSensor.alpha() && ringSightings == 2
-                    && carouselIndexWaitTime < time.milliseconds()) {
-                carousel.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-                carousel.set(0);
-                ringCount++;
-                ringSightings = 0;
-                indexWaitSet = false;
-            }
-        } */
-
-
-
-        if(gamepad1.right_bumper) {
-            carousel.set(CAROUSEL_INDEXING_POWER);
-        } else {
+            // stop non-drive motors
             carousel.set(0);
+            shooter.set(0);
+            intake.set(0);
+        }
+
+        if(gamepad2.dpad_down) {
+            // stop non-drive motors
+            intake.set(0);
+            wobbleRotate.set(0);
+
+            // release all servos
+            teleopWobble.setPosition(.93);
+            autoWobble.setPosition(0);
         }
     }
 }
