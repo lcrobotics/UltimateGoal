@@ -146,6 +146,8 @@ public abstract class AutoSuperOpNew extends OpMode {
         // initialize servos
         autoWobble = new SimpleServo(hardwareMap, "autoWobble");
 
+        // initialize TouchSensor
+        touchSensor = hardwareMap.get(TouchSensor.class, "sensor_touch");
 
         // initialize drive
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);

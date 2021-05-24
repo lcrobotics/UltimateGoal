@@ -104,6 +104,9 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                     time.reset();
                 }
 
+                if(!touchSensor.isPressed()) {
+                    wobbleRotate.set(.6);
+                }
 
             case ROTATECW:
                 // make sure code only runs once and reset the time
