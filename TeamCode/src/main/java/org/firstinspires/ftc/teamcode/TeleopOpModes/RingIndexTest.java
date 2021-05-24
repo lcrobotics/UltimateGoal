@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp
-public class PeytonsSensor extends OpMode {
+//@TeleOp
+public class RingIndexTest extends OpMode {
     // declare class constants
     // constant used to update the current time and get a wait time for carousel activation
     final double CAROUSEL_ACTIVATION_TIME = 1000.0;

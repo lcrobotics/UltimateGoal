@@ -106,7 +106,6 @@ public abstract class SuperOpNew extends OpMode {
         telemetry.addData("carousel", carousel.get());
         telemetry.addData("ring count", ringCount);
         telemetry.addData("wait time", carouselActivationWaitTime);
-        telemetry.addData("index wait", indexWaitSet);
         // add shooter telemetry
         telemetry.addData("Shooter Power", shooter.motor.getPower());
         telemetry.addData("manual carousel", isCarouselManuallyStopped);
@@ -150,29 +149,86 @@ public abstract class SuperOpNew extends OpMode {
         }
     }
 
+
     // declare threshold for color sensor data
-    double alphaThreshold = 250;
-    // keep track of rings indexed
-    int ringCount = 0;
-    // keep track of whether or not a wait time has been set
-    boolean indexWaitSet = false;
-    boolean prevX = false;
-    boolean isCarouselIndexing = false;
-    // index rings (can be done manually on driver's right bumper or automatically after driver's x press)
+    double alphaThreshold = 500;
+    // check whether or not carousel is running, ensures that carousel turns off at the correct time
+    boolean isCarouselRunning = false;
+    double lastSeenRing = 0.0;
+    double ringDetectionTimer = 15.0;
+    boolean currentlyViewingRing = false;
+    enum RingState {
+        FRONT, IN_MIDDLE, BACK, NONE
+    }
+    RingState ringState = RingState.NONE;
+    double ringCount = 0;
+
+    // autonomously index rings as they're pulled in by the intake
     public void index() {
-        // if the driver's x button is pressed and there are less than 2 rings indexed, set a wait time
-        // (to ensure no false positives), then use color sensor to detect the ring. If the color
-        // sensor sees the ring and the wait time is finished, then turn on carousel until it has
-        // finished indexing (determined by the time)
+        telemetry.addData("> sensor data: ", colorSensor.alpha());
+        telemetry.addData("> sensor threshold: ", alphaThreshold);
+        telemetry.addData("> currently viewing ring: ", currentlyViewingRing);
+        telemetry.addData("> when ring last saw: ", lastSeenRing);
+        telemetry.addData("> Ring State: ", ringState);
+
+        telemetry.addData("> ring count: ", ringCount);
+        telemetry.addData("> carousel on: ", isCarouselRunning);
+        telemetry.addData("> time: ", time.milliseconds());
+        telemetry.addData("> Ring Detection Time Threshold: ", ringDetectionTimer);
 
 
-        // if driver presses right bumper, turn on carousel at half power, otherwise stop carousel
-        if(gamepad1.right_bumper) {
-            carousel.set(CAROUSEL_INDEXING_POWER);
-        } else {
-            carousel.set(0);
+
+
+        // TODO: sync into one method
+//        shoot.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
+        // TODO: figure out where ringCount can be manipulated elsewhere
+
+        // determines whether the sensor can detect a ring
+        currentlyViewingRing = alphaThreshold < colorSensor.alpha();
+
+        // An observed ring only needs to be modified when it was not previously seen
+        if (currentlyViewingRing) {
+            // if the ringState previously indicates that the ring was not visible, increment state
+            switch (ringState) {
+                // if a new ring is seen, start carousel to move ring
+                case NONE:
+                    // the third ring we want to not be indexed, so we only increase count but not move on to the indexing states
+                    if (ringCount < 3) {
+                        ringCount++;
+
+                        // the first two rings we want to index, so we increment state and set carousel motor power
+                        if (ringCount <= 2) {
+                            ringState = RingState.FRONT;
+                            carousel.set(CAROUSEL_INDEXING_POWER);
+                        }
+                    }
+                    break;
+                case IN_MIDDLE:
+                    ringState = RingState.BACK;
+                    break;
+            }
+            // start a timer to monitor when the last time it was seen
+            // this deals with false negatives given by hardware
+            lastSeenRing = time.milliseconds();
+            // if the visibility of the ring has timed out, increment the visible states
+        } else if(time.milliseconds() - ringDetectionTimer > lastSeenRing && lastSeenRing != -1) {
+            switch (ringState) {
+                case FRONT:
+                    ringState = RingState.IN_MIDDLE;
+                    break;
+                // if the ring state was the back, we can stop the carousel and increase the ring count on the carousel
+                case BACK:
+                    ringState = RingState.NONE;
+                    carousel.set(0);
+                    lastSeenRing = -1;
+                    break;
+            }
         }
     }
+
+
+
     // set equal to the previous value of driver's left bumper
     boolean prevLB = false;
     // keep track of whether or not the shooter is currently running

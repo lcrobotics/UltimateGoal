@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
-@TeleOp
+//@TeleOp
 public class TouchSensorTest extends OpMode {
     // declare touch sensor
     TouchSensor touch;

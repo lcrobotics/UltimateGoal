@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
 
 
-@TeleOp
+//@TeleOp
 public class ShooterTest extends OpMode {
     Motor shooter;
     // declare motor constants

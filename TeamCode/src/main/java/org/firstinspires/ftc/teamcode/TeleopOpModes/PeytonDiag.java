@@ -4,7 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@TeleOp
+
+// A class used to show that the robot was wired incorrectly.
+// Can be deleted
+//@TeleOp
 public class PeytonDiag extends OpMode {
     DcMotor fl;
     DcMotor bl;
