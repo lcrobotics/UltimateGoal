@@ -21,7 +21,10 @@ public enum AutoState {
     DROPWOBBLE(12),
     TURNABIT(13),
     DRIVEABIT(14),
-    DETECT(15);
+    DETECT(15),
+    STRAFECW(16),
+    STRAFECCW(17);
+
 
     int val;
 
