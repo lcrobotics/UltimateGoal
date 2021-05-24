@@ -42,6 +42,7 @@ public abstract class SuperOp extends OpMode {
     ServoEx shooterControl;
 
     ServoEx wobbleLock;
+
     // frontHook booleans (for toggle)
     boolean frontOn = false;
     boolean isA = false;
@@ -198,6 +199,8 @@ public abstract class SuperOp extends OpMode {
 
     final double wobbleLockOpenPosition = .2;
     final double wobbleLockClosePosition = 0;
+
+
     boolean wobbleLockActuated = false;
     boolean lastGamepad2Bpress = false;
     // bind rotate to operator's right stick
