@@ -20,7 +20,7 @@ public abstract class SuperOpNew extends OpMode {
     final double FALSE_POSITIVE_BUFFER = 50.0;
     // constant used to update the current time and get the correct run time for the carousel while
     // indexing
-    final double CAROUSEL_INDEX_LENGTH = 500.0;
+    final double CAROUSEL_INDEX_LENGTH = 300.0;
     // constant used for the carousel's power while indexing
     final double CAROUSEL_INDEXING_POWER = .5;
     // constant used for the shooter power
@@ -134,23 +134,20 @@ public abstract class SuperOpNew extends OpMode {
     // binds intake to right trigger, reverse intake to left trigger
     // both driver and operator can intake, but driver has precedence
     public void intake() {
-        // set intake as a button on right trigger and reverse intake on left trigger (button)
-        if (gamepad2.right_trigger > THRESHOLD) {
-            intakePower = INTAKE_POWER;
+        if(gamepad2.right_trigger > THRESHOLD) {
+            intake.set(INTAKE_POWER);
         } else if (gamepad2.left_trigger > THRESHOLD) {
-            intakePower = -INTAKE_POWER;
+            intake.set(-INTAKE_POWER);
+        } else {
+            intake.set(0);
         }
-
-        // set intake as a button on right trigger and reverse intake on left trigger (button)
-        // and override operator
-        if (gamepad1.right_trigger > THRESHOLD) {
-            intakePower = INTAKE_POWER;
+        if(gamepad1.right_trigger > THRESHOLD) {
+            intake.set(INTAKE_POWER);
         } else if (gamepad1.left_trigger > THRESHOLD) {
-            intakePower = -INTAKE_POWER;
+            intake.set(-INTAKE_POWER);
+        } else {
+            intake.set(0);
         }
-
-        // set intake to the double intake power
-        intake.set(intakePower);
     }
 
     // declare threshold for color sensor data
@@ -159,36 +156,15 @@ public abstract class SuperOpNew extends OpMode {
     int ringCount = 0;
     // keep track of whether or not a wait time has been set
     boolean indexWaitSet = false;
-    // will be set to value of necessary wait time in method (eg: now + 50 milliseconds)
-    double carouselIndexWaitTime = 0.0;
+    boolean prevX = false;
+    boolean isCarouselIndexing = false;
     // index rings (can be done manually on driver's right bumper or automatically after driver's x press)
     public void index() {
         // if the driver's x button is pressed and there are less than 2 rings indexed, set a wait time
         // (to ensure no false positives), then use color sensor to detect the ring. If the color
         // sensor sees the ring and the wait time is finished, then turn on carousel until it has
         // finished indexing (determined by the time)
-        if(gamepad1.x && ringCount < 2) {
-            // if a wait time has not been set, set carouselIndexWaitTime to now + the buffer time
-            // and set the boolean to true
-            if (!indexWaitSet) {
-                carouselIndexWaitTime = time.milliseconds() + FALSE_POSITIVE_BUFFER;
-                indexWaitSet = true;
-            }
 
-            // if the color sensor sees the ring and has waited the correct amount of time, turn on
-            // the carousel as until the time is greater than the assigned indexing time. after the
-            // time is up, turn off carousel, increment ringCount, and declare that the wait time has
-            // not been set
-            if (alphaThreshold < colorSensor.alpha() && carouselIndexWaitTime < time.milliseconds()) {
-                if(time.milliseconds() < time.milliseconds() + CAROUSEL_INDEX_LENGTH) {
-                    carousel.set(CAROUSEL_INDEXING_POWER);
-                } else {
-                    carousel.set(0);
-                    ringCount++;
-                    indexWaitSet = false;
-                }
-            }
-        }
 
         // if driver presses right bumper, turn on carousel at half power, otherwise stop carousel
         if(gamepad1.right_bumper) {
@@ -287,10 +263,10 @@ public abstract class SuperOpNew extends OpMode {
             // if
             if (isTeleopServo) {
                 // if servo is open, close on a press
-                teleopWobble.setPosition(.93);
+                teleopWobble.setPosition(.7);
             } else {
                 // if servo is closed, open on a press
-                teleopWobble.setPosition(.3);
+                teleopWobble.setPosition(-.3);
             }
             // set isTeleopServo to it's opposite (toggle)
             isTeleopServo = !isTeleopServo;
@@ -304,10 +280,10 @@ public abstract class SuperOpNew extends OpMode {
         if (gamepad2.y && !prevY) {
             if (isAutoServo) {
                 // if servo is open, close on y press
-                autoWobble.setPosition(0);
+                autoWobble.setPosition(.7);
             } else {
                 // if servo is closed, open on y press
-                autoWobble.setPosition(0.5);
+                autoWobble.setPosition(0.1);
             }
             // set isAutoServo to it's opposite (toggle)
             isAutoServo = !isAutoServo;
@@ -317,10 +293,10 @@ public abstract class SuperOpNew extends OpMode {
 
         // set wobble rotate to wobbleRotatePower (declared above, is equal to operator's right stick
         // y as long as it's above the threshold)
-        wobbleRotate.set(wobbleRotatePower);
+        wobbleRotate.set(-wobbleRotatePower * .7);
         // if the touch sensor is pressed and the wobbleRotatePower isn't positive (meaning if the
         // operator isn't bringing the goal up), stop wobbleRotate
-        if(touchSensor.isPressed() && wobbleRotatePower < 0) {
+        if(touchSensor.isPressed() && wobbleRotatePower > 0) {
             wobbleRotate.set(0);
         }
     }
