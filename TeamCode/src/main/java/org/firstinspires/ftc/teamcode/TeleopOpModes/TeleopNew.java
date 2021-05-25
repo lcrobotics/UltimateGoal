@@ -13,8 +13,8 @@ public class TeleopNew extends SuperOpNew{
         // call TeleOp methods
         drive();
         intake();
-        index();
-        shooter();
+//        index(); // self sufficient
+        shooterRewrite(); // manually active
         wobbleGoals();
         emergencyStop();
     }

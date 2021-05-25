@@ -22,7 +22,7 @@ public abstract class SuperOpNew extends OpMode {
     // indexing
     final double CAROUSEL_INDEX_LENGTH = 300.0;
     // constant used for the carousel's power while indexing
-    final double CAROUSEL_INDEXING_POWER = .5;
+    final double CAROUSEL_INDEXING_POWER = .2;
     // constant used for the shooter power
     final double SHOOTER_POWER = 1;
     // constant used for the carousel's power while shooting
@@ -108,7 +108,7 @@ public abstract class SuperOpNew extends OpMode {
         telemetry.addData("wait time", carouselActivationWaitTime);
         // add shooter telemetry
         telemetry.addData("Shooter Power", shooter.motor.getPower());
-        telemetry.addData("manual carousel", isCarouselManuallyStopped);
+//        telemetry.addData("manual carousel", isCarouselManuallyStopped);
         telemetry.addData("time", time.milliseconds());
     }
 
@@ -133,19 +133,18 @@ public abstract class SuperOpNew extends OpMode {
     // binds intake to right trigger, reverse intake to left trigger
     // both driver and operator can intake, but driver has precedence
     public void intake() {
+        intake.set(0);
+
         if(gamepad2.right_trigger > THRESHOLD) {
             intake.set(INTAKE_POWER);
         } else if (gamepad2.left_trigger > THRESHOLD) {
             intake.set(-INTAKE_POWER);
-        } else {
-            intake.set(0);
         }
+
         if(gamepad1.right_trigger > THRESHOLD) {
             intake.set(INTAKE_POWER);
         } else if (gamepad1.left_trigger > THRESHOLD) {
             intake.set(-INTAKE_POWER);
-        } else {
-            intake.set(0);
         }
     }
 
@@ -172,9 +171,7 @@ public abstract class SuperOpNew extends OpMode {
         telemetry.addData("> Ring State: ", ringState);
 
         telemetry.addData("> ring count: ", ringCount);
-        telemetry.addData("> carousel on: ", isCarouselRunning);
         telemetry.addData("> time: ", time.milliseconds());
-        telemetry.addData("> Ring Detection Time Threshold: ", ringDetectionTimer);
 
 
 
@@ -223,7 +220,11 @@ public abstract class SuperOpNew extends OpMode {
                     carousel.set(0);
                     lastSeenRing = -1;
                     break;
+                case IN_MIDDLE:
+                    carousel.set(CAROUSEL_INDEXING_POWER);
             }
+        } else {
+            carousel.set(0);
         }
     }
 
@@ -231,71 +232,56 @@ public abstract class SuperOpNew extends OpMode {
 
     // set equal to the previous value of driver's left bumper
     boolean prevLB = false;
+    boolean left_bumper;
     // keep track of whether or not the shooter is currently running
     boolean isShooterRunning = false;
-    // ensure that if the carousel is run manually, the carousel will not run again on the same toggle
-    boolean isCarouselManuallyStopped = false;
-    // ensure that the carousel's wait time is only set once per toggle
-    boolean isCarouselWaitSet = false;
     // will be set to value of necessary wait time in method (eg: now + 1000 milliseconds)
     double carouselActivationWaitTime = 0.0;
-    // run shooter on driver's left bumper press and run spin a second later
-    public void shooter() {
+
+    void shooterRewrite() {
+        left_bumper = gamepad1.left_bumper;
+        telemetry.addData("> Prev: ", prevLB);
+        telemetry.addData("> Bumper: ", left_bumper);
+        telemetry.addData("> Is shooter running", isShooterRunning);
+
+
         // check if the driver's left bumper is pressed and if it's previous value is false (prevLB)
         // if both conditions are met, toggle boolean isShooterRunning, causing the shooter to either
         // turn on or off and toggle boolean isCarouselManuallyStopped, ensuring the driver can manually
         // run the carousel
-        if(gamepad1.left_bumper && !prevLB) {
+        if(left_bumper && !prevLB) {
             // toggle boolean isShooterRunning, causing the shooter to either turn on or off and toggle
             // boolean isCarouselManuallyStopped, ensuring the driver can manually run the carousel
-            isShooterRunning = !isShooterRunning;
-            isCarouselManuallyStopped = false;
-        }
-
-        // if isShooterRunning is false, stop both motors and reset isCarouselWaitSet back to false
-        if(!isShooterRunning) {
-            // stop both motors and reset isCarouselWaitSet back to false
-            carousel.set(0);
-            shooter.set(0);
-            isCarouselWaitSet = false;
-        }
-
-        // if isShooterRunning is true, turn on shooter
-        if(isShooterRunning) {
-            // turn on shooter
-            shooter.set(SHOOTER_POWER);
-        }
-
-        // if the driver's right bumper (manual index) isn't pressed and hasn't been pressed during
-        // the current toggle, run carousel after a second
-        // if the right bumper is pressed or index() hasn't been ran during the current toggle, run
-        // index() and set isCarouselManuallyStopped to true
-        if (!gamepad1.right_bumper && !isCarouselManuallyStopped) {
-            // if isCarouselWaitSet (initialized as false) is false and isShooterRunning is true set the
-            // carouselActivationWaitTime to the current time + CAROUSEL_ACTIVATION_TIME (set to 1000),
-            // and set isCarouselWaitSet to true, ensuring the activation time is only set once per toggle
-            if (!isCarouselWaitSet && isShooterRunning) {
-                // set carousel wait time to now + 1000 milliseconds (value of constant
-                // CAROUSEL_ACTIVATION_TIME) and set isCarouselWaitSet to true
+            if (!isShooterRunning) {
+                isShooterRunning = true;
                 carouselActivationWaitTime = time.milliseconds() + CAROUSEL_ACTIVATION_TIME;
-                isCarouselWaitSet = true;
+            } else {
+                isShooterRunning = false;
             }
+
+
+        }
+
+        // TODO: add manual index
+
+        if (isShooterRunning) {
+            shooter.set(SHOOTER_POWER);
 
             // if the wait time has been completed (time is greater than the wait time) and the wait time
             // has already been set, run carousel
-            if (time.milliseconds() > carouselActivationWaitTime && isCarouselWaitSet) {
+            if (time.milliseconds() > carouselActivationWaitTime) {
                 // run carousel
                 carousel.set(CAROUSEL_SHOOTING_POWER);
+                lastSeenRing = -1;
                 ringCount = 0;
             }
-        } else {
-            // run index() and set isCarouselManuallyStopped to true
+
+        } else{
+            shooter.set(0);
             index();
-            isCarouselManuallyStopped = true;
         }
 
-        // set prevLB to the driver's left bumper
-        prevLB = gamepad1.left_bumper;
+        prevLB = left_bumper;
     }
 
     // set equal to the previous value of operator's a button
@@ -349,11 +335,11 @@ public abstract class SuperOpNew extends OpMode {
 
         // set wobble rotate to wobbleRotatePower (declared above, is equal to operator's right stick
         // y as long as it's above the threshold)
-        wobbleRotate.set(-wobbleRotatePower * .7);
+        wobbleRotate.set(-wobbleRotatePower * .5);
         // if the touch sensor is pressed and the wobbleRotatePower isn't positive (meaning if the
         // operator isn't bringing the goal up), stop wobbleRotate
         if(touchSensor.isPressed() && wobbleRotatePower > 0) {
-            wobbleRotate.set(0);
+            wobbleRotate.set(-0.1);
         }
     }
 
