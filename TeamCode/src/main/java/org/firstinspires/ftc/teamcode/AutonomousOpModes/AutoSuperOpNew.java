@@ -55,54 +55,15 @@ public abstract class AutoSuperOpNew extends OpMode {
     public ServoEx autoWobble;
 
     // declare touch sensor
-    TouchSensor touchSensor;
+    public TouchSensor touchSensor;
 
     /* declare all booleans needed for auto opmodes */
-
-    // check if servo is going to position 1 or 0
-    public boolean servoPos;
-    // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
-    public boolean angleCorrect = false;
     // make sure each state only runs once (since all of our OpModes are iterative)
     public boolean lock = false;
-    // makes sure that the hesitation time only runs once
-    public boolean shoot = false;
-    // when there are zero rings, the code must go back to state ROTATECW, this boolean makes sure
-    // the code run in the first instance of the state does not run again
-    public boolean rotateZeroCW = false;
-    // when there are zero rings, the code must go back to state ROTATECCW, this boolean makes sure
-    // the code run in the first instance of the state does not run again
-    public boolean rotateZeroCCW = false;
-    // when there is one ring, the code must go back to state ROTATECW, this boolean makes sure
-    // the code run in the first instance of the state does not run again
-    public boolean rotateSingle = false;
-    // when there are four rings, the code must go back to state ROTATECW, this boolean makes sure
-    // the code run in the first instance of the state does not run again
-    public boolean rotateQuad = false;
 
     /* declare all ints needed for auto opmodes */
-
-    // number of attempts to find nav servoPos
-    public int turnCount = 0;
-    // count number of servo movements
-    public int servoMoveCount = 0;
-    // 0 when adjusting angle the first time, 1 when adjusting angle the second time
-    public int angleAdjustCount = 0;
-    // 0 when checking for servoPos during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
-    public int checkMoveType = 0;
     // keeps track of provided rings (for where to drop wobble goal)
     public int numRings = 0;
-    // keep track of number of times code has been in park
-    public int park = 0;
-
-    /* declare all doubles needed for auto opmodes */
-
-    // declare desiredY position (eg: about where the robot so be in the y direction on the field)
-    // NOTE: the Y is actually horizontal, due to rev
-    public double desiredY = 33;
-    // declare desiredX position (eg: about where the robot so be in the x direction on the field)
-    // NOTE: the X is actually vertical, due to rev
-    public double desiredX = 44;
 
     /* declare all constructors needed for auto opmodes */
 
@@ -110,14 +71,10 @@ public abstract class AutoSuperOpNew extends OpMode {
     public MecanumDrive drive;
     // declare time
     public ElapsedTime time;
-    // declare lastPos
-    public ObjectLocator.RobotPos lastPos;
     // declare vuforia
     public VuforiaLocalizer vuforia;
     // declare tfod
     public TFObjectDetector tfod;
-    // declare objectLocator
-    public ObjectLocator objectLocator = null;
 
     @Override
     public void init() {
