@@ -149,12 +149,14 @@ public abstract class SuperOpNew extends OpMode {
     }
 
 
+
+
+
     // declare threshold for color sensor data
-    double alphaThreshold = 500;
+    final double alphaThreshold = 500;
     // check whether or not carousel is running, ensures that carousel turns off at the correct time
-    boolean isCarouselRunning = false;
     double lastSeenRing = 0.0;
-    double ringDetectionTimer = 15.0;
+    final double ringDetectionTimer = 15.0;
     boolean currentlyViewingRing = false;
     enum RingState {
         FRONT, IN_MIDDLE, BACK, NONE
@@ -227,19 +229,38 @@ public abstract class SuperOpNew extends OpMode {
             carousel.set(0);
         }
     }
+    public void resetIndex() {
+        lastSeenRing = -1.0;
+        ringState = RingState.NONE;
+    }
 
 
 
     // set equal to the previous value of driver's left bumper
     boolean prevLB = false;
     boolean left_bumper;
+
+    boolean prevRB = false;
+    boolean right_bumper;
     // keep track of whether or not the shooter is currently running
     boolean isShooterRunning = false;
     // will be set to value of necessary wait time in method (eg: now + 1000 milliseconds)
     double carouselActivationWaitTime = 0.0;
+    boolean manualCarouselIndex = false;
+    boolean gamepad1A;
+    boolean prevG1A = false;
+    final double SINGLE_INDEX_CAROUSEL_TIME = 37;
+    boolean buttonIndexingActive = false;
 
+    double prevG2Joystick = 0;
+    double g2Joystick;
+
+    // TODO: reset index variables after shooting
     void shooterRewrite() {
+        right_bumper = gamepad1.right_bumper;
         left_bumper = gamepad1.left_bumper;
+        gamepad1A = gamepad1.a;
+        g2Joystick = gamepad2.left_stick_x;
         telemetry.addData("> Prev: ", prevLB);
         telemetry.addData("> Bumper: ", left_bumper);
         telemetry.addData("> Is shooter running", isShooterRunning);
@@ -249,39 +270,77 @@ public abstract class SuperOpNew extends OpMode {
         // if both conditions are met, toggle boolean isShooterRunning, causing the shooter to either
         // turn on or off and toggle boolean isCarouselManuallyStopped, ensuring the driver can manually
         // run the carousel
-        if(left_bumper && !prevLB) {
+        if((left_bumper && !prevLB) || (right_bumper && !prevRB)) {
+
             // toggle boolean isShooterRunning, causing the shooter to either turn on or off and toggle
             // boolean isCarouselManuallyStopped, ensuring the driver can manually run the carousel
             if (!isShooterRunning) {
+                if (left_bumper) {
+                    manualCarouselIndex = false;
+                    carouselActivationWaitTime = time.milliseconds() + CAROUSEL_ACTIVATION_TIME;
+                } else if (right_bumper) {
+                    manualCarouselIndex = true;
+                }
+
                 isShooterRunning = true;
-                carouselActivationWaitTime = time.milliseconds() + CAROUSEL_ACTIVATION_TIME;
             } else {
+                resetIndex();
                 isShooterRunning = false;
             }
 
 
         }
 
+
+
         // TODO: add manual index
 
         if (isShooterRunning) {
             shooter.set(SHOOTER_POWER);
 
+
             // if the wait time has been completed (time is greater than the wait time) and the wait time
             // has already been set, run carousel
-            if (time.milliseconds() > carouselActivationWaitTime) {
+            if (!manualCarouselIndex && time.milliseconds() > carouselActivationWaitTime) {
                 // run carousel
                 carousel.set(CAROUSEL_SHOOTING_POWER);
                 lastSeenRing = -1;
                 ringCount = 0;
-            }
+            } else if (manualCarouselIndex) {
+                if (gamepad1A && !prevG1A) {
 
+                    if (buttonIndexingActive) {
+                        carouselActivationWaitTime += SINGLE_INDEX_CAROUSEL_TIME;
+                        ringCount--;
+                    } else {
+                        carouselActivationWaitTime = time.milliseconds() + SINGLE_INDEX_CAROUSEL_TIME;
+                        buttonIndexingActive = true;
+                    }
+                    carousel.set(CAROUSEL_SHOOTING_POWER);
+                }
+
+                if (carouselActivationWaitTime < time.milliseconds()) {
+                    buttonIndexingActive = false;
+                    carousel.set(0);
+                }
+            }
         } else{
             shooter.set(0);
-            index();
+            if (Math.abs(g2Joystick) > THRESHOLD) {
+                carousel.set(g2Joystick * CAROUSEL_INDEXING_POWER);
+            } else {
+                if (Math.abs(prevG2Joystick) > THRESHOLD) {
+                    carousel.set(0);
+                    resetIndex();
+                }
+                index();
+            }
         }
 
         prevLB = left_bumper;
+        prevRB = right_bumper;
+        prevG1A = gamepad1A;
+        prevG2Joystick = g2Joystick;
     }
 
     // set equal to the previous value of operator's a button
