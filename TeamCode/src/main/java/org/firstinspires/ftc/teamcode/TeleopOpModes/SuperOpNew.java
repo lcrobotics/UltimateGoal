@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.TeleopOpModes;
+ package org.firstinspires.ftc.teamcode.TeleopOpModes;
 
 import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
@@ -166,6 +166,7 @@ public abstract class SuperOpNew extends OpMode {
 
     // autonomously index rings as they're pulled in by the intake
     public void index() {
+        telemetry.addLine("running this");
         telemetry.addData("> sensor data: ", colorSensor.alpha());
         telemetry.addData("> sensor threshold: ", alphaThreshold);
         telemetry.addData("> currently viewing ring: ", currentlyViewingRing);
@@ -179,10 +180,10 @@ public abstract class SuperOpNew extends OpMode {
 
 
         // TODO: sync into one method
-//        shoot.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        //  shoot.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
 
         // TODO: figure out where ringCount can be manipulated elsewhere
-
         // determines whether the sensor can detect a ring
         currentlyViewingRing = alphaThreshold < colorSensor.alpha();
 
@@ -211,19 +212,23 @@ public abstract class SuperOpNew extends OpMode {
             // this deals with false negatives given by hardware
             lastSeenRing = time.milliseconds();
             // if the visibility of the ring has timed out, increment the visible states
-        } else if(time.milliseconds() - ringDetectionTimer > lastSeenRing && lastSeenRing != -1) {
-            switch (ringState) {
-                case FRONT:
-                    ringState = RingState.IN_MIDDLE;
-                    break;
-                // if the ring state was the back, we can stop the carousel and increase the ring count on the carousel
-                case BACK:
-                    ringState = RingState.NONE;
-                    carousel.set(0);
-                    lastSeenRing = -1;
-                    break;
-                case IN_MIDDLE:
-                    carousel.set(CAROUSEL_INDEXING_POWER);
+        } else if(time.milliseconds() - ringDetectionTimer > lastSeenRing) {
+            if (lastSeenRing != -1) {
+                switch (ringState) {
+                    case FRONT:
+                        ringState = RingState.IN_MIDDLE;
+                        break;
+                    // if the ring state was the back, we can stop the carousel and increase the ring count on the carousel
+                    case BACK:
+                        ringState = RingState.NONE;
+                        carousel.set(0);
+                        lastSeenRing = -1;
+                        break;
+                    case IN_MIDDLE:
+                        carousel.set(CAROUSEL_INDEXING_POWER);
+                }
+            } else {
+                telemetry.addLine("hey doesn't remember rings");
             }
         } else {
             carousel.set(0);
@@ -231,6 +236,7 @@ public abstract class SuperOpNew extends OpMode {
     }
     public void resetIndex() {
         lastSeenRing = -1.0;
+        carousel.set(0.0);
         ringState = RingState.NONE;
     }
 
@@ -332,11 +338,13 @@ public abstract class SuperOpNew extends OpMode {
                 if (Math.abs(prevG2Joystick) > THRESHOLD) {
                     carousel.set(0);
                     resetIndex();
+                } else {
+                    index();
                 }
-                index();
             }
         }
 
+        telemetry.addData("Prev Joystick", prevG2Joystick);
         prevLB = left_bumper;
         prevRB = right_bumper;
         prevG1A = gamepad1A;
