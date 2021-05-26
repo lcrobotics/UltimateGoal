@@ -57,8 +57,8 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                     time.reset();
                 }
 
-                drive.driveRobotCentric(.5, 0, 0);
-                if (time.milliseconds() >= 900) {
+                drive.driveRobotCentric(.55, 0, 0);
+                if (time.milliseconds() >= 1000) {
                     lock = false;
                     resetDrive();
                     auto = AutoState.DRIVETOMID;
@@ -74,33 +74,69 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                 }
 
                 drive.driveRobotCentric(0,.4, 0);
-                if(time.milliseconds() >= 2900 && getBatteryVoltage() > 12.6) {
+                if(time.milliseconds() >= 2200 && getBatteryVoltage() > 13.8) {
                     lock = false;
                     resetDrive();
-                    auto = AutoState.STRAFECCW;
-                } else if (time.milliseconds() >= 2600) {
+                    auto = AutoState.ROTATECWSTART;
+                } else if(time.milliseconds() >= 2800 && getBatteryVoltage() > 12.6) {
                     lock = false;
                     resetDrive();
-                    auto = AutoState.STRAFECCW;
+                    auto = AutoState.ROTATECWSTART;
+                } else if (time.milliseconds() >= 3400) {
+                    lock = false;
+                    resetDrive();
+                    auto = AutoState.ROTATECWSTART;
                 }
 
                 break;
 
-            case STRAFECCW:
+            case ROTATECWSTART:
                 // make sure code only runs once and reset the time
                 if (!lock) {
                     lock = true;
                     time.reset();
                 }
 
-                drive.driveRobotCentric(-.5, 0, 0);
-                if (time.milliseconds() >= 1050) {
-                    lock = false;
+                drive.driveRobotCentric(0,0,.5);
+                if(time.milliseconds() >= 700) {
                     resetDrive();
-                    auto = AutoState.ROTATEWOBBLE;
+                    lock = false;
+                    auto = AutoState.DRIVEFORWARDSTART;
                 }
+
                 break;
 
+            case DRIVEFORWARDSTART:
+                // make sure code only runs once and reset the time
+                if (!lock) {
+                    lock = true;
+                    time.reset();
+                }
+
+                drive.driveRobotCentric(0,.5,0);
+                if(time.milliseconds() >= 900) {
+                    resetDrive();
+                    lock = false;
+                    auto = AutoState.ROTATECW;
+                }
+
+                break;
+
+            case ROTATECCWSTART:
+                // make sure code only runs once and reset the time
+                if (!lock) {
+                    lock = true;
+                    time.reset();
+                }
+
+                drive.driveRobotCentric(0,0,-.5);
+                if(time.milliseconds() >= 700) {
+                    resetDrive();
+                    lock = false;
+                    auto = AutoState.ROTATEWOBBLE;
+                }
+
+                break;
 
             case ROTATEWOBBLE:
                 // make sure code only runs once and reset the time
@@ -149,18 +185,30 @@ public class RingDetectStartNew extends AutoSuperOpNew{
 
                 break;
 
-            case ROTATECW:
+            case ROTATECCW:
                 // make sure code only runs once and reset the time
                 if (!lock) {
                     lock = true;
                     time.reset();
                 }
 
-                drive.driveRobotCentric(0,0,-.32);
-                if(time.milliseconds() >= 500) {
-                    resetDrive();
-                    lock = false;
-                    auto = AutoState.DRIVEABIT;
+                if(numRings != 1) {
+                    drive.driveRobotCentric(0,0,-.32);
+                    if(time.milliseconds() >= 500) {
+                        resetDrive();
+                        lock = false;
+                        auto = AutoState.DRIVEABIT;
+                    }
+                } else {
+                    if(time.milliseconds() >= 300 && getBatteryVoltage() > 13) {
+                        resetDrive();
+                        lock = false;
+                        auto = AutoState.DROPWOBBLE;
+                    } else if (time.milliseconds() >= 300) {
+                        resetDrive();
+                        lock = false;
+                        auto = AutoState.DRIVEABIT;
+                    }
                 }
                 // rotate and drop wobble in box A (only if 0 rings)
                 // rotate and drop wobble in box C (only if 4 rings)
@@ -190,10 +238,10 @@ public class RingDetectStartNew extends AutoSuperOpNew{
 
                 if(numRings == 1) {
                     drive.driveRobotCentric(0,.5,0);
-                    if(time.milliseconds() >= 1400) {
+                    if(time.milliseconds() >= 800) {
                         resetDrive();
                         lock = false;
-                        auto = AutoState.ROTATECW;
+                        auto = AutoState.ROTATECCW;
                     }
                 }
 
@@ -202,11 +250,11 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                     if(time.milliseconds() >= 2200 && getBatteryVoltage() >= 12.7) {
                         resetDrive();
                         lock = false;
-                        auto = AutoState.ROTATECW;
-                    } else if(time.milliseconds() >= 2000) {
+                        auto = AutoState.ROTATECCW;
+                    } else if(time.milliseconds() >= 2400) {
                         resetDrive();
                         lock = false;
-                        auto = AutoState.ROTATECW;
+                        auto = AutoState.ROTATECCW;
                     }
                 }
 
@@ -245,7 +293,7 @@ public class RingDetectStartNew extends AutoSuperOpNew{
 
                 if(numRings == 1) {
                     drive.driveRobotCentric(0,-.4,0);
-                    if(time.milliseconds() >= 1500) {
+                    if(time.milliseconds() >= 900) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.DONE;

@@ -23,8 +23,10 @@ public enum AutoState {
     DRIVEABIT(14),
     DETECT(15),
     STRAFECW(16),
-    STRAFECCW(17),
-    ROTATEWOBBLE(18);
+    ROTATECCWSTART(17),
+    ROTATEWOBBLE(18),
+    ROTATECWSTART(19),
+    DRIVEFORWARDSTART(20);
 
 
     int val;
