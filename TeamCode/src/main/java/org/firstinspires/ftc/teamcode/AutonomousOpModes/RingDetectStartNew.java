@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.AutonomousOpModes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous
-public class RingDetectStartNew extends AutoSuperOpNew{
+public class RingDetectStartNew extends AutoSuperOpNew {
     // ensure that DETECT actually runs
     boolean started = false;
     // start the OpMode in state DETECT
@@ -130,7 +130,7 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                 }
 
                 drive.driveRobotCentric(0,0,-.5);
-                if(time.milliseconds() >= 700) {
+                if(time.milliseconds() >= 750) {
                     resetDrive();
                     lock = false;
                     auto = AutoState.ROTATEWOBBLE;
@@ -200,22 +200,16 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                         lock = false;
                         auto = AutoState.DROPWOBBLE;
                     }
-                } else if(numRings == 1) {
+                } else if (numRings == 4) {
                     drive.driveRobotCentric(0,0,-.32);
-                    if(time.milliseconds() >= 500) {
+                    if(time.milliseconds() >= 600 && getBatteryVoltage() > 13) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.DRIVEABIT;
-                    }
-                } else {
-                    if(time.milliseconds() >= 300 && getBatteryVoltage() > 13) {
+                    } else if (time.milliseconds() >= 700) {
                         resetDrive();
                         lock = false;
-                        auto = AutoState.DROPWOBBLE;
-                    } else if (time.milliseconds() >= 300) {
-                        resetDrive();
-                        lock = false;
-                        auto = AutoState.DROPWOBBLE;
+                        auto = AutoState.DRIVEABIT;
                     }
                 }
                 // rotate and drop wobble in box A (only if 0 rings)
@@ -249,17 +243,17 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                     if(time.milliseconds() >= 800) {
                         resetDrive();
                         lock = false;
-                        auto = AutoState.ROTATECCW;
+                        auto = AutoState.DROPWOBBLE;
                     }
                 }
 
                 if(numRings == 4) {
                     drive.driveRobotCentric(0,.5,0);
-                    if(time.milliseconds() >= 1400 && getBatteryVoltage() >= 12.7) {
+                    if(time.milliseconds() >= 1600 && getBatteryVoltage() >= 12.7) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.ROTATECCW;
-                    } else if(time.milliseconds() >= 2300) {
+                    } else if(time.milliseconds() >= 2000) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.ROTATECCW;
@@ -301,7 +295,7 @@ public class RingDetectStartNew extends AutoSuperOpNew{
 
                 if(numRings == 1) {
                     drive.driveRobotCentric(0,-.4,0);
-                    if(time.milliseconds() >= 900) {
+                    if(time.milliseconds() >= 650) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.DONE;
