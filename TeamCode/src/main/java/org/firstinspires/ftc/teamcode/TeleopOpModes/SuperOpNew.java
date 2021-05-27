@@ -170,13 +170,6 @@ public abstract class SuperOpNew extends OpMode {
         telemetry.addData("> time: ", time.milliseconds());
 
 
-
-
-        // TODO: sync into one method
-        //  shoot.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-
-
-        // TODO: figure out where ringCount can be manipulated elsewhere
         // determines whether the sensor can detect a ring
         currentlyViewingRing = alphaThreshold < colorSensor.alpha();
 
@@ -237,7 +230,7 @@ public abstract class SuperOpNew extends OpMode {
     }
     public void resetIndex() {
         lastSeenRing = -1.0;
-        carousel.set(0.0);
+        carousel.set(0.0 );
         ringState = RingState.NONE;
     }
 
@@ -360,11 +353,17 @@ public abstract class SuperOpNew extends OpMode {
     boolean prevY = false;
     // keep track of whether or not the autoServo is currently open
     boolean isAutoServo = false;
+    int i = 0;
+
+    boolean wasTouching = false;
+
+    double wobbleRotatePower;
+    double g2RightStickY;
+
     // bind autoWobble to operator's a, bind teleopWobble to operator's y, and bind wobbleRotate to
     // operator's right stick y (also uses the touch sensor to stop wobbleRotate)
     public void wobbleGoals() {
-        // double that allows for neater method code (checks for threshold)
-        double wobbleRotatePower = Math.abs(gamepad2.right_stick_y) < THRESHOLD ? 0 : gamepad2.right_stick_y;
+
 
         // if operator's a button is pressed and it's previous value is false (prevA), check if
         // teleopServo is open (isTeleopServo). if it is, close it and if it isn't, open it. No
@@ -401,14 +400,43 @@ public abstract class SuperOpNew extends OpMode {
         // set prevY to the current value of operator's y
         prevY = gamepad2.y;
 
+        // double that allows for neater method code (checks for threshold)
+        wobbleRotatePower = 0.0;
+
+
+        g2RightStickY = -gamepad2.right_stick_y;
         // set wobble rotate to wobbleRotatePower (declared above, is equal to operator's right stick
         // y as long as it's above the threshold)
-        wobbleRotate.set(-wobbleRotatePower * .5);
         // if the touch sensor is pressed and the wobbleRotatePower isn't positive (meaning if the
         // operator isn't bringing the goal up), stop wobbleRotate
-        if(touchSensor.isPressed() && wobbleRotatePower > 0) {
-            wobbleRotate.set(-0.1);
+        if(touchSensor.isPressed()) {
+            if (g2RightStickY < THRESHOLD) {
+                wobbleRotatePower = 0.2;
+            }
+            wasTouching = true;
+            i++;
+        } else if (Math.abs(g2RightStickY) > THRESHOLD) {
+            if (wasTouching) {
+                if (g2RightStickY > THRESHOLD) {
+                    wobbleRotatePower = g2RightStickY * 0.5;
+                    wasTouching = false;
+                }
+            } else {
+                wobbleRotatePower = g2RightStickY * 0.5;
+            }
         }
+
+        wobbleRotate.set(wobbleRotatePower);
+
+
+        telemetry.addData("right stick y: ", g2RightStickY);
+        telemetry.addData("raw right stick y: ", gamepad2.right_stick_y);
+        telemetry.addData("raw right stick x: ", gamepad2.right_stick_x);
+        telemetry.addData("Wobble Rotate Power", wobbleRotatePower);
+        // TODO: add var if it hasnt moved up since it auto did
+        telemetry.addData("Touch sensor presses: ", i);
+        telemetry.addData("was touching?: ", wasTouching);
+        telemetry.addData("is touching: ", touchSensor.isPressed());
     }
 
     // allows driver and operator to stop all of the hardware they control on dpad down press
