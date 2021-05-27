@@ -15,12 +15,6 @@ public abstract class SuperOpNew extends OpMode {
     final double THRESHOLD = .12;
     // constant used for the intake's power
     final double INTAKE_POWER = 1;
-    // constant used to update the current time and get a wait time for carousel activation during
-    // index() - makes sure the sensor doesn't see any false positives
-    final double FALSE_POSITIVE_BUFFER = 50.0;
-    // constant used to update the current time and get the correct run time for the carousel while
-    // indexing
-    final double CAROUSEL_INDEX_LENGTH = 300.0;
     // constant used for the carousel's power while indexing
     final double CAROUSEL_INDEXING_POWER = .2;
     // constant used for the shooter power
@@ -128,8 +122,6 @@ public abstract class SuperOpNew extends OpMode {
         );
     }
 
-    // allows for the power to only be set once, making the code more efficient
-    double intakePower = 0;
     // binds intake to right trigger, reverse intake to left trigger
     // both driver and operator can intake, but driver has precedence
     public void intake() {
@@ -163,6 +155,7 @@ public abstract class SuperOpNew extends OpMode {
     }
     RingState ringState = RingState.NONE;
     double ringCount = 0;
+    final double INDEX_TIME_THIRD_RING = 3.0;
 
     // autonomously index rings as they're pulled in by the intake
     public void index() {
@@ -202,8 +195,16 @@ public abstract class SuperOpNew extends OpMode {
                             ringState = RingState.FRONT;
                             carousel.set(CAROUSEL_INDEXING_POWER);
                         }
+                    } else if (ringCount == 3) {
+                        if(time.milliseconds() >= INDEX_TIME_THIRD_RING) {
+                            carousel.set(CAROUSEL_INDEXING_POWER);
+                        } else {
+                            carousel.set(0);
+                        }
                     }
+
                     break;
+
                 case IN_MIDDLE:
                     ringState = RingState.BACK;
                     break;
@@ -255,7 +256,7 @@ public abstract class SuperOpNew extends OpMode {
     boolean manualCarouselIndex = false;
     boolean gamepad1A;
     boolean prevG1A = false;
-    final double SINGLE_INDEX_CAROUSEL_TIME = 35;
+    final double SINGLE_INDEX_CAROUSEL_TIME = 31;
     boolean buttonIndexingActive = false;
 
     double prevG2Joystick = 0;
@@ -330,7 +331,7 @@ public abstract class SuperOpNew extends OpMode {
                     carousel.set(0);
                 }
             }
-        } else{
+        } else {
             shooter.set(0);
             if (Math.abs(g2Joystick) > THRESHOLD) {
                 carousel.set(g2Joystick * CAROUSEL_INDEXING_POWER);
@@ -431,8 +432,8 @@ public abstract class SuperOpNew extends OpMode {
             wobbleRotate.set(0);
 
             // release all servos
-            teleopWobble.setPosition(.93);
-            autoWobble.setPosition(0);
+            teleopWobble.setPosition(.7);
+            autoWobble.setPosition(.7);
         }
     }
 }
