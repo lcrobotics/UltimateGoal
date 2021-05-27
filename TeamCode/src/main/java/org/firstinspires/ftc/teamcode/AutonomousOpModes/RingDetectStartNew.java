@@ -98,7 +98,7 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                 }
 
                 drive.driveRobotCentric(0,0,.5);
-                if(time.milliseconds() >= 700) {
+                if(time.milliseconds() >= 800) {
                     resetDrive();
                     lock = false;
                     auto = AutoState.DRIVEFORWARDSTART;
@@ -114,10 +114,10 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                 }
 
                 drive.driveRobotCentric(0,.5,0);
-                if(time.milliseconds() >= 900) {
+                if(time.milliseconds() >= 500) {
                     resetDrive();
                     lock = false;
-                    auto = AutoState.ROTATECW;
+                    auto = AutoState.ROTATECCWSTART;
                 }
 
                 break;
@@ -177,7 +177,7 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                     }
 
                     if(numRings == 0) {
-                        auto = AutoState.ROTATECW;
+                        auto = AutoState.ROTATECCW;
                     } else {
                         auto = AutoState.DRIVEOVERMID;
                     }
@@ -192,7 +192,15 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                     time.reset();
                 }
 
-                if(numRings != 1) {
+
+                if (numRings == 0) {
+                    drive.driveRobotCentric(0,0,-.32);
+                    if(time.milliseconds() >= 700) {
+                        resetDrive();
+                        lock = false;
+                        auto = AutoState.DROPWOBBLE;
+                    }
+                } else if(numRings == 1) {
                     drive.driveRobotCentric(0,0,-.32);
                     if(time.milliseconds() >= 500) {
                         resetDrive();
@@ -207,7 +215,7 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                     } else if (time.milliseconds() >= 300) {
                         resetDrive();
                         lock = false;
-                        auto = AutoState.DRIVEABIT;
+                        auto = AutoState.DROPWOBBLE;
                     }
                 }
                 // rotate and drop wobble in box A (only if 0 rings)
@@ -221,7 +229,7 @@ public class RingDetectStartNew extends AutoSuperOpNew{
                     time.reset();
                 }
                 drive.driveRobotCentric(0,.4,0);
-                if(time.milliseconds() >= 300) {
+                if(time.milliseconds() >= 450) {
                     resetDrive();
                     lock = false;
                     auto = AutoState.DROPWOBBLE;
@@ -247,11 +255,11 @@ public class RingDetectStartNew extends AutoSuperOpNew{
 
                 if(numRings == 4) {
                     drive.driveRobotCentric(0,.5,0);
-                    if(time.milliseconds() >= 2200 && getBatteryVoltage() >= 12.7) {
+                    if(time.milliseconds() >= 1400 && getBatteryVoltage() >= 12.7) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.ROTATECCW;
-                    } else if(time.milliseconds() >= 2400) {
+                    } else if(time.milliseconds() >= 2300) {
                         resetDrive();
                         lock = false;
                         auto = AutoState.ROTATECCW;

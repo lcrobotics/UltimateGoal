@@ -255,7 +255,7 @@ public abstract class SuperOpNew extends OpMode {
     boolean manualCarouselIndex = false;
     boolean gamepad1A;
     boolean prevG1A = false;
-    final double SINGLE_INDEX_CAROUSEL_TIME = 37;
+    final double SINGLE_INDEX_CAROUSEL_TIME = 35;
     boolean buttonIndexingActive = false;
 
     double prevG2Joystick = 0;
