@@ -5,11 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
-import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
 
 @Disabled
 @Autonomous
-public class StartAuto extends AutoSuperOp {
+public class StartAuto extends AutoSuperOpOld {
     // ensure that SHOOT actually runs
     boolean started = false;
     // start the OpMode in state SHOOT

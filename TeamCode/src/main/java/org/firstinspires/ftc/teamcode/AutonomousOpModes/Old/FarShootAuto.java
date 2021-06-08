@@ -4,11 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
-import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
 
 @Disabled
 @Autonomous
-public class FarShootAuto extends AutoSuperOp {
+public class FarShootAuto extends AutoSuperOpOld {
     // ensure that TURNABIT actually runs
     boolean started = false;
     // declare array to keep track of rotation states

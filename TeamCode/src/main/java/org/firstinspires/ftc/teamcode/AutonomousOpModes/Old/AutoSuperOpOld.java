@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.AutonomousOpModes;
+package org.firstinspires.ftc.teamcode.AutonomousOpModes.Old;
 
 import com.lcrobotics.easyftclib.commandCenter.driveTrain.MecanumDrive;
 import com.lcrobotics.easyftclib.commandCenter.hardware.Motor;
@@ -7,7 +7,6 @@ import com.lcrobotics.easyftclib.commandCenter.hardware.SimpleServo;
 import com.lcrobotics.easyftclib.vision.ObjectLocator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -20,9 +19,9 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-public abstract class AutoSuperOpNew extends OpMode {
+public abstract class AutoSuperOpOld extends OpMode {
 
-    // declare vuforia license key
+    // delcare vuforia lisense key
     public final static String VUFORIA_KEY =
             "ARgYuCf/////AAABmUYfc1+dVEQsgUBCPA2kCAFRmuTRB/XUfAJzLsRyFDRg6uMMjj6EXM8YNiY5l3oTw83H"
                     + "+PKgfF46gctdzrln2nnVXMebpgN9ULy1cOfdSsPk0hwSZqzcY0LWCj+rPPrZ3JyQT7gf2aw7bo8ZvWedWB7skuGIjg"
@@ -45,25 +44,61 @@ public abstract class AutoSuperOpNew extends OpMode {
     public Motor backLeftDrive;
     public Motor frontRightDrive;
     public Motor backRightDrive;
+
     // declare non-drive motors
-    public Motor carousel;
-    public Motor shooter;
     public Motor intake;
-    public Motor wobbleRotate;
+    public Motor shooter;
 
     // declare servos
-    public ServoEx autoWobble;
-
-    // declare touch sensor
-    public TouchSensor touchSensor;
+    public ServoEx topHook;
+    public ServoEx shooterServo;
 
     /* declare all booleans needed for auto opmodes */
+
+    // check if servo is going to position 1 or 0
+    public boolean servoPos;
+    // check if code has been in state STRAFETOTARGET & check that the angle is close to correct
+    public boolean angleCorrect = false;
     // make sure each state only runs once (since all of our OpModes are iterative)
     public boolean lock = false;
+    // makes sure that the hesitation time only runs once
+    public boolean shoot = false;
+    // when there are zero rings, the code must go back to state ROTATECW, this boolean makes sure
+    // the code run in the first instance of the state does not run again
+    public boolean rotateZeroCW = false;
+    // when there are zero rings, the code must go back to state ROTATECCW, this boolean makes sure
+    // the code run in the first instance of the state does not run again
+    public boolean rotateZeroCCW = false;
+    // when there is one ring, the code must go back to state ROTATECW, this boolean makes sure
+    // the code run in the first instance of the state does not run again
+    public boolean rotateSingle = false;
+    // when there are four rings, the code must go back to state ROTATECW, this boolean makes sure
+    // the code run in the first instance of the state does not run again
+    public boolean rotateQuad = false;
 
     /* declare all ints needed for auto opmodes */
+
+    // number of attempts to find nav servoPos
+    public int turnCount = 0;
+    // count number of servo movements
+    public int servoMoveCount = 0;
+    // 0 when adjusting angle the first time, 1 when adjusting angle the second time
+    public int angleAdjustCount = 0;
+    // 0 when checking for servoPos during rotation, 1 when angle adjusting, 2 when strafing, 3 when going back
+    public int checkMoveType = 0;
     // keeps track of provided rings (for where to drop wobble goal)
     public int numRings = 0;
+    // keep track of number of times code has been in park
+    public int park = 0;
+
+    /* declare all doubles needed for auto opmodes */
+
+    // declare desiredY position (eg: about where the robot so be in the y direction on the field)
+    // NOTE: the Y is actually horizontal, due to rev
+    public double desiredY = 33;
+    // declare desiredX position (eg: about where the robot so be in the x direction on the field)
+    // NOTE: the X is actually vertical, due to rev
+    public double desiredX = 44;
 
     /* declare all constructors needed for auto opmodes */
 
@@ -71,45 +106,45 @@ public abstract class AutoSuperOpNew extends OpMode {
     public MecanumDrive drive;
     // declare time
     public ElapsedTime time;
+    // declare lastPos
+    public ObjectLocator.RobotPos lastPos;
     // declare vuforia
     public VuforiaLocalizer vuforia;
     // declare tfod
     public TFObjectDetector tfod;
+    // delcare objectLocator
+    public ObjectLocator objectLocator = null;
 
     @Override
     public void init() {
         // initialize drive motors
         // NOTE: scalars on frontLeftDrive and frontRightDrive are due to robot weight imbalance
         frontLeftDrive = new Motor(hardwareMap, "FrontLeftDrive", cpr, rpm, 0.9);
-        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 0.9);
-        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1);
-        backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm, 1);
-
-        frontRightDrive.setInverted(true);
-        backRightDrive.setInverted(true);
-
         frontLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        frontRightDrive = new Motor(hardwareMap, "FrontRightDrive", cpr, rpm, 0.9);
         frontRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        frontRightDrive.setInverted(true);
+        backLeftDrive = new Motor(hardwareMap, "BackLeftDrive", cpr, rpm, 1);
         backLeftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        backRightDrive = new Motor(hardwareMap, "BackRightDrive", cpr, rpm, 1);
         backRightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         // initialize non-drive motors
-        carousel = new Motor(hardwareMap, "carousel", cpr, rpm);
-        shooter = new Motor(hardwareMap, "shooter", cpr, rpm);
-        intake = new Motor(hardwareMap, "intake", cpr, rpm);
-        wobbleRotate = new Motor(hardwareMap, "wobbleRotate", cpr, rpm);
+        intake = new Motor(hardwareMap, "Intake", cpr, rpm);
+        shooter = new Motor(hardwareMap, "Shooter", cpr, rpm);
         // set shooter to run with encoder (that way we can use velocity instead of the motor power)
+        shooter.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // initialize servos
-        autoWobble = new SimpleServo(hardwareMap, "autoWobble");
-
-        // initialize TouchSensor
-        touchSensor = hardwareMap.get(TouchSensor.class, "sensor_touch");
+        topHook = new SimpleServo(hardwareMap, "TopHook");
+        shooterServo = new SimpleServo(hardwareMap, "ShooterServo");
 
         // initialize drive
         drive = new MecanumDrive(true, frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive);
+
         // initialize time
         time = new ElapsedTime();
+
         // call methods that initialize vuforia and tensorflow
         initVuforia();
         initTfod();
@@ -213,3 +248,4 @@ public abstract class AutoSuperOpNew extends OpMode {
         telemetry.update();
     }
 }
+

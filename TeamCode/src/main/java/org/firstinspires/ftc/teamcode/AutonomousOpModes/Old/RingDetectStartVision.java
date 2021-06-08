@@ -1,10 +1,12 @@
-package org.firstinspires.ftc.teamcode.AutonomousOpModes;
+package org.firstinspires.ftc.teamcode.AutonomousOpModes.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
+
 @Autonomous
-public class RingDetectStartVision extends AutoSuperOp {
+public class RingDetectStartVision extends AutoSuperOpOld {
     // ensure that DETECT actually runs
     boolean started = false;
     // start the OpMode in state DETECT

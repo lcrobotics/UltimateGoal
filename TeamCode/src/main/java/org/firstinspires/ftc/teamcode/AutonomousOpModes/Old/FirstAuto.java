@@ -4,11 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoState;
-import org.firstinspires.ftc.teamcode.AutonomousOpModes.AutoSuperOp;
 
 @Disabled
 @Autonomous
-public class FirstAuto extends AutoSuperOp {
+public class FirstAuto extends AutoSuperOpOld {
     // start the OpMode in state DRIVEOVERMID
     AutoState auto = AutoState.DRIVEOVERMID;
 

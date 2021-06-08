@@ -1,9 +1,7 @@
-package org.firstinspires.ftc.teamcode.TeleopOpModes;
-
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+package org.firstinspires.ftc.teamcode.TeleopOpModes.Old;
 
 //@TeleOp(name = "Competition TeleOp")
-public class Teleop extends SuperOp {
+public class Teleop extends SuperOpOld {
     @Override
     public void loop() {
         drive();
